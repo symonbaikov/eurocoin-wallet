@@ -19,7 +19,7 @@ export function DisconnectButton() {
     try {
       await disconnect();
       // Remove authentication cookie
-      Cookies.remove('metamask_connected');
+      Cookies.remove("metamask_connected");
       show({
         title: "Кошелёк отключён",
         description: "Подключение MetaMask завершено. Перенаправляем на страницу входа...",

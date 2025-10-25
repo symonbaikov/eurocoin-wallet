@@ -10,14 +10,29 @@ import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { connect, isConnecting } = useWalletConnection();
+  const { connect, isConnecting, isConnected } = useWalletConnection();
   const { show } = useToast();
 
   const handleMetaMaskConnect = async () => {
     try {
+      // If already connected, just set cookie and redirect
+      if (isConnected) {
+        Cookies.set("metamask_connected", "true", { expires: 7 }); // 7 days
+        show({
+          title: "Кошелёк уже подключён",
+          description: "MetaMask уже подключён. Перенаправляем на главную страницу...",
+          variant: "success",
+        });
+        setTimeout(() => {
+          router.push("/");
+        }, 1500);
+        return;
+      }
+
+      // If not connected, try to connect
       await connect();
       // Set cookie to indicate successful MetaMask connection
-      Cookies.set('metamask_connected', 'true', { expires: 7 }); // 7 days
+      Cookies.set("metamask_connected", "true", { expires: 7 }); // 7 days
       show({
         title: "Кошелёк подключён",
         description: "MetaMask успешно подключён. Перенаправляем на главную страницу...",
@@ -49,10 +64,14 @@ export default function LoginPage() {
             Авторизация доступна через корпоративный SSO либо подключение MetaMask. Подключите
             кошелёк для доступа к функциям управления токенами и просмотра баланса.
           </p>
-          <div className="dark:border-dark-outline dark:bg-dark-surface flex flex-col gap-4 rounded-3xl border border-outline bg-surface p-6 shadow-card">
-            <Button size="lg" fullWidth onClick={handleMetaMaskConnect} disabled={isConnecting}>
-              {isConnecting ? "Подключение..." : "Подключить MetaMask"}
-            </Button>
+                 <div className="dark:border-dark-outline dark:bg-dark-surface flex flex-col gap-4 rounded-3xl border border-outline bg-surface p-6 shadow-card">
+                   <Button size="lg" fullWidth onClick={handleMetaMaskConnect} disabled={isConnecting}>
+                     {isConnecting 
+                       ? "Подключение..." 
+                       : isConnected 
+                         ? "Продолжить с MetaMask" 
+                         : "Подключить MetaMask"}
+                   </Button>
             <Button variant="outline" fullWidth disabled>
               Войти через корпоративный Email
             </Button>
