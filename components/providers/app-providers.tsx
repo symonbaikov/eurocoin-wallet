@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { ThemeProvider } from "next-themes";
 import { wagmiConfig } from "@/lib/wagmi";
-import { ToastProvider } from "@/components/ui/toast";
 import { LanguageProvider } from "@/components/providers/language-provider";
 
 export function AppProviders({ children }: PropsWithChildren) {
@@ -26,7 +25,7 @@ export function AppProviders({ children }: PropsWithChildren) {
       <LanguageProvider>
         <WagmiProvider config={wagmiConfig}>
           <QueryClientProvider client={queryClient}>
-            <ToastProvider>{children}</ToastProvider>
+            {children}
           </QueryClientProvider>
         </WagmiProvider>
       </LanguageProvider>

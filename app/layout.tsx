@@ -36,10 +36,10 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${displayFont.variable} bg-background font-sans text-foreground antialiased dark:bg-dark-background dark:text-dark-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} ${displayFont.variable} dark:bg-dark-background dark:text-dark-foreground bg-background font-sans text-foreground antialiased`}
       >
         <AppProviders>
-          <div className="flex min-h-screen flex-col dark:bg-dark-background">
+          <div className="dark:bg-dark-background flex min-h-screen flex-col">
             <SiteHeader />
             <div className="flex-1">{children}</div>
             <SiteFooter />
@@ -49,9 +49,9 @@ export default function RootLayout({
             toastOptions={{
               duration: 4000,
               style: {
-                background: 'var(--surface)',
-                color: 'var(--foreground)',
-                border: '1px solid var(--outline)',
+                background: "var(--surface)",
+                color: "var(--foreground)",
+                border: "1px solid var(--outline)",
               },
             }}
           />
