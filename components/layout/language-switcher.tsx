@@ -5,7 +5,7 @@ import { availableLocales, type Locale } from "@/lib/i18n/translations";
 import { useLanguage } from "@/components/providers/language-provider";
 import { cn } from "@/lib/utils";
 
-export function LanguageSwitcher(): JSX.Element {
+export function LanguageSwitcher() {
   const { locale, setLocale } = useLanguage();
   const [isPending, startTransition] = useTransition();
 

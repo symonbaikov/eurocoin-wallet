@@ -1,6 +1,7 @@
 "use client";
+import { useEffect } from "react";
+import { ethers } from "ethers";
 import { InternalRequestForm } from "@/components/forms/internal-request-form";
-import { Card, CardContent, CardDescription } from "@/components/ui/card";
 import { BalanceCard, PriceTicker, TaxCard } from "@/components/wallet";
 import { ConnectButton } from "@/components/wallet/connect-button";
 import { WalletStatus } from "@/components/wallet/wallet-status";
@@ -13,8 +14,42 @@ import { ReviewsCarousel } from "@/components/reviews";
 import { ScrollToTop } from "@/components/ui/scroll-to-top";
 import { useTranslation } from "@/hooks/use-translation";
 
-export default function Home(): JSX.Element {
+export default function Home() {
   const t = useTranslation();
+
+  useEffect(() => {
+    const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL;
+    const tokenAddress = process.env.NEXT_PUBLIC_TOKEN_ADDRESS;
+
+    if (!rpcUrl || !tokenAddress) {
+      console.warn(
+        "Missing NEXT_PUBLIC_RPC_URL or NEXT_PUBLIC_TOKEN_ADDRESS, skipping token metadata check."
+      );
+      return;
+    }
+
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
+    const token = new ethers.Contract(
+      tokenAddress,
+      [
+        "function name() view returns (string)",
+        "function symbol() view returns (string)",
+      ],
+      provider
+    );
+
+    void (async () => {
+      try {
+        const [name, symbol] = await Promise.all([
+          token.name(),
+          token.symbol(),
+        ]);
+        console.log("Connected token metadata:", { name, symbol });
+      } catch (error) {
+        console.error("Failed to fetch token metadata", error);
+      }
+    })();
+  }, []);
 
   return (
     <main className="dark:from-dark-background dark:to-dark-backgroundAlt min-h-screen bg-gradient-to-br from-background to-backgroundAlt">

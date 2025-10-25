@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export default function LoginPage(): JSX.Element {
+export default function LoginPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-backgroundAlt to-background">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-16 md:flex-row md:items-center md:justify-between md:px-10">

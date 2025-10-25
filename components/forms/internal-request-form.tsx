@@ -22,7 +22,7 @@ const initialState: FormState = {
   priority: "normal",
 };
 
-export function InternalRequestForm(): JSX.Element {
+export function InternalRequestForm() {
   const [form, setForm] = useState<FormState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { show } = useToast();

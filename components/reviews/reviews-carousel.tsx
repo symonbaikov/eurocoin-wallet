@@ -58,13 +58,15 @@ const mockReviews: Review[] = [
   },
 ];
 
-export function ReviewsCarousel(): JSX.Element {
+export function ReviewsCarousel() {
   const t = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    setTimeout(() => {
+      setIsMounted(true);
+    }, 100);
   }, []);
 
   useEffect(() => {
@@ -140,7 +142,7 @@ export function ReviewsCarousel(): JSX.Element {
 
                 {/* Review Text */}
                 <blockquote className="mb-8 text-lg italic text-foregroundMuted dark:text-dark-foregroundMuted">
-                  "{currentReview.text}"
+                  &quot;{currentReview.text}&quot;
                 </blockquote>
 
                 {/* Author Info */}

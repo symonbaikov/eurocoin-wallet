@@ -1,4 +1,4 @@
-const TAX_FUNCTIONS = ["tax", "taxPercent", "getTax"] as const;
+const TAX_FUNCTIONS = ["tax", "taxPercent", "getTax", "taxBps"] as const;
 
 type TaxFunctionName = (typeof TAX_FUNCTIONS)[number];
 

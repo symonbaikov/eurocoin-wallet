@@ -1,7 +1,16 @@
 import { mainnet, sepolia } from "wagmi/chains";
+import { TOKEN_CONFIG } from "@/config/token";
 
-export const SUPPORTED_CHAINS = [sepolia, mainnet] as const;
+const AVAILABLE_CHAINS = [sepolia, mainnet] as const;
 
-export const DEFAULT_CHAIN = sepolia;
+const defaultChain =
+  AVAILABLE_CHAINS.find((chain) => chain.id === TOKEN_CONFIG.chainId) ??
+  sepolia;
 
-export const SUPPORTED_CHAIN_IDS = SUPPORTED_CHAINS.map((chain) => chain.id);
+export const SUPPORTED_CHAINS = AVAILABLE_CHAINS;
+
+export const DEFAULT_CHAIN = defaultChain;
+
+export const SUPPORTED_CHAIN_IDS = SUPPORTED_CHAINS.map(
+  (chain) => chain.id,
+);

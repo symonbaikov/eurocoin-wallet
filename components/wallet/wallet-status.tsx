@@ -1,12 +1,20 @@
 "use client";
 
 import { useMemo } from "react";
+import { shortenAddress } from "@/lib/address";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
 import { useTranslation } from "@/hooks/use-translation";
 
 export function WalletStatus() {
-  const { status, connectorName, currentChainName, isConnected, isConnecting, isReconnecting } =
-    useWalletConnection();
+  const {
+    status,
+    connectorName,
+    currentChainName,
+    address,
+    isConnected,
+    isConnecting,
+    isReconnecting,
+  } = useWalletConnection();
   const t = useTranslation();
 
   const label = (() => {
@@ -42,6 +50,14 @@ export function WalletStatus() {
           <span>{t("wallet.status.connector", { connector: connectorName ?? "—" })}</span>
           <span>{t("wallet.status.network", { network: currentChainName ?? "—" })}</span>
         </div>
+        {isConnected && address ? (
+          <div className="flex flex-wrap items-center gap-3 text-xs text-foreground">
+            <span className="uppercase tracking-[0.25em] text-foregroundMuted">
+              {t("wallet.status.connectedAddress")}
+            </span>
+            <span className="font-mono text-sm">{shortenAddress(address, 4)}</span>
+          </div>
+        ) : null}
       </div>
     </div>
   );

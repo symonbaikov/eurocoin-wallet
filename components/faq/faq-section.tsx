@@ -4,13 +4,15 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/use-translation";
 
-export function FAQSection(): JSX.Element {
+export function FAQSection() {
   const t = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    setIsMounted(true);
+    setTimeout(() => {
+      setIsMounted(true);
+    }, 100);
   }, []);
 
   const toggleItem = (id: string) => {

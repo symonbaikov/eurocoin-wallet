@@ -23,7 +23,7 @@ export function TaxCard() {
 
   const amountValue = parseAmount(amountInput);
   const taxAmount = amountValue !== null ? (amountValue * taxPercent) / 100 : null;
-  const totalAfterTax = taxAmount !== null ? amountValue - taxAmount : amountValue;
+  const totalAfterTax = amountValue !== null && taxAmount !== null ? amountValue - taxAmount : null;
 
   const sourceLabel =
     source === "contract" ? t("wallet.taxCard.sourceContract") : t("wallet.taxCard.sourceFallback");

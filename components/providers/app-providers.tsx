@@ -8,7 +8,7 @@ import { wagmiConfig } from "@/lib/wagmi";
 import { ToastProvider } from "@/components/ui/toast";
 import { LanguageProvider } from "@/components/providers/language-provider";
 
-export function AppProviders({ children }: PropsWithChildren): JSX.Element {
+export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(
     () =>
       new QueryClient({

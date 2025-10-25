@@ -340,6 +340,7 @@ export function useWalletConnection() {
 ```env
 # Blockchain
 NEXT_PUBLIC_TOKEN_ADDRESS=0x...
+NEXT_PUBLIC_TOKEN_CHAIN_ID=1
 NEXT_PUBLIC_TOKEN_PRICE_USD=1.50
 NEXT_PUBLIC_RPC_URL_SEPOLIA=https://sepolia.infura.io/v3/KEY
 NEXT_PUBLIC_RPC_URL_MAINNET=https://mainnet.infura.io/v3/KEY
@@ -386,4 +387,3 @@ NEXT_PUBLIC_APP_DESCRIPTION="Internal token management system"
 **Статус:** Актуальный
 
 > ⚠️ **Важно:** Архитектура должна следовать принципам, описанным в `arch-rules.md`, и требованиям из `requirements.md`.
-

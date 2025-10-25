@@ -1,7 +1,7 @@
 'use client';
 import { useTranslation } from "@/hooks/use-translation";
 
-export function SiteFooter(): JSX.Element {
+export function SiteFooter() {
   const t = useTranslation();
   const year = new Date().getFullYear();
 

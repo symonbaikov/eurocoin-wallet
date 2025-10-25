@@ -6,23 +6,7 @@ import { useTokenPrice } from "@/hooks/use-token-price";
 import { useTranslation } from "@/hooks/use-translation";
 import { useLanguage } from "@/components/providers/language-provider";
 
-const formatPrice = (price: number | null): string =>
-  price === null
-    ? "—"
-    : new Intl.NumberFormat("ru-RU", {
-        style: "currency",
-        currency: "USD",
-        maximumFractionDigits: price >= 1 ? 2 : 6,
-      }).format(price);
-
-const formatTimestamp = (timestamp: number): string =>
-  new Intl.DateTimeFormat("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).format(new Date(timestamp));
-
-export function PriceTicker(): JSX.Element {
+export function PriceTicker() {
   const { priceUsd, source, isLoading, isFetching, error, refetch, fetchedAt } = useTokenPrice({
     refetchInterval: 60_000,
   });
@@ -42,15 +26,20 @@ export function PriceTicker(): JSX.Element {
   );
 
   const timestamp = useMemo(() => {
-    if (typeof window === "undefined") {
+    if (!fetchedAt) {
       return "—";
     }
 
-    return new Intl.DateTimeFormat(locale === "ru" ? "ru-RU" : "en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    }).format(new Date(fetchedAt));
+    try {
+      return new Intl.DateTimeFormat(locale === "ru" ? "ru-RU" : "en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "UTC",
+      }).format(new Date(fetchedAt));
+    } catch {
+      return "—";
+    }
   }, [fetchedAt, locale]);
 
   const sourceLabel = source === "coingecko" ? "CoinGecko" : t("wallet.balanceCard.staticSource");
@@ -82,7 +71,7 @@ export function PriceTicker(): JSX.Element {
             <div className="h-4 w-36 animate-pulse rounded bg-white/40 dark:bg-white/20" />
           </div>
         ) : (
-          <div className="flex flex-col gap-2 text-sm text-foregroundMuted dark:text-dark-foregroundMuted">
+          <div className="dark:text-dark-foregroundMuted flex flex-col gap-2 text-sm text-foregroundMuted">
             <span className="text-2xl font-medium text-accent">{formatPrice(priceUsd)}</span>
             <span>{t("wallet.priceTicker.source", { source: sourceLabel })}</span>
             <span>{t("wallet.priceTicker.updated", { time: timestamp })}</span>

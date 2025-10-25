@@ -2,10 +2,8 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/use-translation";
-import { ConnectButton } from "@/components/wallet/connect-button";
-import { WalletStatus } from "@/components/wallet/wallet-status";
 
-export function EuroCoin3D(): JSX.Element {
+export function EuroCoin3D() {
   const t = useTranslation();
 
   return (

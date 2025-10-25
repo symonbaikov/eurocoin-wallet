@@ -29,7 +29,7 @@ export function Modal({
   children,
   size = "md",
   showCloseButton = true,
-}: ModalProps): JSX.Element | null {
+}: ModalProps) {
   const labelledBy = useId();
   const describedBy = useId();
 

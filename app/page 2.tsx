@@ -9,7 +9,7 @@ import {
   WalletDashboard,
 } from "@/components/wallet";
 
-export default function Home(): JSX.Element {
+export default function Home() {
   return (
     <main className="flex min-h-screen flex-col bg-background">
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-10 md:px-12">

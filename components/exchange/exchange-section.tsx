@@ -4,13 +4,15 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export function ExchangeSection(): JSX.Element {
+export function ExchangeSection() {
   const [isMounted, setIsMounted] = useState(false);
   const [tokenAmount, setTokenAmount] = useState("1000");
   const [rubAmount, setRubAmount] = useState("150000");
 
   useEffect(() => {
-    setIsMounted(true);
+    setTimeout(() => {
+      setIsMounted(true);
+    }, 100);
   }, []);
 
   useEffect(() => {
@@ -21,7 +23,9 @@ export function ExchangeSection(): JSX.Element {
     const rate = 150; // Fixed rate: 150 RUB per 1 TOKEN
     const commission = 0.015; // 1.5% commission
     const rubs = tokens * rate * (1 - commission);
-    setRubAmount(Math.round(rubs).toLocaleString("ru-RU"));
+    setTimeout(() => {
+      setRubAmount(Math.round(rubs).toLocaleString("ru-RU"));
+    }, 100);
   }, [tokenAmount, isMounted]);
 
   const handleTokenAmountChange = (value: string) => {

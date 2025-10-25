@@ -45,7 +45,7 @@ const generateToastId = (): string => {
   return `toast-${++toastIdCounter}`;
 };
 
-export function ToastProvider({ children }: { children: ReactNode }): JSX.Element {
+export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const dismiss = useCallback((id: string) => {
@@ -107,7 +107,7 @@ interface ToastViewportProps {
   onDismiss: (id: string) => void;
 }
 
-function ToastViewport({ toasts, onDismiss }: ToastViewportProps): JSX.Element | null {
+function ToastViewport({ toasts, onDismiss }: ToastViewportProps) {
   if (typeof document === "undefined") {
     return null;
   }

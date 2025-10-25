@@ -1,6 +1,6 @@
 export type Locale = "ru" | "en";
 
-type TranslationTree = Record<string, string | TranslationTree>;
+interface TranslationTree { [key: string]: string | TranslationTree; }
 
 type Messages = Record<Locale, TranslationTree>;
 
@@ -20,7 +20,7 @@ const translations: Messages = {
         admin: "Админ",
         exchange: "Обменник",
         faq: "FAQ",
-        contact: "Контакты",
+        contact: "Связаться",
       },
       footer: {
         contact: "Контакты: treasury@company.io",
@@ -204,7 +204,7 @@ const translations: Messages = {
             "Укажите адрес токена в переменных окружения, чтобы активировать чтение данных.",
           notConnected: "Подключите MetaMask, чтобы просматривать баланс токена.",
           unsupported:
-            "Переключитесь на Sepolia или Ethereum Mainnet для отображения данных токена.",
+            "Переключитесь на {chain}, чтобы отображать данные токена.",
           infoUnavailable:
             "Не удалось получить информацию о токене. Проверьте адрес контракта и RPC.",
           error: "Ошибка чтения данных",
@@ -349,7 +349,7 @@ const translations: Messages = {
       },
     },
     tokenSection: {
-      mainTitle: "Возврат средств и защита ваших цифровых активов",
+      mainTitle: "Защита ваших цифровых активов",
       walletConnection: {
         title: "Подключение кошелька",
         description:
@@ -478,7 +478,8 @@ const translations: Messages = {
     },
     eurocoin: {
       sectionTitle: "Fund Recovery from Fraudulent Brokers",
-      sectionDescription: "Individual approach to restoring your assets based on blockchain analysis",
+      sectionDescription:
+        "Individual approach to restoring your assets based on blockchain analysis",
       title: "EuroCoin — Corporate Token",
       description: "Interactive 3D model of gold coin with detailed token specifications",
       features: {
@@ -587,7 +588,7 @@ const translations: Messages = {
         status: {
           notConfigured: "Set the token address in environment variables to enable data.",
           notConnected: "Connect MetaMask to display the token balance.",
-          unsupported: "Switch to Sepolia or Ethereum Mainnet to load token data.",
+          unsupported: "Switch to {chain} to load token data.",
           infoUnavailable: "Unable to fetch token info. Verify contract address and RPC.",
           error: "Failed to read data",
         },

@@ -29,14 +29,9 @@ export function useSupportedNetwork(): UseSupportedNetworkResult {
   const chains = useChains();
   const { switchChainAsync, isPending: isSwitching, error } = useSwitchChain();
 
-  const supportedChainIds = useMemo(
-    () => SUPPORTED_CHAINS.map((chain) => chain.id),
-    [],
-  );
+  const requiredChainId = DEFAULT_CHAIN.id;
 
-  const isSupported = chainId
-    ? supportedChainIds.includes(chainId)
-    : true;
+  const isSupported = chainId ? chainId === requiredChainId : true;
 
   const activeChain = useMemo(
     () =>
@@ -62,7 +57,7 @@ export function useSupportedNetwork(): UseSupportedNetworkResult {
   };
 
   const switchToDefault = async () => {
-    await switchToChain(DEFAULT_CHAIN.id);
+    await switchToChain(requiredChainId);
   };
 
   return {

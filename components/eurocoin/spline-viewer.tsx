@@ -17,10 +17,8 @@ interface SplineViewerProps {
   style?: React.CSSProperties;
 }
 
-export function SplineViewer({ scene, className, style }: SplineViewerProps): JSX.Element {
-  return (
-    <div className={className} style={style}>
-      <Spline scene={scene} />
-    </div>
-  );
+export function SplineViewer({ scene, className, style }: SplineViewerProps) {
+  return <div className={className} style={style}>
+    <Spline scene={scene} />
+  </div>;
 }

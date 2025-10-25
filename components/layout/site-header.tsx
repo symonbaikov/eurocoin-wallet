@@ -18,7 +18,7 @@ const navItems = [
   { href: "/#faq", key: "common.nav.faq" },
 ];
 
-function MobileLanguageSwitcher(): JSX.Element {
+function MobileLanguageSwitcher() {
   const { locale, setLocale } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -96,9 +96,7 @@ function MobileLanguageSwitcher(): JSX.Element {
   );
 }
 
-export function SiteHeader(): JSX.Element {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+export function SiteHeader() {
   const t = useTranslation();
   const [activeSection, setActiveSection] = useState<string>("");
 

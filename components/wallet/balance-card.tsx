@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { DEFAULT_CHAIN } from "@/config/chains";
 import { TOKEN_CONFIG, isTokenConfigured } from "@/config/token";
 import { useSupportedNetwork } from "@/hooks/use-supported-network";
 import { useTokenBalance } from "@/hooks/use-token-balance";
@@ -61,7 +62,9 @@ export function BalanceCard(): React.ReactElement {
     if (!isSupported) {
       return {
         title: t("wallet.networkAlert.title"),
-        description: t("wallet.networkAlert.message", { chain: "Sepolia / Ethereum" }),
+        description: t("wallet.balanceCard.status.unsupported", {
+          chain: DEFAULT_CHAIN.name,
+        }),
       };
     }
 

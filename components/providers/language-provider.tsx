@@ -21,7 +21,7 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 const STORAGE_KEY = "meta-wallet-locale";
 
-export function LanguageProvider({ children }: PropsWithChildren): JSX.Element {
+export function LanguageProvider({ children }: PropsWithChildren) {
   const [locale, setLocaleState] = useState<Locale>(defaultLocale);
 
   useEffect(() => {
@@ -30,7 +30,9 @@ export function LanguageProvider({ children }: PropsWithChildren): JSX.Element {
     }
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (isLocale(stored)) {
-      setLocaleState(stored);
+      setTimeout(() => {
+        setLocaleState(stored);
+      }, 100);
     }
   }, []);
 

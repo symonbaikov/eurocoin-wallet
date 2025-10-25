@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/use-translation";
 import Image from "next/image";
 
-export function MetaMaskQR(): JSX.Element {
+export function MetaMaskQR() {
   const t = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    setTimeout(() => {
+      setIsMounted(true);
+    }, 100);
   }, []);
 
   if (!isMounted) {
@@ -35,6 +37,7 @@ export function MetaMaskQR(): JSX.Element {
                 src="/metamask.png"
                 alt="MetaMask Logo"
                 fill
+                sizes="(max-width: 768px) 128px, 128px"
                 className="object-contain"
                 priority
               />

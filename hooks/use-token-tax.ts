@@ -29,6 +29,8 @@ export function useTokenTax(): UseTokenTaxResult {
   const { isSupported, activeChainId } = useSupportedNetwork();
 
   const taxQueryEnabled = isTokenConfigured && isSupported;
+  const denominatorQueryEnabled =
+    taxQueryEnabled && TAX_CONFIG.functionName === "taxBps";
 
   const taxQuery = useReadContract({
     abi: TOKEN_CONFIG.abi,
@@ -44,15 +46,27 @@ export function useTokenTax(): UseTokenTaxResult {
     },
   });
 
+  const denominatorQuery = useReadContract({
+    abi: TOKEN_CONFIG.abi,
+    address: TOKEN_CONFIG.address,
+    functionName: "BPS_DENOMINATOR",
+    chainId: activeChainId ?? DEFAULT_CHAIN.id,
+    query: {
+      enabled: denominatorQueryEnabled,
+      refetchInterval: 300_000,
+      staleTime: 300_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  });
+
   const contractTaxBps = useMemo(() => {
     if (!taxQuery.data) {
       return null;
     }
 
     const rawValue =
-      typeof taxQuery.data === "bigint"
-        ? Number(taxQuery.data)
-        : Number(taxQuery.data as unknown);
+      Number(taxQuery.data);
 
     if (!Number.isFinite(rawValue) || rawValue < 0) {
       return null;
@@ -61,9 +75,20 @@ export function useTokenTax(): UseTokenTaxResult {
     return rawValue;
   }, [taxQuery.data]);
 
+  const scaleFromContract = useMemo(() => {
+    if (!denominatorQuery.data) {
+      return null;
+    }
+
+    const value = Number(denominatorQuery.data);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }, [denominatorQuery.data]);
+
   const taxBps = contractTaxBps ?? TAX_CONFIG.fallbackBps;
 
-  const taxPercent = formatTaxPercent(taxBps, TAX_CONFIG.scale);
+  const effectiveScale = scaleFromContract ?? TAX_CONFIG.scale;
+
+  const taxPercent = formatTaxPercent(taxBps, effectiveScale);
 
   const formattedTax = formatTaxLabel(taxPercent);
 
@@ -71,7 +96,10 @@ export function useTokenTax(): UseTokenTaxResult {
     contractTaxBps !== null && taxQueryEnabled ? "contract" : "fallback";
 
   const refetch = async () => {
-    await taxQuery.refetch();
+    await Promise.all([
+      taxQuery.refetch(),
+      denominatorQueryEnabled ? denominatorQuery.refetch() : Promise.resolve(),
+    ]);
   };
 
   return {
@@ -79,9 +107,12 @@ export function useTokenTax(): UseTokenTaxResult {
     taxPercent,
     formattedTax,
     source,
-    isLoading: taxQuery.isLoading,
-    isFetching: taxQuery.isRefetching,
-    error: (taxQuery.error as Error | undefined) ?? null,
+    isLoading: taxQuery.isLoading || denominatorQuery.isLoading,
+    isFetching: taxQuery.isRefetching || denominatorQuery.isRefetching,
+    error:
+      (taxQuery.error as Error | undefined) ??
+      (denominatorQuery.error as Error | undefined) ??
+      null,
     refetch,
   };
 }
