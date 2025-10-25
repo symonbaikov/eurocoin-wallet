@@ -7,13 +7,13 @@ type ButtonSize = "sm" | "md" | "lg";
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-accent text-white hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-60",
+    "bg-accent text-white hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface dark:focus-visible:ring-offset-dark-surface disabled:pointer-events-none disabled:opacity-60",
   secondary:
-    "bg-foreground text-background hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-60",
+    "bg-foreground text-background hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-surface dark:bg-dark-foreground dark:text-dark-background dark:hover:bg-dark-foreground/90 dark:focus-visible:ring-offset-dark-surface disabled:pointer-events-none disabled:opacity-60",
   outline:
-    "border border-outline bg-surface text-foreground hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-60",
+    "border border-outline bg-surface text-foreground hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground dark:hover:border-accent dark:hover:text-accent dark:focus-visible:ring-offset-dark-surface disabled:pointer-events-none disabled:opacity-60",
   ghost:
-    "bg-transparent text-foreground hover:bg-foreground/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-60",
+    "bg-transparent text-foreground hover:bg-foreground/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface dark:text-dark-foreground dark:hover:bg-dark-foreground/5 dark:focus-visible:ring-offset-dark-surface disabled:pointer-events-none disabled:opacity-60",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
