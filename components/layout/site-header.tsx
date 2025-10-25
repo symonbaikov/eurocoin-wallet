@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { ProfileIcon } from "@/components/layout/profile-icon";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslation } from "@/hooks/use-translation";
 import { useLanguage } from "@/components/providers/language-provider";
@@ -174,12 +175,14 @@ export function SiteHeader() {
 
         {/* Desktop Right Side */}
         <div className="hidden items-center gap-3 md:flex">
+          <ProfileIcon />
           <ThemeToggle />
           <LanguageSwitcher />
         </div>
 
         {/* Mobile Right Side */}
         <div className="flex items-center gap-2 md:hidden">
+          <ProfileIcon />
           <ThemeToggle />
           <MobileLanguageSwitcher />
         </div>
