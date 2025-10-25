@@ -66,8 +66,8 @@ export default function ProfilePage() {
               </div>
 
               <WalletStatus />
-              
-              <div className="flex justify-end pt-4 border-t border-outline dark:border-dark-outline">
+
+              <div className="dark:border-dark-outline flex justify-end border-t border-outline pt-4">
                 <DisconnectButton />
               </div>
             </CardContent>
