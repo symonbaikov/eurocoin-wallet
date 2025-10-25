@@ -41,7 +41,7 @@ export function NetworkSwitcher() {
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-xs uppercase tracking-[0.25em] text-foregroundMuted dark:text-dark-foregroundMuted">
+      <span className="dark:text-dark-foregroundMuted text-xs uppercase tracking-[0.25em] text-foregroundMuted">
         {t("wallet.networkLabel")}
       </span>
       <div className="flex flex-wrap gap-2">
