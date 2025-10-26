@@ -1,6 +1,8 @@
 export type Locale = "ru" | "en";
 
-interface TranslationTree { [key: string]: string | TranslationTree; }
+interface TranslationTree {
+  [key: string]: string | TranslationTree;
+}
 
 type Messages = Record<Locale, TranslationTree>;
 
@@ -14,6 +16,7 @@ const translations: Messages = {
       },
       nav: {
         dashboard: "Дашборд",
+        wallet: "Кошелек",
         token: "Токен",
         requests: "Заявки",
         reviews: "Отзывы",
@@ -203,8 +206,7 @@ const translations: Messages = {
           notConfigured:
             "Укажите адрес токена в переменных окружения, чтобы активировать чтение данных.",
           notConnected: "Подключите MetaMask, чтобы просматривать баланс токена.",
-          unsupported:
-            "Переключитесь на {chain}, чтобы отображать данные токена.",
+          unsupported: "Переключитесь на {chain}, чтобы отображать данные токена.",
           infoUnavailable:
             "Не удалось получить информацию о токене. Проверьте адрес контракта и RPC.",
           error: "Ошибка чтения данных",
@@ -399,6 +401,7 @@ const translations: Messages = {
       },
       nav: {
         dashboard: "Dashboard",
+        wallet: "Wallet",
         token: "Token",
         requests: "Requests",
         reviews: "Reviews",

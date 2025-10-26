@@ -23,7 +23,7 @@ export default function Home() {
 
     if (!rpcUrl || !tokenAddress) {
       console.warn(
-        "Missing NEXT_PUBLIC_RPC_URL or NEXT_PUBLIC_TOKEN_ADDRESS, skipping token metadata check."
+        "Missing NEXT_PUBLIC_RPC_URL or NEXT_PUBLIC_TOKEN_ADDRESS, skipping token metadata check.",
       );
       return;
     }
@@ -31,19 +31,13 @@ export default function Home() {
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     const token = new ethers.Contract(
       tokenAddress,
-      [
-        "function name() view returns (string)",
-        "function symbol() view returns (string)",
-      ],
-      provider
+      ["function name() view returns (string)", "function symbol() view returns (string)"],
+      provider,
     );
 
     void (async () => {
       try {
-        const [name, symbol] = await Promise.all([
-          token.name(),
-          token.symbol(),
-        ]);
+        const [name, symbol] = await Promise.all([token.name(), token.symbol()]);
         console.log("Connected token metadata:", { name, symbol });
       } catch (error) {
         console.error("Failed to fetch token metadata", error);
@@ -79,7 +73,10 @@ export default function Home() {
         </section>
 
         {/* Main Header Section */}
-        <header className="dark:border-dark-outline dark:bg-dark-surface rounded-3xl border border-outline bg-surface p-8 shadow-card">
+        <header
+          id="wallet"
+          className="dark:border-dark-outline dark:bg-dark-surface rounded-3xl border border-outline bg-surface p-8 shadow-card"
+        >
           <div className="space-y-5">
             <span className="pill dark:bg-dark-surfaceAlt dark:text-dark-foreground inline-flex bg-surfaceAlt text-foreground">
               {t("home.hero.badge")}

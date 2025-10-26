@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
@@ -14,6 +13,7 @@ const navItems = [
   { href: "/", key: "common.nav.dashboard" },
   { href: "/#exchange", key: "common.nav.exchange" },
   { href: "/#contact", key: "common.nav.contact" },
+  { href: "/#wallet", key: "common.nav.wallet" },
   { href: "/#reviews", key: "common.nav.reviews" },
   { href: "/#token-balance", key: "common.nav.token" },
   { href: "/#faq", key: "common.nav.faq" },
@@ -103,7 +103,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["exchange", "contact", "reviews", "token-balance", "faq"];
+      const sections = ["wallet", "exchange", "contact", "reviews", "token-balance", "faq"];
       const scrollPosition = window.scrollY + 100; // Offset for header
 
       for (const section of sections) {
