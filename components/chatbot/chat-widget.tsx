@@ -148,7 +148,7 @@ export function ChatWidget({ delay = 10000, position = "bottom-right" }: ChatWid
               <X className="h-3 w-3" />
             </button>
             <div className="flex items-start gap-3 pr-6">
-              {/* Specialist Avatar with Online Indicator */}
+              {/* Specialist Avatar */}
               <div className="relative mt-0.5 h-10 w-10 shrink-0 overflow-hidden rounded-full">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -156,7 +156,6 @@ export function ChatWidget({ delay = 10000, position = "bottom-right" }: ChatWid
                   alt="Specialist"
                   className="h-full w-full object-cover"
                 />
-                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-blue-600 bg-green-500" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-white">
