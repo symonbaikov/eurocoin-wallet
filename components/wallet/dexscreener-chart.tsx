@@ -1,10 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/use-translation";
-import { useMemo } from "react";
 
 interface DexscreenerChartProps {
   tokenAddress?: string;
@@ -13,6 +13,11 @@ interface DexscreenerChartProps {
 export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
   const t = useTranslation();
   const { theme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Use the token address from env or fallback
   const address =
@@ -21,11 +26,11 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
     "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586";
 
   // Determine chart theme based on application theme
-  const chartTheme = useMemo(() => {
-    // Use resolvedTheme to handle system preference
-    const currentTheme = resolvedTheme || theme || "light";
-    return currentTheme === "dark" ? "dark" : "light";
-  }, [theme, resolvedTheme]);
+  const chartTheme = mounted
+    ? (resolvedTheme || theme || "light") === "dark"
+      ? "dark"
+      : "light"
+    : "light";
 
   // Create Dexscreener embed URL with dynamic theme
   const dexUrl = `https://dexscreener.com/ethereum/${address}?embed=1&theme=${chartTheme}&trades=0&info=0`;
