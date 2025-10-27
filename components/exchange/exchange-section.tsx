@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useExchangeRate } from "@/hooks/use-exchange-rate";
+import { useTranslation } from "@/hooks/use-translation";
 
 export function ExchangeSection() {
   const [isMounted, setIsMounted] = useState(false);
@@ -17,6 +18,7 @@ export function ExchangeSection() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { USD_RUB, loading: rateLoading } = useExchangeRate();
+  const t = useTranslation();
 
   useEffect(() => {
     setTimeout(() => {
@@ -54,14 +56,14 @@ export function ExchangeSection() {
 Email: ${formData.email || "не указан"}`;
 
     navigator.clipboard.writeText(template).then(() => {
-      toast.success("Шаблон скопирован!");
+      toast.success(t("exchange.buttons.copySuccess"));
     });
   };
 
   const handleSubmitRequest = async () => {
     // Validate
     if (!formData.walletAddress || !formData.email) {
-      toast.error("Заполните все обязательные поля!");
+      toast.error(t("exchange.errors.fillRequired"));
       return;
     }
 
@@ -90,7 +92,7 @@ Email: ${formData.email || "не указан"}`;
         throw new Error(data.error || "Failed to submit request");
       }
 
-      toast.success("Заявка успешно отправлена в Telegram!");
+      toast.success(t("exchange.errors.submitSuccess"));
 
       // Reset form
       setFormData({
@@ -100,7 +102,7 @@ Email: ${formData.email || "не указан"}`;
       });
     } catch (error) {
       console.error("Error submitting exchange request:", error);
-      toast.error("Ошибка при отправке заявки. Попробуйте еще раз.");
+      toast.error(t("exchange.errors.submitError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -146,10 +148,10 @@ Email: ${formData.email || "не указан"}`;
           <div className="mx-auto max-w-2xl space-y-6">
             <div className="text-center">
               <h3 className="dark:text-dark-foreground mb-2 text-2xl font-bold text-foreground">
-                Калькулятор обмена
+                {t("exchange.calculatorTitle")}
               </h3>
               <p className="dark:text-dark-foregroundMuted text-foregroundMuted">
-                Введите сумму и получите предварительный расчёт. Значения статичны.
+                {t("exchange.calculatorDescription")}
               </p>
             </div>
 
@@ -157,7 +159,7 @@ Email: ${formData.email || "не указан"}`;
             <div className="space-y-4">
               <div>
                 <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
-                  СУММА В ТОКЕНАХ
+                  {t("exchange.fields.tokenAmount")}
                 </label>
                 <div className="relative">
                   <input
@@ -165,17 +167,17 @@ Email: ${formData.email || "не указан"}`;
                     value={tokenAmount}
                     onChange={(e) => handleTokenAmountChange(e.target.value)}
                     className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground w-full rounded-lg border border-outline bg-surface px-4 py-3 text-lg font-semibold text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                    placeholder="1 000"
+                    placeholder={t("exchange.placeholders.tokenAmount")}
                   />
                   <span className="dark:text-dark-foregroundMuted absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-foregroundMuted">
-                    TOKEN
+                    {t("exchange.fields.tokenUnit")}
                   </span>
                 </div>
               </div>
 
               <div>
                 <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
-                  ПОЛУЧИТЕ (RUB)
+                  {t("exchange.fields.receiveRub")}
                 </label>
                 <div className="relative">
                   <input
@@ -185,7 +187,7 @@ Email: ${formData.email || "не указан"}`;
                     className="dark:border-dark-outline dark:bg-dark-surfaceAlt dark:text-dark-foreground w-full rounded-lg border border-outline bg-surfaceAlt px-4 py-3 text-lg font-semibold text-foreground"
                   />
                   <span className="dark:text-dark-foregroundMuted absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-foregroundMuted">
-                    RUB
+                    {t("exchange.fields.rubUnit")}
                   </span>
                 </div>
               </div>
@@ -195,34 +197,34 @@ Email: ${formData.email || "не указан"}`;
             <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt space-y-3 rounded-lg border border-outline bg-surfaceAlt p-4">
               <div className="flex justify-between text-sm">
                 <span className="dark:text-dark-foregroundMuted text-foregroundMuted">
-                  Курс обмена
+                  {t("exchange.details.exchangeRate")}
                 </span>
                 <span className="dark:text-dark-foreground font-medium text-foreground">
-                  {rateLoading ? "Загрузка..." : `${USD_RUB.toFixed(2)} RUB за 1 TOKEN`}
+                  {rateLoading ? t("exchange.details.rateLoading") : `${USD_RUB.toFixed(2)} ${t("exchange.details.rateFormat")}`}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="dark:text-dark-foregroundMuted text-foregroundMuted">
-                  Эквивалент
+                  {t("exchange.details.equivalent")}
                 </span>
                 <span className="dark:text-dark-foreground font-medium text-foreground">
-                  1 TOKEN = 1 USD
+                  {t("exchange.details.tokenUsd")}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="dark:text-dark-foregroundMuted text-foregroundMuted">
-                  Комиссия обмена
+                  {t("exchange.details.commission")}
                 </span>
                 <span className="dark:text-dark-foreground font-medium text-foreground">
-                  1.5% (из конфигурации)
+                  {t("exchange.details.commissionValue")}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="dark:text-dark-foregroundMuted text-foregroundMuted">
-                  Среднее время обработки
+                  {t("exchange.details.processingTime")}
                 </span>
                 <span className="dark:text-dark-foreground font-medium text-foreground">
-                  15 минут
+                  {t("exchange.details.processingValue")}
                 </span>
               </div>
             </div>
@@ -231,41 +233,41 @@ Email: ${formData.email || "не указан"}`;
             <div className="space-y-4">
               <div>
                 <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
-                  Адрес кошелька для получения фиата *
+                  {t("exchange.fields.walletAddress")}
                 </label>
                 <input
                   type="text"
                   value={formData.walletAddress}
                   onChange={(e) => setFormData({ ...formData, walletAddress: e.target.value })}
                   className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground w-full rounded-lg border border-outline bg-surface px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                  placeholder="Введите адрес кошелька"
+                  placeholder={t("exchange.placeholders.walletAddress")}
                   required
                 />
               </div>
 
               <div>
                 <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
-                  Email для связи *
+                  {t("exchange.fields.email")}
                 </label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground w-full rounded-lg border border-outline bg-surface px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                  placeholder="your@email.com"
+                  placeholder={t("exchange.placeholders.email")}
                   required
                 />
               </div>
 
               <div>
                 <label className="dark:text-dark-foreground mb-2 block text-sm font-medium text-foreground">
-                  Комментарий (необязательно)
+                  {t("exchange.fields.comment")}
                 </label>
                 <textarea
                   value={formData.comment}
                   onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
                   className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground w-full rounded-lg border border-outline bg-surface px-4 py-3 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                  placeholder="Дополнительная информация"
+                  placeholder={t("exchange.placeholders.comment")}
                   rows={3}
                 />
               </div>
@@ -292,9 +294,9 @@ Email: ${formData.email || "не указан"}`;
                   />
                 </svg>
                 <span className="hidden md:inline">
-                  {isSubmitting ? "Отправка..." : "Создать заявку в Telegram"}
+                  {isSubmitting ? t("exchange.buttons.submitting") : t("exchange.buttons.submitFull")}
                 </span>
-                <span className="md:hidden">{isSubmitting ? "Отправка..." : "Создать заявку"}</span>
+                <span className="md:hidden">{isSubmitting ? t("exchange.buttons.submitting") : t("exchange.buttons.submitShort")}</span>
               </Button>
               <Button variant="outline" onClick={copyTemplate} className="md:w-auto">
                 <svg
@@ -310,8 +312,8 @@ Email: ${formData.email || "не указан"}`;
                     d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                   />
                 </svg>
-                <span className="hidden md:inline">Скопировать шаблон</span>
-                <span className="md:hidden">Скопировать</span>
+                <span className="hidden md:inline">{t("exchange.buttons.copyFull")}</span>
+                <span className="md:hidden">{t("exchange.buttons.copyShort")}</span>
               </Button>
             </div>
           </div>

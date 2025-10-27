@@ -17,10 +17,9 @@ export function useExchangeRate() {
     const fetchRate = async () => {
       try {
         // Try to fetch real USD/RUB rate from a free API
-        const response = await fetch(
-          "https://api.exchangerate-api.com/v4/latest/USD",
-          { cache: "no-store" }
-        );
+        const response = await fetch("https://api.exchangerate-api.com/v4/latest/USD", {
+          cache: "no-store",
+        });
 
         if (!response.ok) {
           throw new Error("Failed to fetch rate");
@@ -55,4 +54,3 @@ export function useExchangeRate() {
 
   return rate;
 }
-
