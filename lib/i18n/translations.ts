@@ -56,7 +56,7 @@ const translations: Messages = {
         title: "Контроль токена компании",
         description:
           "Подключите MetaMask, чтобы управлять корпоративным токеном: проверяйте баланс, отслеживайте курс и контролируйте комиссии в едином дашборде, оформленном в фирменном стиле MetaMask.",
-        chip1: "Sepolia · Ethereum Mainnet",
+        chip1: "Ethereum Mainnet",
         chip2: "Реактивные обновления баланса",
         chip3: "Эквивалент USD и калькулятор tax",
         statusTitle: "Статус интеграции",
@@ -665,7 +665,7 @@ const translations: Messages = {
         title: "Company token control",
         description:
           "Connect MetaMask to manage the corporate token: review balances, track the rate and control fees in a MetaMask-inspired dashboard.",
-        chip1: "Sepolia · Ethereum Mainnet",
+        chip1: "Ethereum Mainnet",
         chip2: "Reactive balance updates",
         chip3: "USD equivalent & tax calculator",
         statusTitle: "Integration status",
