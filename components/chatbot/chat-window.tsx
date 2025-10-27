@@ -142,12 +142,12 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
   };
 
   return (
-    <div className="flex h-[600px] w-full max-w-md flex-col bg-white shadow-2xl">
+    <div className="flex h-[600px] w-full max-w-md flex-col bg-white shadow-2xl dark:bg-dark-surface">
       {/* Header */}
-      <div className="flex items-center justify-between border-b-2 border-blue-300 bg-blue-600 p-4">
+      <div className="flex items-center justify-between border-b-2 border-blue-300 bg-blue-600 p-4 dark:border-blue-800 dark:bg-blue-800">
         <div className="flex items-center gap-3">
           {/* Avatar */}
-          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-blue-700">
+          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-blue-700 dark:bg-blue-900">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/specialist.png"
@@ -157,7 +157,7 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
           </div>
           <div>
             <h3 className="font-bold text-white">Поддержка</h3>
-            <p className="flex items-center gap-1 text-xs text-blue-100">
+            <p className="flex items-center gap-1 text-xs text-blue-100 dark:text-blue-200">
               <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
               Антифрод консультант
             </p>
@@ -166,7 +166,7 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 space-y-4 overflow-y-auto bg-white p-4">
+      <div className="flex-1 space-y-4 overflow-y-auto bg-white p-4 dark:bg-dark-surface">
         {messages.map((message) => (
           <ChatMessageComponent
             key={message.id}
@@ -178,11 +178,11 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
           />
         ))}
         {loading && (
-          <div className="flex items-center gap-2 text-sm text-blue-600">
+          <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
             <div className="flex gap-1">
-              <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600" />
-              <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 [animation-delay:0.2s]" />
-              <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 [animation-delay:0.4s]" />
+              <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 dark:bg-blue-400" />
+              <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 dark:bg-blue-400 [animation-delay:0.2s]" />
+              <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 dark:bg-blue-400 [animation-delay:0.4s]" />
             </div>
             <span>💬 {locale === "ru" ? "Бот печатает..." : "Bot is typing..."}</span>
           </div>

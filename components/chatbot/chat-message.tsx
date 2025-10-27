@@ -63,7 +63,9 @@ export function ChatMessage({ message, onTranslate }: ChatMessageProps) {
         <div
           className={cn(
             "rounded-lg px-4 py-3",
-            isUser ? "bg-blue-600 text-white" : "bg-blue-500 text-white",
+            isUser
+              ? "bg-blue-600 text-white dark:bg-blue-700"
+              : "bg-blue-500 text-white dark:bg-blue-600",
           )}
         >
           <p className="whitespace-pre-wrap break-words text-sm text-white">{displayText}</p>
