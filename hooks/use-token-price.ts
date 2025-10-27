@@ -29,10 +29,11 @@ export function useTokenPrice(
   const query = useQuery({
     queryKey: TOKEN_PRICE_QUERY_KEY,
     queryFn: getTokenPriceUsd,
-    initialData: getTokenPriceSync(),
+    placeholderData: getTokenPriceSync(),
     refetchInterval: revalidateMs,
     staleTime: revalidateMs,
     refetchOnWindowFocus: false,
+    refetchOnMount: true, // Always refetch on mount to get real-time price
   });
 
   return {
