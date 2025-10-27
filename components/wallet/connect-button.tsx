@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
@@ -10,10 +10,28 @@ export function ConnectButton() {
   const { isConnected, isConnecting, connect, canConnect, connectorName, connectError } =
     useWalletConnection();
   const [localError, setLocalError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const t = useTranslation();
+
+  useEffect(() => {
+    setIsMounted(true);
+    // This is a standard pattern to prevent hydration mismatch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isConnected) {
     return null;
+  }
+
+  // Prevent hydration mismatch
+  if (!isMounted) {
+    return (
+      <div className="flex flex-col gap-3">
+        <Button fullWidth disabled>
+          {t("wallet.connect")}
+        </Button>
+      </div>
+    );
   }
 
   const handleConnect = async () => {
