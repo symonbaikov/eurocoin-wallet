@@ -133,10 +133,10 @@ Email: ${formData.email || "не указан"}`;
           <div className="mb-8 text-center">
             <h2 className="mb-4 font-display text-4xl font-bold tracking-tight">
               <span className="bg-gradient-to-r from-accent to-accentAlt bg-clip-text text-transparent">
-                {t("exchange.title").split("-")[0]}
+                {t("exchange.title").split(" ")[0]}
               </span>{" "}
               <span className="text-foreground dark:text-white">
-                {t("exchange.title").split("-")[1] || t("exchange.title")}
+                {t("exchange.title").split(" ").slice(1).join(" ") || ""}
               </span>
             </h2>
             <CardDescription className="text-lg">{t("exchange.description")}</CardDescription>
