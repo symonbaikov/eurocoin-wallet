@@ -149,20 +149,22 @@ export function UserRequests({ walletAddress }: UserRequestsProps) {
             ))}
           </div>
 
-              {/* Loading state */}
-              {loading && (
-                <div className="py-8 text-center">
-                  <p className="text-foregroundMuted">{t("profile.myRequests.loading")}</p>
-                </div>
-              )}
+          {/* Loading state */}
+          {loading && (
+            <div className="py-8 text-center">
+              <p className="text-foregroundMuted">{t("profile.myRequests.loading")}</p>
+            </div>
+          )}
 
-              {/* Empty state */}
-              {!loading && requests.length === 0 && (
-                <div className="py-12 text-center">
-                  <p className="mb-2 text-lg font-semibold text-foreground">{t("profile.myRequests.empty")}</p>
-                  <p className="text-foregroundMuted">{t("profile.myRequests.emptyDescription")}</p>
-                </div>
-              )}
+          {/* Empty state */}
+          {!loading && requests.length === 0 && (
+            <div className="py-12 text-center">
+              <p className="mb-2 text-lg font-semibold text-foreground">
+                {t("profile.myRequests.empty")}
+              </p>
+              <p className="text-foregroundMuted">{t("profile.myRequests.emptyDescription")}</p>
+            </div>
+          )}
 
           {/* Requests list */}
           {!loading && requests.length > 0 && (

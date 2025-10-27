@@ -30,7 +30,12 @@ export function RequestDetailsModal({ open, onClose, request }: RequestDetailsMo
   const formattedUpdatedAt = new Date(request.updatedAt).toLocaleString("ru-RU");
 
   return (
-    <Modal open={open} onClose={onClose} title={`${t("profile.requestDetails.title")} ${request.id}`} size="lg">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={`${t("profile.requestDetails.title")} ${request.id}`}
+      size="lg"
+    >
       <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between border-b pb-4">
@@ -39,7 +44,9 @@ export function RequestDetailsModal({ open, onClose, request }: RequestDetailsMo
               {t("profile.requestDetails.requestType")}
             </p>
             <p className="dark:text-dark-foreground font-semibold text-foreground">
-              {request.type === "exchange" ? t("profile.requestDetails.exchangeType") : t("profile.requestDetails.internalType")}
+              {request.type === "exchange"
+                ? t("profile.requestDetails.exchangeType")
+                : t("profile.requestDetails.internalType")}
             </p>
           </div>
           <RequestStatusBadge status={request.status} />

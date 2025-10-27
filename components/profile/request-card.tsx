@@ -46,7 +46,9 @@ export function RequestCard({
               {id}
             </span>
             <span className="dark:bg-dark-surfaceAlt shrink-0 rounded-full bg-surfaceAlt px-2 py-0.5 text-xs">
-              {type === "exchange" ? t("profile.requestCard.exchange") : t("profile.requestCard.internal")}
+              {type === "exchange"
+                ? t("profile.requestCard.exchange")
+                : t("profile.requestCard.internal")}
             </span>
             <RequestStatusBadge status={status} />
           </div>
@@ -84,7 +86,9 @@ export function RequestCard({
                 {id}
               </span>
               <span className="dark:bg-dark-surfaceAlt rounded-full bg-surfaceAlt px-2 py-0.5 text-xs">
-                {type === "exchange" ? t("profile.requestCard.exchange") : t("profile.requestCard.internal")}
+                {type === "exchange"
+                  ? t("profile.requestCard.exchange")
+                  : t("profile.requestCard.internal")}
               </span>
             </div>
 
