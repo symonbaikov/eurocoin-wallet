@@ -273,6 +273,81 @@ const translations: Messages = {
         "При входе вы соглашаетесь с внутренней политикой доступа и NDA. Все операции логируются.",
       demo: "Демо-доступ",
       demoDescription: "MetaWallet build 0.4 · внутренний превью",
+      link: {
+        requests: "Заявки на вывод",
+        terms: "Пользовательское соглашение",
+        exchange: "Telegram-обменник",
+      },
+    },
+    info: {
+      notFound: "Страница не найдена",
+      backToLogin: "Вернуться на страницу входа",
+      requests: {
+        title: "Заявки на вывод средств",
+        description:
+          "Подача заявок на вывод средств через MetaMask с использованием смарт-контрактов Ethereum",
+        content: `<p>Наша платформа позволяет подавать заявки на вывод средств напрямую через ваш кошелёк MetaMask.</p>
+        
+<p><strong>Как это работает:</strong></p>
+<ul>
+  <li>Подключите ваш MetaMask кошелёк</li>
+  <li>Заполните форму заявки на вывод</li>
+  <li>Подтвердите транзакцию через MetaMask</li>
+  <li>Отслеживайте статус заявки в реальном времени</li>
+</ul>
+
+<p><strong>Преимущества:</strong></p>
+<ul>
+  <li>Безопасность: все операции через смарт-контракты</li>
+  <li>Прозрачность: статус заявки в реальном времени</li>
+  <li>Контроль: вы всегда видите, что происходит с вашими средствами</li>
+</ul>`,
+      },
+      terms: {
+        title: "Пользовательское соглашение",
+        description: "Условия использования сервиса EuroCoin",
+        content: `<p>Настоящее Пользовательское соглашение регулирует условия использования сервиса EuroCoin.</p>
+
+<h3>1. Общие положения</h3>
+<p>Используя наш сервис, вы соглашаетесь с условиями данного соглашения.</p>
+
+<h3>2. Условия использования</h3>
+<ul>
+  <li>Использование MetaMask для доступа к функциям сервиса</li>
+  <li>Соблюдение правил безопасности при работе с криптовалютами</li>
+  <li>Своевременная оплата услуг согласно тарифам</li>
+</ul>
+
+<h3>3. Безопасность</h3>
+<p>Все операции проходят через защищённые смарт-контракты Ethereum. Мы не храним ваши приватные ключи и не имеем доступа к вашему кошельку.</p>
+
+<h3>4. Ответственность</h3>
+<p>Пользователь несёт полную ответственность за безопасность своего кошелька MetaMask и приватных ключей.</p>`,
+      },
+      exchange: {
+        title: "Telegram-обменник",
+        description: "Обмен корпоративных токенов через Telegram бота",
+        content: `<p>Telegram-обменник позволяет конвертировать корпоративные токены EuroCoin в фиатные средства через удобного Telegram бота.</p>
+
+<p><strong>Как работает обмен:</strong></p>
+<ol>
+  <li>Откройте Telegram и найдите нашего бота</li>
+  <li>Отправьте команду на обмен токенов</li>
+  <li>Укажите сумму и реквизиты для получения фиатных средств</li>
+  <li>Подтвердите операцию через MetaMask</li>
+  <li>Получите средства на указанный счёт</li>
+</ol>
+
+<p><strong>Курс обмена:</strong></p>
+<ul>
+  <li>1 TOKEN = 1 USD</li>
+  <li>Курс автоматически обновляется каждую минуту</li>
+  <li>Комиссия за обмен: 1.5%</li>
+</ul>
+
+<p><strong>Безопасность:</strong></p>
+<p>Все обмены проходят через смарт-контракты Ethereum, что гарантирует надёжность и прозрачность операций.</p>`,
+      },
     },
     admin: {
       title: "Панель администратора",
@@ -776,6 +851,81 @@ const translations: Messages = {
         "By signing in you accept the internal access policy and NDA. All actions are logged.",
       demo: "Demo access",
       demoDescription: "MetaWallet build 0.4 · internal preview",
+      link: {
+        requests: "Withdrawal Requests",
+        terms: "Terms of Service",
+        exchange: "Telegram Exchange",
+      },
+    },
+    info: {
+      notFound: "Page not found",
+      backToLogin: "Back to login",
+      requests: {
+        title: "Withdrawal Requests",
+        description:
+          "Submit withdrawal requests through MetaMask using Ethereum smart contracts",
+        content: `<p>Our platform allows you to submit withdrawal requests directly through your MetaMask wallet.</p>
+        
+<p><strong>How it works:</strong></p>
+<ul>
+  <li>Connect your MetaMask wallet</li>
+  <li>Fill out the withdrawal request form</li>
+  <li>Confirm the transaction through MetaMask</li>
+  <li>Track the request status in real-time</li>
+</ul>
+
+<p><strong>Benefits:</strong></p>
+<ul>
+  <li>Security: all operations through smart contracts</li>
+  <li>Transparency: real-time request status</li>
+  <li>Control: you always see what's happening with your funds</li>
+</ul>`,
+      },
+      terms: {
+        title: "Terms of Service",
+        description: "EuroCoin service usage terms",
+        content: `<p>These Terms of Service govern the use of the EuroCoin service.</p>
+
+<h3>1. General Provisions</h3>
+<p>By using our service, you agree to the terms of this agreement.</p>
+
+<h3>2. Terms of Use</h3>
+<ul>
+  <li>Use MetaMask to access service features</li>
+  <li>Comply with security rules when working with cryptocurrencies</li>
+  <li>Pay for services in a timely manner according to tariffs</li>
+</ul>
+
+<h3>3. Security</h3>
+<p>All operations are conducted through secure Ethereum smart contracts. We do not store your private keys and do not have access to your wallet.</p>
+
+<h3>4. Responsibility</h3>
+<p>The user is fully responsible for the security of their MetaMask wallet and private keys.</p>`,
+      },
+      exchange: {
+        title: "Telegram Exchange",
+        description: "Exchange corporate tokens through Telegram bot",
+        content: `<p>Telegram exchange allows you to convert EuroCoin corporate tokens into fiat funds through a convenient Telegram bot.</p>
+
+<p><strong>How exchange works:</strong></p>
+<ol>
+  <li>Open Telegram and find our bot</li>
+  <li>Send a token exchange command</li>
+  <li>Specify the amount and details for receiving fiat funds</li>
+  <li>Confirm the operation through MetaMask</li>
+  <li>Receive funds to the specified account</li>
+</ol>
+
+<p><strong>Exchange rate:</strong></p>
+<ul>
+  <li>1 TOKEN = 1 USD</li>
+  <li>Rate automatically updates every minute</li>
+  <li>Exchange commission: 1.5%</li>
+</ul>
+
+<p><strong>Security:</strong></p>
+<p>All exchanges are conducted through Ethereum smart contracts, ensuring reliability and transparency of operations.</p>`,
+      },
     },
     admin: {
       title: "Admin panel",

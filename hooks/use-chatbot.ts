@@ -37,9 +37,7 @@ export function useChatbot({ locale, walletAddress }: UseChatbotOptions): UseCha
 
   const updateMessage = useCallback((messageId: string, translated: string) => {
     setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId ? { ...msg, translated, isTranslated: true } : msg,
-      ),
+      prev.map((msg) => (msg.id === messageId ? { ...msg, translated, isTranslated: true } : msg)),
     );
   }, []);
 

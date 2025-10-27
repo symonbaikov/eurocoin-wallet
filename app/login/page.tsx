@@ -72,14 +72,14 @@ export default function LoginPage() {
             </p>
           </div>
           <div className="dark:text-dark-foregroundMuted flex flex-wrap gap-3 text-[10px] text-foregroundMuted sm:gap-4 sm:text-xs">
-            <Link href="/requests" className="underline hover:text-accent">
-              Заявки на вывод
+            <Link href="/info/requests" className="underline hover:text-accent">
+              {t("login.link.requests")}
             </Link>
-            <Link href="/admin" className="underline hover:text-accent">
-              Панель админа
+            <Link href="/info/terms" className="underline hover:text-accent">
+              {t("login.link.terms")}
             </Link>
-            <Link href="/exchange" className="underline hover:text-accent">
-              Telegram-обменник
+            <Link href="/info/exchange" className="underline hover:text-accent">
+              {t("login.link.exchange")}
             </Link>
           </div>
         </div>
