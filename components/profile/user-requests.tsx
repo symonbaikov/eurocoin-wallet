@@ -7,6 +7,7 @@ import { RequestDetailsModal, RequestData } from "./request-details-modal";
 import { RequestStatus } from "./request-status-badge";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface UserRequestsProps {
   walletAddress: string;
@@ -24,6 +25,7 @@ interface RequestItem {
 }
 
 export function UserRequests({ walletAddress }: UserRequestsProps) {
+  const t = useTranslation();
   const [activeTab, setActiveTab] = useState<RequestType>("all");
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -116,17 +118,17 @@ export function UserRequests({ walletAddress }: UserRequestsProps) {
   };
 
   const tabs = [
-    { id: "all" as RequestType, label: "Все заявки" },
-    { id: "exchange" as RequestType, label: "Обмен" },
-    { id: "internal" as RequestType, label: "Внутренние" },
+    { id: "all" as RequestType, label: t("profile.myRequests.tabs.all") },
+    { id: "exchange" as RequestType, label: t("profile.myRequests.tabs.exchange") },
+    { id: "internal" as RequestType, label: t("profile.myRequests.tabs.internal") },
   ];
 
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Мои заявки</CardTitle>
-          <CardDescription>Просмотр и отслеживание всех ваших заявок</CardDescription>
+          <CardTitle>{t("profile.myRequests.title")}</CardTitle>
+          <CardDescription>{t("profile.myRequests.subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           {/* Tabs */}
@@ -147,20 +149,20 @@ export function UserRequests({ walletAddress }: UserRequestsProps) {
             ))}
           </div>
 
-          {/* Loading state */}
-          {loading && (
-            <div className="py-8 text-center">
-              <p className="text-foregroundMuted">Загрузка заявок...</p>
-            </div>
-          )}
+              {/* Loading state */}
+              {loading && (
+                <div className="py-8 text-center">
+                  <p className="text-foregroundMuted">{t("profile.myRequests.loading")}</p>
+                </div>
+              )}
 
-          {/* Empty state */}
-          {!loading && requests.length === 0 && (
-            <div className="py-12 text-center">
-              <p className="mb-2 text-lg font-semibold text-foreground">Нет заявок</p>
-              <p className="text-foregroundMuted">Вы еще не создавали заявок</p>
-            </div>
-          )}
+              {/* Empty state */}
+              {!loading && requests.length === 0 && (
+                <div className="py-12 text-center">
+                  <p className="mb-2 text-lg font-semibold text-foreground">{t("profile.myRequests.empty")}</p>
+                  <p className="text-foregroundMuted">{t("profile.myRequests.emptyDescription")}</p>
+                </div>
+              )}
 
           {/* Requests list */}
           {!loading && requests.length > 0 && (
@@ -197,7 +199,7 @@ export function UserRequests({ walletAddress }: UserRequestsProps) {
                     onClick={() => setShowAll(true)}
                     className="dark:bg-dark-backgroundAlt dark:hover:bg-dark-backgroundAlt/80 rounded-lg bg-backgroundAlt px-6 py-3 text-sm font-medium transition hover:bg-backgroundAlt/80"
                   >
-                    Развернуть список ({requests.length} заявок)
+                    {t("profile.myRequests.expand")} ({requests.length})
                   </button>
                 </div>
               )}
@@ -209,7 +211,7 @@ export function UserRequests({ walletAddress }: UserRequestsProps) {
                     onClick={() => setShowAll(false)}
                     className="dark:bg-dark-backgroundAlt dark:hover:bg-dark-backgroundAlt/80 rounded-lg bg-backgroundAlt px-6 py-3 text-sm font-medium transition hover:bg-backgroundAlt/80"
                   >
-                    Свернуть список (показать первые 3)
+                    {t("profile.myRequests.collapse")}
                   </button>
                 </div>
               )}

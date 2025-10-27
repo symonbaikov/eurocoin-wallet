@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RequestStatusBadge, RequestStatus } from "./request-status-badge";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface RequestCardProps {
   id: string;
@@ -28,6 +29,7 @@ export function RequestCard({
   onDetailsClick,
   className,
 }: RequestCardProps) {
+  const t = useTranslation();
   const formattedDate = new Date(createdAt).toLocaleDateString("ru-RU", {
     day: "2-digit",
     month: "2-digit",
@@ -44,7 +46,7 @@ export function RequestCard({
               {id}
             </span>
             <span className="dark:bg-dark-surfaceAlt shrink-0 rounded-full bg-surfaceAlt px-2 py-0.5 text-xs">
-              {type === "exchange" ? "💱 Обмен" : "📝 Внутренняя"}
+              {type === "exchange" ? t("profile.requestCard.exchange") : t("profile.requestCard.internal")}
             </span>
             <RequestStatusBadge status={status} />
           </div>
@@ -68,7 +70,7 @@ export function RequestCard({
               📅 {formattedDate}
             </span>
             <Button onClick={onDetailsClick} variant="outline" size="sm" className="shrink-0">
-              Детали
+              {t("profile.requestDetails.viewDetails")}
             </Button>
           </div>
         </div>
@@ -82,7 +84,7 @@ export function RequestCard({
                 {id}
               </span>
               <span className="dark:bg-dark-surfaceAlt rounded-full bg-surfaceAlt px-2 py-0.5 text-xs">
-                {type === "exchange" ? "💱 Обмен" : "📝 Внутренняя"}
+                {type === "exchange" ? t("profile.requestCard.exchange") : t("profile.requestCard.internal")}
               </span>
             </div>
 
@@ -109,7 +111,7 @@ export function RequestCard({
           <div className="flex flex-col items-end gap-3">
             <RequestStatusBadge status={status} />
             <Button onClick={onDetailsClick} variant="outline" size="sm">
-              Детали
+              {t("profile.requestDetails.viewDetails")}
             </Button>
           </div>
         </div>

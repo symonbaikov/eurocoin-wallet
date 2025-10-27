@@ -3,6 +3,7 @@
 import { Modal } from "@/components/ui/modal";
 import { RequestStatusBadge, RequestStatus } from "./request-status-badge";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface RequestDetailsModalProps {
   open: boolean;
@@ -22,22 +23,23 @@ export interface RequestData {
 }
 
 export function RequestDetailsModal({ open, onClose, request }: RequestDetailsModalProps) {
+  const t = useTranslation();
   if (!request) return null;
 
   const formattedCreatedAt = new Date(request.createdAt).toLocaleString("ru-RU");
   const formattedUpdatedAt = new Date(request.updatedAt).toLocaleString("ru-RU");
 
   return (
-    <Modal open={open} onClose={onClose} title={`Детали заявки ${request.id}`} size="lg">
+    <Modal open={open} onClose={onClose} title={`${t("profile.requestDetails.title")} ${request.id}`} size="lg">
       <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between border-b pb-4">
           <div>
             <p className="dark:text-dark-foregroundMuted text-sm text-foregroundMuted">
-              Тип заявки
+              {t("profile.requestDetails.requestType")}
             </p>
             <p className="dark:text-dark-foreground font-semibold text-foreground">
-              {request.type === "exchange" ? "💱 Обмен токенов" : "📝 Внутренняя заявка"}
+              {request.type === "exchange" ? t("profile.requestDetails.exchangeType") : t("profile.requestDetails.internalType")}
             </p>
           </div>
           <RequestStatusBadge status={request.status} />
