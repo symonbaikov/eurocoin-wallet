@@ -142,7 +142,7 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
   };
 
   return (
-    <div className="flex h-[600px] w-full max-w-md flex-col bg-white shadow-2xl dark:bg-dark-surface">
+    <div className="dark:bg-dark-surface flex h-[600px] w-full max-w-md flex-col bg-white shadow-2xl">
       {/* Header */}
       <div className="flex items-center justify-between border-b-2 border-blue-300 bg-blue-600 p-4 dark:border-blue-800 dark:bg-blue-800">
         <div className="flex items-center gap-3">
@@ -166,7 +166,7 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 space-y-4 overflow-y-auto bg-white p-4 dark:bg-dark-surface">
+      <div className="dark:bg-dark-surface flex-1 space-y-4 overflow-y-auto bg-white p-4">
         {messages.map((message) => (
           <ChatMessageComponent
             key={message.id}
@@ -181,8 +181,8 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
           <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
             <div className="flex gap-1">
               <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 dark:bg-blue-400" />
-              <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 dark:bg-blue-400 [animation-delay:0.2s]" />
-              <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 dark:bg-blue-400 [animation-delay:0.4s]" />
+              <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 [animation-delay:0.2s] dark:bg-blue-400" />
+              <div className="h-2 w-2 animate-bounce rounded-full bg-blue-600 [animation-delay:0.4s] dark:bg-blue-400" />
             </div>
             <span>💬 {locale === "ru" ? "Бот печатает..." : "Bot is typing..."}</span>
           </div>
