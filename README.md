@@ -14,6 +14,7 @@ EuroCoin Web Wallet is a comprehensive dashboard for managing corporate ERC-20 t
 ## ✨ Key Features
 
 ### 🔐 Wallet & Blockchain
+
 - **MetaMask Integration** - Secure wallet connection with Ethereum network support
 - **Multi-Network Support** - Ethereum Mainnet and Sepolia testnet
 - **Real-time Balance** - Live token balance updates with automatic refresh
@@ -21,36 +22,42 @@ EuroCoin Web Wallet is a comprehensive dashboard for managing corporate ERC-20 t
 - **Tax Calculator** - Built-in transaction fee calculator
 
 ### 🛡️ Security & Fraud Investigation
+
 - **Investigation Tracker** - Real-time progress tracking for fraud cases
 - **Telegram Integration** - Two-way communication between admins and users
 - **Automated Workflows** - Stage-based investigation process with live updates
 - **Transaction Analysis** - Direct blockchain analysis for suspicious transactions
 
 ### 💱 Exchange & Trading
+
 - **Exchange Calculator** - Real-time TOKEN ↔ RUB conversion with live rates
 - **Dynamic Pricing** - Automatic exchange rate updates via CoinGecko
 - **Commission Management** - Configurable trading fees
 - **Request System** - Streamlined exchange request workflow
 
 ### 🤖 Chatbot Support
+
 - **Anti-Fraud Assistant** - Dedicated chatbot for fraud victims
 - **Real-time Translation** - Instant EN ↔ RU translation
 - **Admin Chat** - Direct communication with support team via Telegram
 - **Transaction Help** - Blockchain analysis and recovery guidance
 
 ### 📊 Analytics & Visualization
+
 - **Dexscreener Charts** - Interactive real-time price charts
 - **Token Statistics** - Comprehensive wallet analytics
 - **Request History** - Full audit trail of all operations
 - **Progress Tracking** - Visual investigation progress timeline
 
 ### 🌍 Internationalization
+
 - **Multi-language** - Full Russian and English support
 - **Dynamic Content** - All UI elements translated
 - **Locale-aware** - Automatic date/time formatting
 - **RTL Support Ready** - Architecture ready for RTL languages
 
 ### 🎨 Modern UI/UX
+
 - **Dark/Light Theme** - Automatic theme switching
 - **Responsive Design** - Mobile-first approach
 - **Smooth Animations** - Polished transitions
@@ -154,6 +161,7 @@ web-wallet/
 ## 🛠️ Tech Stack
 
 ### Core
+
 - **Framework:** Next.js 15 (App Router)
 - **Language:** TypeScript 5.0 (strict mode)
 - **Styling:** TailwindCSS 3.0
@@ -161,22 +169,26 @@ web-wallet/
 - **Package Manager:** pnpm 8
 
 ### Web3
+
 - **wagmi** v2 - React Hooks for Ethereum
 - **viem** - TypeScript Ethereum library
 - **MetaMask** - Browser wallet integration
 
 ### Backend
+
 - **Telegraf** - Telegram bot framework
 - **Resend** - Email delivery
 - **Next.js API Routes** - Serverless functions
 
 ### UI/UX
+
 - **React Hot Toast** - Toast notifications
 - **next-themes** - Theme management
 - **Lucide Icons** - Icon library
 - **date-fns** - Date formatting
 
 ### Development
+
 - **ESLint** - Code linting
 - **Prettier** - Code formatting
 - **TypeScript** - Type safety
@@ -194,21 +206,25 @@ Comprehensive documentation is available in the `/docs` folder:
 ## 🎯 Key Workflows
 
 ### 1. Wallet Connection
+
 ```
 User → MetaMask Connect → Network Validation → Balance Fetch → USD Conversion
 ```
 
 ### 2. Exchange Request
+
 ```
 User Input → Rate Calculation → Database Save → Telegram Notification → Admin Response
 ```
 
 ### 3. Investigation Tracking
+
 ```
 Submit Request → Stage 1-6 Progress → Real-time Updates → Completion
 ```
 
 ### 4. Chatbot Support
+
 ```
 User Message → Telegram Forward → Admin Response → Real-time Update → Translation
 ```
