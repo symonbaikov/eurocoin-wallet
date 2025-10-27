@@ -181,7 +181,9 @@ export function UserRequests({ walletAddress }: UserRequestsProps) {
                           ? `${request.details["Сумма токенов"]} → ${request.details["Сумма фиата"]}`
                           : `${request.details["Запрашивающий"]} - ${request.details["Отдел"]}`,
                       amount:
-                        request.type === "exchange" ? `${request.details["Сумма фиата"]}` : undefined,
+                        request.type === "exchange"
+                          ? `${request.details["Сумма фиата"]}`
+                          : undefined,
                     }}
                     onDetailsClick={() => handleRequestClick(request)}
                   />

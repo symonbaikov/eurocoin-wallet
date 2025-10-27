@@ -4,17 +4,19 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import { useExchangeRate } from "@/hooks/use-exchange-rate";
 
 export function ExchangeSection() {
   const [isMounted, setIsMounted] = useState(false);
   const [tokenAmount, setTokenAmount] = useState("1000");
-  const [rubAmount, setRubAmount] = useState("150000");
+  const [rubAmount, setRubAmount] = useState("100000");
   const [formData, setFormData] = useState({
     walletAddress: "",
     email: "",
     comment: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { USD_RUB, loading: rateLoading } = useExchangeRate();
 
   useEffect(() => {
     setTimeout(() => {
@@ -23,17 +25,18 @@ export function ExchangeSection() {
   }, []);
 
   useEffect(() => {
-    if (!isMounted) return;
+    if (!isMounted || rateLoading) return;
 
     // Calculate RUB amount based on token amount
+    // 1 TOKEN = 1 USD, so we use USD_RUB rate
     const tokens = parseFloat(tokenAmount) || 0;
-    const rate = 150; // Fixed rate: 150 RUB per 1 TOKEN
+    const rate = USD_RUB; // Real USD/RUB rate
     const commission = 0.015; // 1.5% commission
     const rubs = tokens * rate * (1 - commission);
     setTimeout(() => {
       setRubAmount(Math.round(rubs).toLocaleString("ru-RU"));
     }, 100);
-  }, [tokenAmount, isMounted]);
+  }, [tokenAmount, isMounted, USD_RUB, rateLoading]);
 
   const handleTokenAmountChange = (value: string) => {
     // Remove non-numeric characters except dots
@@ -45,7 +48,7 @@ export function ExchangeSection() {
     const template = `Заявка на обмен токенов:
 Сумма: ${tokenAmount} TOKEN
 Получить: ~${rubAmount} RUB
-Курс: 150 RUB за 1 TOKEN
+Курс: ${USD_RUB.toFixed(2)} RUB за 1 TOKEN (1 TOKEN = 1 USD)
 Комиссия: 1.5%
 Адрес кошелька: ${formData.walletAddress || "не указан"}
 Email: ${formData.email || "не указан"}`;
@@ -77,7 +80,7 @@ Email: ${formData.email || "не указан"}`;
           email: formData.email,
           comment: formData.comment,
           commission: "1.5%",
-          rate: "150 RUB за 1 TOKEN",
+          rate: `${USD_RUB.toFixed(2)} RUB за 1 TOKEN (1 TOKEN = 1 USD)`,
         }),
       });
 
@@ -192,10 +195,18 @@ Email: ${formData.email || "не указан"}`;
             <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt space-y-3 rounded-lg border border-outline bg-surfaceAlt p-4">
               <div className="flex justify-between text-sm">
                 <span className="dark:text-dark-foregroundMuted text-foregroundMuted">
-                  Курс фиксирован на уровне
+                  Курс обмена
                 </span>
                 <span className="dark:text-dark-foreground font-medium text-foreground">
-                  150 RUB за 1 TOKEN
+                  {rateLoading ? "Загрузка..." : `${USD_RUB.toFixed(2)} RUB за 1 TOKEN`}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="dark:text-dark-foregroundMuted text-foregroundMuted">
+                  Эквивалент
+                </span>
+                <span className="dark:text-dark-foreground font-medium text-foreground">
+                  1 TOKEN = 1 USD
                 </span>
               </div>
               <div className="flex justify-between text-sm">
