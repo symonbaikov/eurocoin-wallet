@@ -50,7 +50,7 @@ export default function Home() {
 
   return (
     <>
-      <PageTitle title="Dashboard" description="Token management dashboard" />
+      <PageTitle title="Dashboard" description="Token management dashboard" enableSectionTracking />
       <main className="dark:from-dark-background dark:to-dark-backgroundAlt min-h-screen bg-gradient-to-br from-background to-backgroundAlt">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-12 md:px-10">
           {/* Exchange Section */}
