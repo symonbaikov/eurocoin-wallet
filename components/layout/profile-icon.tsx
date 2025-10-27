@@ -95,7 +95,7 @@ export function ProfileIcon() {
                 onClick={handleProfileClick}
                 className="dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt w-full rounded-md px-3 py-2 text-left text-sm font-medium transition hover:bg-surfaceAlt"
               >
-                Profile
+                {t("profile.title")}
               </button>
             </>
           ) : (
