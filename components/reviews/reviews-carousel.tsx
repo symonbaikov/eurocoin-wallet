@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/use-translation";
@@ -107,9 +107,18 @@ export function ReviewsCarousel() {
   const { locale } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
+  const prevLocale = useRef(locale);
 
   const mockReviews = useMemo(() => {
     return locale === "en" ? mockReviewsEn : mockReviewsRu;
+  }, [locale]);
+
+  // Reset to first review when language changes
+  useEffect(() => {
+    if (prevLocale.current !== locale) {
+      prevLocale.current = locale;
+      setCurrentIndex(0);
+    }
   }, [locale]);
 
   useEffect(() => {
@@ -117,12 +126,6 @@ export function ReviewsCarousel() {
       setIsMounted(true);
     }, 100);
   }, []);
-
-  // Reset to first review when language changes
-  useEffect(() => {
-    setCurrentIndex(0);
-    // eslint-disable-next-line react-compiler/react-compiler
-  }, [mockReviews]);
 
   useEffect(() => {
     if (!isMounted) return;
