@@ -131,7 +131,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["wallet", "exchange", "contact", "reviews", "token-balance", "faq"];
+      const sections = ["wallet", "exchange", "contact", "reviews", "investigation", "token-balance", "faq"];
       const scrollPosition = window.scrollY + 100; // Offset for header
 
       for (const section of sections) {
