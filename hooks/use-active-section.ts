@@ -7,7 +7,7 @@ export function useActiveSection() {
 
   useEffect(() => {
     const sections = ["exchange", "contact", "wallet", "investigation", "token-balance", "faq"];
-    
+
     // Check initial hash and update immediately
     const checkHash = () => {
       const hash = window.location.hash.slice(1); // Remove '#'
@@ -15,16 +15,16 @@ export function useActiveSection() {
         setActiveSection(hash);
       }
     };
-    
+
     checkHash();
-    
+
     // Listen for hash changes (navigation clicks)
     const handleHashChange = () => {
       checkHash();
     };
-    
+
     window.addEventListener("hashchange", handleHashChange);
-    
+
     // Delay observer initialization to ensure all sections are rendered
     const timeout = setTimeout(() => {
       const observerOptions = {
@@ -58,7 +58,7 @@ export function useActiveSection() {
         sectionElements.forEach((section) => observer.unobserve(section));
       };
     }, 500); // Wait 500ms for components to render
-    
+
     return () => {
       clearTimeout(timeout);
       window.removeEventListener("hashchange", handleHashChange);

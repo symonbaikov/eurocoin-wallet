@@ -48,9 +48,8 @@ export function PageTitle({ title, description, enableSectionTracking = false }:
 
   // Update document.title directly for immediate effect
   useEffect(() => {
-    console.log("[PageTitle] Updating title to:", dynamicTitle, "for section:", activeSection);
     document.title = dynamicTitle;
-  }, [dynamicTitle, activeSection]);
+  }, [dynamicTitle]);
 
   return (
     <Helmet>
