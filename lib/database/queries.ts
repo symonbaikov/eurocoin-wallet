@@ -104,6 +104,7 @@ export interface InternalRequest {
   priority: string;
   description: string;
   status: RequestStatus;
+  current_stage?: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -171,6 +172,18 @@ export async function updateInternalRequestStatus(
   const result = await query(
     "UPDATE internal_requests SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
     [status, id],
+  );
+
+  return result.rows[0];
+}
+
+export async function updateInternalRequestStage(
+  id: string,
+  stage: string,
+): Promise<InternalRequest> {
+  const result = await query(
+    "UPDATE internal_requests SET current_stage = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
+    [stage, id],
   );
 
   return result.rows[0];

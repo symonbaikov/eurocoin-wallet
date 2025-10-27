@@ -49,7 +49,10 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
   useEffect(() => {
     const handleNewRequest = (event: Event) => {
       const customEvent = event as CustomEvent;
-      console.log("[Investigation] New request submitted, fetching latest data", customEvent.detail);
+      console.log(
+        "[Investigation] New request submitted, fetching latest data",
+        customEvent.detail,
+      );
       const newRequestId = customEvent.detail?.requestId;
       const url = newRequestId
         ? `/api/investigation/status?requestId=${newRequestId}`

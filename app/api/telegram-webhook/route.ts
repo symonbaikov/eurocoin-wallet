@@ -7,6 +7,7 @@ import {
   getInternalRequestById,
   updateExchangeRequestStatus,
   updateInternalRequestStatus,
+  updateInternalRequestStage,
 } from "@/lib/database/queries";
 
 const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
@@ -384,11 +385,14 @@ bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
 
     const dbStatus = stageMap[newStage] || "pending";
 
-    // Update database
+    // Update database with both status and stage
     await updateInternalRequestStatus(
       requestId,
       dbStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
     );
+    
+    // Also update current_stage field
+    await updateInternalRequestStage(requestId, newStage);
 
     // Confirm to user
     const stageLabels: Record<string, string> = {

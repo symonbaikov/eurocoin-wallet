@@ -17,7 +17,7 @@ const stageLabels: Record<string, string> = {
   completed: "Завершено",
 };
 
-function getStagesFromStatus(status: string): InvestigationStage[] {
+function getStagesFromStatus(status: string, currentStage?: string | null): InvestigationStage[] {
   const allStages = [
     { id: "submitted", label: stageLabels.submitted, completed: false, current: false },
     { id: "checking", label: stageLabels.checking, completed: false, current: false },
@@ -38,10 +38,24 @@ function getStagesFromStatus(status: string): InvestigationStage[] {
     allStages[0].completed = true;
     allStages[1].current = true;
   } else if (status === "processing") {
-    allStages[0].completed = true;
-    allStages[1].completed = true;
-    allStages[2].completed = true;
-    allStages[3].current = true;
+    // If current_stage is provided, use it to determine progress
+    if (currentStage) {
+      const stageIndex = allStages.findIndex((s) => s.id === currentStage);
+      if (stageIndex !== -1) {
+        // Mark all previous stages as completed
+        for (let i = 0; i < stageIndex; i++) {
+          allStages[i].completed = true;
+        }
+        // Mark current stage as current
+        allStages[stageIndex].current = true;
+      }
+    } else {
+      // Default behavior for processing without current_stage
+      allStages[0].completed = true;
+      allStages[1].completed = true;
+      allStages[2].completed = true;
+      allStages[3].current = true;
+    }
   }
 
   return allStages;
@@ -79,7 +93,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Request not found" }, { status: 404 });
     }
 
-    const stages = getStagesFromStatus(targetRequest.status);
+    const stages = getStagesFromStatus(targetRequest.status, targetRequest.current_stage);
     const completedCount = stages.filter((s) => s.completed).length;
     const progress = Math.round((completedCount / stages.length) * 100);
 

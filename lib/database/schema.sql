@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS internal_requests (
   priority VARCHAR(20) DEFAULT 'normal' NOT NULL,
   description TEXT NOT NULL,
   status VARCHAR(20) DEFAULT 'pending' NOT NULL,
+  current_stage VARCHAR(50),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
