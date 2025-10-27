@@ -155,7 +155,7 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
               />
             </div>
             {/* Online indicator positioned outside the avatar */}
-            <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-white bg-green-500" />
+            <span className="absolute bottom-0 right-0 h-5 w-5 translate-x-1/2 translate-y-1/2 rounded-full border-2 border-white bg-green-500" />
           </div>
           <div>
             <h3 className="font-bold text-white">Поддержка</h3>
