@@ -916,31 +916,39 @@ const translations: Messages = {
         connectedValue: "Yes",
       },
       myRequests: {
-        title: "My Requests",
-        subtitle: "View and track all your requests",
+        title: "Мои заявки",
+        subtitle: "Просмотр и отслеживание всех ваших заявок",
         tabs: {
-          all: "All requests",
-          exchange: "Exchange",
-          internal: "Internal",
+          all: "Все заявки",
+          exchange: "Обмен",
+          internal: "Внутренние",
         },
-        loading: "Loading requests...",
-        empty: "No requests",
-        emptyDescription: "You haven't created any requests yet",
-        expand: "Expand list",
-        collapse: "Collapse list",
+        loading: "Загрузка заявок...",
+        empty: "Нет заявок",
+        emptyDescription: "Вы еще не создавали заявок",
+        expand: "Развернуть список",
+        collapse: "Свернуть список",
       },
       requestDetails: {
-        title: "Request details",
-        requestType: "Request type",
-        exchangeType: "💱 Token exchange",
-        internalType: "📝 Internal request",
-        viewDetails: "Details",
+        title: "Детали заявки",
+        requestType: "Тип заявки",
+        exchangeType: "💱 Обмен токенов",
+        internalType: "📝 Внутренняя заявка",
+        viewDetails: "Детали",
       },
       requestCard: {
-        exchange: "💱 Exchange",
-        internal: "📝 Internal",
+        exchange: "💱 Обмен",
+        internal: "📝 Внутренняя",
       },
     },
   },
+
+export const availableLocales: Locale[] = ["ru", "en"];
+
+export const defaultLocale: Locale = "ru";
+
+export function isLocale(value: string | null | undefined): value is Locale {
+  return value === "ru" || value === "en";
+}
 
 export const translationsRaw = translations;
