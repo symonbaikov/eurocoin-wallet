@@ -5,13 +5,9 @@ import { InternalRequestForm } from "@/components/forms/internal-request-form";
 import { BalanceCard, PriceTicker, TaxCard, WalletStatistics } from "@/components/wallet";
 import { ConnectButton } from "@/components/wallet/connect-button";
 import { WalletStatus } from "@/components/wallet/wallet-status";
-import { WithdrawTimer } from "@/components/dashboard/withdraw-timer";
-import { EuroCoin3D } from "@/components/eurocoin";
+import { InvestigationProgress } from "@/components/dashboard/investigation-progress";
 import { ExchangeSection } from "@/components/exchange";
 import { FAQSection } from "@/components/faq";
-import { MetaMaskQR } from "@/components/metamask";
-import { ReviewsCarousel } from "@/components/reviews";
-import { ScrollToTop } from "@/components/ui/scroll-to-top";
 import { useTranslation } from "@/hooks/use-translation";
 
 export default function Home() {
@@ -48,22 +44,6 @@ export default function Home() {
   return (
     <main className="dark:from-dark-background dark:to-dark-backgroundAlt min-h-screen bg-gradient-to-br from-background to-backgroundAlt">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-12 md:px-10">
-        {/* EuroCoin 3D Presentation Section - Top */}
-        <section>
-          <div className="mb-6 text-center">
-            <h2 className="dark:text-dark-foreground mb-2 text-3xl font-bold text-foreground">
-              {t("eurocoin.sectionTitle")}
-            </h2>
-            <p className="dark:text-dark-foregroundMuted text-foregroundMuted">
-              {t("eurocoin.sectionDescription")}
-            </p>
-          </div>
-          <EuroCoin3D />
-        </section>
-
-        {/* MetaMask QR Code Section */}
-        <MetaMaskQR />
-
         {/* Exchange Section */}
         <ExchangeSection />
 
@@ -125,10 +105,10 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Reviews Carousel Section */}
-        <ReviewsCarousel />
-
-        <WithdrawTimer />
+        {/* Investigation Progress Section */}
+        <section id="investigation">
+          <InvestigationProgress />
+        </section>
 
         <section
           id="token-balance"
@@ -144,9 +124,6 @@ export default function Home() {
 
       {/* FAQ Section */}
       <FAQSection />
-
-      {/* Scroll to Top Button */}
-      <ScrollToTop />
     </main>
   );
 }

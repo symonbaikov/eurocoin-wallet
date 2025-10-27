@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
@@ -126,9 +126,12 @@ Email: ${formData.email || "не указан"}`;
       <Card className="shadow-card-elevated">
         <CardHeader>
           <div className="mb-8 text-center">
-            <CardTitle className="dark:text-dark-foreground mb-4 text-3xl text-foreground">
-              TELEGRAM-ОБМЕННИК
-            </CardTitle>
+            <h2 className="mb-4 font-display text-4xl font-bold tracking-tight">
+              <span className="bg-gradient-to-r from-accent to-accentAlt bg-clip-text text-transparent">
+                Telegram
+              </span>{" "}
+              <span className="text-foreground dark:text-white">Обменник</span>
+            </h2>
             <CardDescription className="text-lg">
               Интерфейс для конвертации корпоративных токенов в фиатные средства с передачей заявки
               через Telegram-бота.
@@ -258,13 +261,18 @@ Email: ${formData.email || "не указан"}`;
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3 md:flex-row">
               <Button
                 onClick={handleSubmitRequest}
                 disabled={isSubmitting}
-                className="flex-1 bg-accent text-white hover:bg-accent/90"
+                className="bg-accent text-white hover:bg-accent/90 md:flex-1"
               >
-                <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="h-4 w-4 md:mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -272,10 +280,18 @@ Email: ${formData.email || "не указан"}`;
                     d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                   />
                 </svg>
-                {isSubmitting ? "Отправка..." : "Создать заявку в Telegram"}
+                <span className="hidden md:inline">
+                  {isSubmitting ? "Отправка..." : "Создать заявку в Telegram"}
+                </span>
+                <span className="md:hidden">{isSubmitting ? "Отправка..." : "Создать заявку"}</span>
               </Button>
-              <Button variant="outline" onClick={copyTemplate}>
-                <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Button variant="outline" onClick={copyTemplate} className="md:w-auto">
+                <svg
+                  className="h-4 w-4 md:mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -283,7 +299,8 @@ Email: ${formData.email || "не указан"}`;
                     d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                   />
                 </svg>
-                Скопировать шаблон
+                <span className="hidden md:inline">Скопировать шаблон</span>
+                <span className="md:hidden">Скопировать</span>
               </Button>
             </div>
           </div>

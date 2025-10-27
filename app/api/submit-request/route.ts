@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { Telegraf, Markup } from "telegraf";
 import { createInternalRequest } from "@/lib/database/queries";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
 
 interface RequestFormData {
   requester: string;
@@ -10,6 +12,7 @@ interface RequestFormData {
   requestType: string;
   description: string;
   priority: "low" | "normal" | "high";
+  walletAddress?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -33,8 +36,8 @@ export async function POST(request: NextRequest) {
         request_type: data.requestType,
         priority: data.priority,
         description: data.description,
-        // Note: email and wallet_address are optional for internal requests
         email: data.requester.includes("@") ? data.requester : undefined,
+        wallet_address: data.walletAddress || undefined,
       });
     } catch (dbError) {
       console.error("Error saving to database:", dbError);
@@ -136,7 +139,49 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, messageId: emailData?.id }, { status: 200 });
+    // Send notification to Telegram
+    try {
+      const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
+      if (managerChatId) {
+        const telegramMessage =
+          `🔵 *Новая внутренняя заявка*\n\n` +
+          `👤 Инициатор: ${data.requester}\n` +
+          (data.walletAddress ? `💼 Кошелек: \`${data.walletAddress}\`\n` : "") +
+          `🏢 Отдел: ${departmentMap[data.department] || data.department}\n` +
+          `📋 Тип: ${requestTypeMap[data.requestType] || data.requestType}\n` +
+          `📊 Приоритет: ${data.priority.toUpperCase()}\n` +
+          `📝 Описание: ${data.description}\n\n` +
+          `🆔 ID: \`${requestId}\``;
+
+        const keyboard = Markup.inlineKeyboard([
+          [
+            Markup.button.callback("✅ В обработке", `status_${requestId}_submitted`),
+            Markup.button.callback("📄 Проверка", `status_${requestId}_checking`),
+          ],
+          [
+            Markup.button.callback("🔍 Анализ", `status_${requestId}_analyzing`),
+            Markup.button.callback("🕵️ Расследование", `status_${requestId}_investigating`),
+          ],
+          [
+            Markup.button.callback("💰 Восстановление", `status_${requestId}_recovering`),
+            Markup.button.callback("✅ Завершить", `status_${requestId}_completed`),
+          ],
+        ]);
+
+        await bot.telegram.sendMessage(parseInt(managerChatId), telegramMessage, {
+          parse_mode: "Markdown",
+          ...keyboard,
+        });
+      }
+    } catch (telegramError) {
+      console.error("Error sending to Telegram:", telegramError);
+      // Don't fail the request if Telegram fails
+    }
+
+    return NextResponse.json(
+      { success: true, requestId, messageId: emailData?.id },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Error processing request:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

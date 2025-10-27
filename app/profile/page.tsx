@@ -53,11 +53,11 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="dark:bg-dark-surfaceAlt flex items-center gap-4 rounded-lg bg-surfaceAlt p-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-white">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-white">
                   {address?.slice(2, 4).toUpperCase()}
                 </div>
-                <div className="flex-1">
-                  <div className="dark:text-dark-foreground font-mono font-medium text-foreground">
+                <div className="min-w-0 flex-1">
+                  <div className="dark:text-dark-foreground break-all font-mono text-xs font-medium text-foreground md:text-base">
                     {address}
                   </div>
                   <div className="dark:text-dark-foregroundMuted text-sm text-foregroundMuted">

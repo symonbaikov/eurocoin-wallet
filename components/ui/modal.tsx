@@ -61,7 +61,7 @@ export function Modal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur md:px-4"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
@@ -75,7 +75,7 @@ export function Modal({
         aria-labelledby={title ? labelledBy : undefined}
         aria-describedby={description ? describedBy : undefined}
         className={cn(
-          "dark:border-dark-outline dark:bg-dark-surface relative w-full rounded-2xl border border-outline bg-surface p-6 shadow-xl shadow-black/50",
+          "dark:border-dark-outline dark:bg-dark-surface relative h-full w-full overflow-y-auto rounded-none border-none bg-surface p-6 shadow-xl shadow-black/50 md:h-auto md:max-h-[90vh] md:rounded-2xl md:border",
           sizeMap[size],
         )}
       >
@@ -104,7 +104,7 @@ export function Modal({
           <button
             type="button"
             aria-label="Закрыть"
-            className="dark:text-dark-foregroundMuted dark:hover:text-dark-foreground absolute right-4 top-4 text-foregroundMuted transition-colors hover:text-foreground"
+            className="dark:text-dark-foregroundMuted dark:hover:text-dark-foreground absolute right-4 top-4 flex h-10 w-10 items-center justify-center text-2xl text-foregroundMuted transition-colors hover:text-foreground"
             onClick={onClose}
           >
             <span aria-hidden="true">×</span>

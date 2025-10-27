@@ -37,7 +37,44 @@ export function RequestCard({
   return (
     <Card className={cn("transition-shadow hover:shadow-md", className)}>
       <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-4">
+        {/* Mobile: Stack vertically */}
+        <div className="flex flex-col gap-4 md:hidden">
+          <div className="flex items-center gap-2">
+            <span className="dark:text-dark-foreground break-all font-mono text-xs font-semibold text-foreground">
+              {id}
+            </span>
+            <span className="dark:bg-dark-surfaceAlt shrink-0 rounded-full bg-surfaceAlt px-2 py-0.5 text-xs">
+              {type === "exchange" ? "💱 Обмен" : "📝 Внутренняя"}
+            </span>
+            <RequestStatusBadge status={status} />
+          </div>
+
+          <h3 className="dark:text-dark-foreground text-base font-semibold text-foreground">
+            {details.title}
+          </h3>
+
+          <p className="dark:text-dark-foregroundMuted break-words text-sm text-foregroundMuted">
+            {details.subtitle}
+          </p>
+
+          {details.amount && (
+            <p className="dark:text-dark-foreground text-lg font-medium text-foreground">
+              {details.amount}
+            </p>
+          )}
+
+          <div className="flex items-center justify-between">
+            <span className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
+              📅 {formattedDate}
+            </span>
+            <Button onClick={onDetailsClick} variant="outline" size="sm" className="shrink-0">
+              Детали
+            </Button>
+          </div>
+        </div>
+
+        {/* Desktop: Horizontal layout */}
+        <div className="hidden items-start justify-between gap-4 md:flex">
           {/* Left side - Info */}
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">

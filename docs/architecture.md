@@ -22,12 +22,18 @@ web-wallet/
 │   │   ├── Card.tsx       # Карточка для отображения информации
 │   │   ├── Modal.tsx      # Модальное окно
 │   │   └── Toast.tsx      # Уведомления
-│   └── wallet/            # Компоненты для работы с кошельком
-│       ├── ConnectButton.tsx    # Кнопка подключения MetaMask
-│       ├── WalletInfo.tsx       # Информация о кошельке
-│       ├── BalanceCard.tsx      # Отображение баланса токена
-│       ├── NetworkSwitcher.tsx  # Переключение сетей
-│       └── TransactionModal.tsx # Модальное окно транзакций
+│   ├── wallet/            # Компоненты для работы с кошельком
+│   │   ├── ConnectButton.tsx    # Кнопка подключения MetaMask
+│   │   ├── WalletInfo.tsx       # Информация о кошельке
+│   │   ├── BalanceCard.tsx      # Отображение баланса токена
+│   │   ├── NetworkSwitcher.tsx  # Переключение сетей
+│   │   └── TransactionModal.tsx # Модальное окно транзакций
+│   └── chatbot/           # Компоненты чат-бота (anti-fraud)
+│       ├── chat-widget.tsx      # Float кнопка чата
+│       ├── chat-window.tsx      # Окно чата
+│       ├── chat-message.tsx     # Компонент сообщения
+│       ├── chat-input.tsx       # Поле ввода
+│       └── translate-button.tsx  # Кнопка перевода
 ├── lib/                   # Утилиты и конфигурация
 │   ├── wagmi.tsx          # Конфигурация wagmi клиента
 │   ├── pricing.ts         # Логика ценообразования
@@ -40,14 +46,18 @@ web-wallet/
 │   ├── useTokenBalance.ts # Hook для получения баланса
 │   ├── useTokenInfo.ts    # Hook для информации о токене
 │   ├── useWalletConnection.ts # Hook для подключения кошелька
-│   └── useTokenPrice.ts   # Hook для получения цены токена
+│   ├── useTokenPrice.ts   # Hook для получения цены токена
+│   ├── use-chatbot.ts     # Логика чат-бота
+│   ├── use-transaction-analysis.ts # Анализ транзакций
+│   └── use-chat-history.ts # История чата
 ├── styles/                # Глобальные стили
 │   └── globals.css        # Основные стили и переменные
 └── docs/                  # Документация
     ├── requirements.md    # Технические требования
     ├── arch-rules.md     # Архитектурные правила
     ├── architecture.md   # Этот файл
-    └── plan.md           # План реализации
+    ├── plan.md           # План реализации
+    └── chatbot-implementation-plan.md # План чат-бота
 ```
 
 ---

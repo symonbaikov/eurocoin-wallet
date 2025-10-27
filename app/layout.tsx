@@ -5,6 +5,7 @@ import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { ChatWidget } from "@/components/chatbot";
 import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
@@ -55,6 +56,7 @@ export default function RootLayout({
               },
             }}
           />
+          <ChatWidget delay={10000} position="bottom-right" />
         </AppProviders>
       </body>
     </html>

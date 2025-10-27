@@ -10,11 +10,10 @@ import { useTranslation } from "@/hooks/use-translation";
 import { useLanguage } from "@/components/providers/language-provider";
 
 const navItems = [
-  { href: "/", key: "common.nav.dashboard" },
   { href: "/#exchange", key: "common.nav.exchange" },
   { href: "/#contact", key: "common.nav.contact" },
+  { href: "/#investigation", key: "common.nav.investigation" },
   { href: "/#wallet", key: "common.nav.wallet" },
-  { href: "/#reviews", key: "common.nav.reviews" },
   { href: "/#token-balance", key: "common.nav.token" },
   { href: "/#faq", key: "common.nav.faq" },
 ];
@@ -48,49 +47,78 @@ function MobileLanguageSwitcher() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt flex h-10 w-10 items-center justify-center rounded-full border border-outline bg-surface text-foreground transition hover:bg-surfaceAlt"
+        className="dark:bg-dark-surfaceAlt dark:text-dark-foreground dark:hover:bg-dark-surface flex h-10 w-10 items-center justify-center rounded-full bg-surfaceAlt text-foreground transition hover:bg-surface"
         aria-label="Выбрать язык"
       >
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-          />
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
         </svg>
       </button>
 
       {isOpen && (
-        <div className="dark:border-dark-outline dark:bg-dark-surface absolute right-0 top-12 z-50 rounded-lg border border-outline bg-surface shadow-lg">
-          <div className="py-1">
-            <button
-              type="button"
-              onClick={() => handleChange("ru")}
-              className={cn(
-                "flex w-full items-center gap-2 px-4 py-2 text-sm transition",
-                locale === "ru"
-                  ? "bg-accent text-white"
-                  : "dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt text-foreground hover:bg-surfaceAlt",
-              )}
-            >
-              <span className="text-xs">🇷🇺</span>
-              Русский
-            </button>
-            <button
-              type="button"
-              onClick={() => handleChange("en")}
-              className={cn(
-                "flex w-full items-center gap-2 px-4 py-2 text-sm transition",
-                locale === "en"
-                  ? "bg-accent text-white"
-                  : "dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt text-foreground hover:bg-surfaceAlt",
-              )}
-            >
-              <span className="text-xs">🇺🇸</span>
-              English
-            </button>
-          </div>
+        <div className="dark:border-dark-outline dark:bg-dark-surface absolute right-0 top-12 z-50 min-w-[120px] rounded-lg border border-outline bg-surface p-2 shadow-lg">
+          <button
+            type="button"
+            onClick={() => handleChange("ru")}
+            className={cn(
+              "dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition hover:bg-surfaceAlt",
+              locale === "ru" ? "bg-accent/10 text-accent dark:bg-accent/20" : "text-foreground",
+            )}
+          >
+            <span>Русский</span>
+            {locale === "ru" && (
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleChange("en")}
+            className={cn(
+              "dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition hover:bg-surfaceAlt",
+              locale === "en" ? "bg-accent/10 text-accent dark:bg-accent/20" : "text-foreground",
+            )}
+          >
+            <span>English</span>
+            {locale === "en" && (
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+          </button>
         </div>
       )}
     </div>
@@ -148,9 +176,9 @@ export function SiteHeader() {
           <img
             src="/logo.png"
             alt="EuroCoin Logo"
-            className="h-10 w-10 rounded-2xl object-contain"
+            className="h-8 w-8 rounded-xl object-contain md:h-10 md:w-10 md:rounded-2xl"
           />
-          <span className="dark:text-dark-foreground font-display text-lg uppercase tracking-[0.32em] text-foreground">
+          <span className="dark:text-dark-foreground font-display text-xs uppercase tracking-[0.32em] text-foreground md:text-lg">
             EuroCoin
           </span>
         </Link>
@@ -181,7 +209,7 @@ export function SiteHeader() {
         </div>
 
         {/* Mobile Right Side */}
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex shrink-0 items-center gap-1.5 md:hidden">
           <ProfileIcon />
           <ThemeToggle />
           <MobileLanguageSwitcher />

@@ -14,6 +14,10 @@ export function LanguageSwitcher() {
   const handleChange = (nextLocale: Locale) => {
     startTransition(() => {
       setLocale(nextLocale);
+      // Reload page to apply language changes
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     });
     setIsOpen(false);
   };

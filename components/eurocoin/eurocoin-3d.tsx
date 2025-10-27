@@ -120,7 +120,7 @@ export function EuroCoin3D() {
           {/* Legal Protection Section */}
           <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt space-y-3 rounded-2xl border border-outline bg-surfaceAlt p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500 text-xl">
+              <div className="hidden h-10 w-10 items-center justify-center rounded-lg bg-blue-500 text-xl sm:flex">
                 ⚖️
               </div>
               <h3 className="dark:text-dark-foreground text-xl font-bold text-foreground">
@@ -138,7 +138,7 @@ export function EuroCoin3D() {
           {/* Process Section */}
           <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt space-y-3 rounded-2xl border border-outline bg-surfaceAlt p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500 text-xl">
+              <div className="hidden h-10 w-10 items-center justify-center rounded-lg bg-green-500 text-xl sm:flex">
                 🧾
               </div>
               <h3 className="dark:text-dark-foreground text-xl font-bold text-foreground">
@@ -168,7 +168,7 @@ export function EuroCoin3D() {
           {/* Why Choose Us Section */}
           <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt space-y-3 rounded-2xl border border-outline bg-surfaceAlt p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500 text-xl">
+              <div className="hidden h-10 w-10 items-center justify-center rounded-lg bg-purple-500 text-xl sm:flex">
                 💼
               </div>
               <h3 className="dark:text-dark-foreground text-xl font-bold text-foreground">
@@ -202,7 +202,7 @@ export function EuroCoin3D() {
           {/* Check Today Section */}
           <div className="dark:border-dark-accent/20 dark:from-dark-accent/5 dark:to-dark-accentAlt/5 space-y-3 rounded-2xl border border-accent/20 bg-gradient-to-r from-accent/5 to-accentAlt/5 p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500 text-xl">
+              <div className="hidden h-10 w-10 items-center justify-center rounded-lg bg-orange-500 text-xl sm:flex">
                 🔍
               </div>
               <h3 className="dark:text-dark-foreground text-xl font-bold text-foreground">

@@ -257,6 +257,26 @@ bot.command("internal", async (ctx) => {
   }
 });
 
+// Chats command - show active chatbot sessions
+bot.command("chats", async (ctx) => {
+  try {
+    // For now, return a simple response
+    // In full implementation, this would query the database
+    ctx.reply(
+      "💬 *Активные чат-сессии*\n\n" +
+        "Эта функция будет доступна после подключения базы данных.\n\n" +
+        "Для ответа пользователю используйте формат:\n" +
+        "`[reply-SESSION_ID] Ваш ответ`\n\n" +
+        "Пример:\n" +
+        "`[reply-abc-123] Здравствуйте! Можем помочь.`",
+      { parse_mode: "Markdown" },
+    );
+  } catch (error) {
+    console.error("Error in /chats command:", error);
+    ctx.reply("❌ Ошибка при получении чат-сессий");
+  }
+});
+
 // Details command
 bot.command("details", async (ctx) => {
   try {
@@ -343,6 +363,80 @@ bot.command("details", async (ctx) => {
   }
 });
 
+// Handle investigation status buttons
+bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
+  try {
+    const match = ctx.match;
+    const requestId = match[1];
+    const newStage = match[2];
+
+    console.log("[telegram-webhook] Investigation status update:", { requestId, newStage });
+
+    // Update investigation status in database
+    const stageMap: Record<string, string> = {
+      submitted: "pending",
+      checking: "processing",
+      analyzing: "processing",
+      investigating: "processing",
+      recovering: "processing",
+      completed: "completed",
+    };
+
+    const dbStatus = stageMap[newStage] || "pending";
+
+    // Update database
+    await updateInternalRequestStatus(
+      requestId,
+      dbStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
+    );
+
+    // Confirm to user
+    const stageLabels: Record<string, string> = {
+      submitted: "✅ Заявка подана",
+      checking: "📄 Проверка документов",
+      analyzing: "🔍 Анализ транзакций",
+      investigating: "🕵️ Расследование",
+      recovering: "💰 Восстановление средств",
+      completed: "✅ Завершено",
+    };
+
+    ctx.answerCbQuery(`✅ Статус обновлен: ${stageLabels[newStage] || newStage}`);
+
+    // Update the button text to show it was clicked
+    const message = ctx.callbackQuery.message;
+    if (
+      message &&
+      "reply_markup" in message &&
+      message.reply_markup &&
+      "inline_keyboard" in message.reply_markup
+    ) {
+      const keyboard = message.reply_markup.inline_keyboard;
+      const newKeyboard = keyboard.map((row) =>
+        row.map((btn) => {
+          if ("data" in ctx.callbackQuery && btn.text) {
+            const currentData = ctx.callbackQuery.data;
+            return {
+              ...btn,
+              text:
+                currentData && btn.text.includes(stageLabels[newStage]?.split(" ")[1] || "")
+                  ? `✓ ${btn.text}`
+                  : btn.text,
+            };
+          }
+          return btn;
+        }),
+      );
+
+      ctx.editMessageReplyMarkup({
+        inline_keyboard: newKeyboard,
+      });
+    }
+  } catch (error) {
+    console.error("[telegram-webhook] Error updating investigation status:", error);
+    ctx.answerCbQuery("❌ Ошибка при обновлении статуса");
+  }
+});
+
 // Handle action buttons
 bot.action(/^action_(.+)_(.+)$/, async (ctx) => {
   try {
@@ -383,14 +477,149 @@ bot.action(/^action_(.+)_(.+)$/, async (ctx) => {
   }
 });
 
-// Default text handler
-bot.on("text", (ctx) => {
+// Simple storage for pending replies (in-memory, will be reset on restart)
+const pendingReplies = new Map<number, string>();
+
+// Chatbot callback handler - handle reply button click
+bot.action(/^reply_to_chat_(.+)$/, async (ctx) => {
+  try {
+    const sessionId = ctx.match[1];
+    const chatId = ctx.chat?.id || ctx.from?.id;
+
+    console.log("[telegram-webhook] Reply button clicked for session:", sessionId);
+
+    if (chatId) {
+      // Store session ID for this chat
+      pendingReplies.set(chatId, sessionId);
+    }
+
+    ctx.answerCbQuery();
+
+    // Send a message asking for the reply text
+    await ctx.reply(
+      `📝 Введите ваш ответ для пользователя:\n\n` +
+        `Просто напишите сообщение, и оно будет автоматически отправлено пользователю.`,
+    );
+
+    return;
+  } catch (error) {
+    console.error("[telegram-webhook] Error handling reply button:", error);
+    ctx.answerCbQuery("❌ Ошибка");
+  }
+});
+
+// Chatbot handler - listen for admin replies
+bot.on("text", async (ctx) => {
+  // Skip if it's a command
+  if (ctx.message.text.startsWith("/")) {
+    return;
+  }
+
+  // Check if we're awaiting a reply from the button click
+  const chatId = ctx.from.id;
+  const pendingSessionId = pendingReplies.get(chatId);
+
+  if (pendingSessionId) {
+    const sessionId = pendingSessionId;
+    const adminResponse = ctx.message.text;
+
+    console.log("[telegram-webhook] Admin reply detected via button:", {
+      sessionId,
+      text: adminResponse,
+      adminId: ctx.from.id,
+    });
+
+    // Clear the pending flag
+    pendingReplies.delete(chatId);
+
+    try {
+      // Send response to user via API
+      const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/chatbot/admin-response`;
+      console.log("[telegram-webhook] Calling API:", apiUrl);
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          text: adminResponse,
+          adminId: ctx.from.id,
+        }),
+      });
+
+      console.log("[telegram-webhook] API response status:", response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("[telegram-webhook] Admin response saved:", data);
+        ctx.reply("✅ Ответ отправлен пользователю");
+      } else {
+        const errorText = await response.text();
+        console.error("[telegram-webhook] API error:", errorText);
+        ctx.reply("❌ Ошибка при отправке ответа");
+      }
+    } catch (error) {
+      console.error("[telegram-webhook] Error sending admin response:", error);
+      ctx.reply("❌ Ошибка при отправке ответа");
+    }
+    return;
+  }
+
+  // Check if this is an admin reply to chatbot (legacy format)
+  // Format: [reply-SESSION_ID] message text
+  const match = ctx.message.text.match(/^\[reply-([^\]]+)\]\s*(.+)/);
+
+  if (match && ctx.chat.type === "private") {
+    const sessionId = match[1];
+    const adminResponse = match[2];
+
+    console.log("[telegram-webhook] Admin reply detected:", {
+      sessionId,
+      text: adminResponse,
+      adminId: ctx.from.id,
+    });
+
+    try {
+      // Send response to user via API
+      const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/chatbot/admin-response`;
+      console.log("[telegram-webhook] Calling API:", apiUrl);
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          text: adminResponse,
+          adminId: ctx.from.id,
+        }),
+      });
+
+      console.log("[telegram-webhook] API response status:", response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("[telegram-webhook] Admin response saved:", data);
+        ctx.reply("✅ Ответ отправлен пользователю");
+      } else {
+        const errorText = await response.text();
+        console.error("[telegram-webhook] API error:", errorText);
+        ctx.reply("❌ Ошибка при отправке ответа");
+      }
+    } catch (error) {
+      console.error("[telegram-webhook] Error sending admin response:", error);
+      ctx.reply("❌ Ошибка при отправке ответа");
+    }
+    return;
+  }
+
+  // Default text handler
   ctx.reply(
     "Используйте команды:\n" +
       "/list - показать все заявки\n" +
       "/exchange - показать заявки на обмен\n" +
       "/internal - показать внутренние заявки\n" +
-      "/details <ID> - детали заявки\n\n" +
+      "/details <ID> - детали заявки\n" +
+      "/chats - активные чат-сессии\n\n" +
       "Для получения подробной справки используйте /help",
   );
 });

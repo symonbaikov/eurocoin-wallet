@@ -181,3 +181,134 @@ export async function getAllInternalRequests(): Promise<InternalRequest[]> {
 
   return result.rows;
 }
+
+// ===== CHATBOT SESSIONS =====
+
+export interface ChatbotSession {
+  id: string;
+  user_wallet_address: string;
+  telegram_chat_id?: number | null;
+  locale: string;
+  is_admin_mode: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ChatbotMessage {
+  id: string;
+  session_id: string;
+  type: "user" | "bot" | "admin";
+  text: string;
+  translated_text?: string | null;
+  is_translated: boolean;
+  is_admin_response: boolean;
+  created_at: Date;
+}
+
+export async function createChatbotSession(data: {
+  userWalletAddress: string;
+  locale: string;
+}): Promise<ChatbotSession> {
+  const result = await query(
+    `INSERT INTO chatbot_sessions (user_wallet_address, locale) 
+     VALUES ($1, $2) 
+     RETURNING *`,
+    [data.userWalletAddress, data.locale],
+  );
+
+  return result.rows[0];
+}
+
+export async function getChatbotSessionById(id: string): Promise<ChatbotSession | null> {
+  const result = await query("SELECT * FROM chatbot_sessions WHERE id = $1", [id]);
+
+  if (result.rows.length === 0) {
+    return null;
+  }
+
+  return result.rows[0];
+}
+
+export async function getChatbotSessionByWallet(
+  walletAddress: string,
+): Promise<ChatbotSession | null> {
+  const result = await query(
+    "SELECT * FROM chatbot_sessions WHERE user_wallet_address = $1 ORDER BY created_at DESC LIMIT 1",
+    [walletAddress],
+  );
+
+  if (result.rows.length === 0) {
+    return null;
+  }
+
+  return result.rows[0];
+}
+
+export async function updateChatbotSession(
+  sessionId: string,
+  updates: Partial<ChatbotSession>,
+): Promise<ChatbotSession> {
+  const updatesList = Object.entries(updates)
+    .filter(([_, value]) => value !== undefined)
+    .map(([key], index) => `${key} = $${index + 2}`)
+    .join(", ");
+
+  const values = Object.values(updates).filter((v) => v !== undefined);
+
+  const result = await query(
+    `UPDATE chatbot_sessions SET ${updatesList} WHERE id = $1 RETURNING *`,
+    [sessionId, ...values],
+  );
+
+  return result.rows[0];
+}
+
+export async function createChatbotMessage(data: {
+  sessionId: string;
+  type: "user" | "bot" | "admin";
+  text: string;
+  translatedText?: string;
+  isTranslated?: boolean;
+  isAdminResponse?: boolean;
+}): Promise<ChatbotMessage> {
+  const result = await query(
+    `INSERT INTO chatbot_messages 
+     (session_id, type, text, translated_text, is_translated, is_admin_response) 
+     VALUES ($1, $2, $3, $4, $5, $6) 
+     RETURNING *`,
+    [
+      data.sessionId,
+      data.type,
+      data.text,
+      data.translatedText || null,
+      data.isTranslated || false,
+      data.isAdminResponse || false,
+    ],
+  );
+
+  // Update session updated_at
+  await query("UPDATE chatbot_sessions SET updated_at = CURRENT_TIMESTAMP WHERE id = $1", [
+    data.sessionId,
+  ]);
+
+  return result.rows[0];
+}
+
+export async function getChatbotMessagesBySession(sessionId: string): Promise<ChatbotMessage[]> {
+  const result = await query(
+    "SELECT * FROM chatbot_messages WHERE session_id = $1 ORDER BY created_at ASC",
+    [sessionId],
+  );
+
+  return result.rows;
+}
+
+export async function getActiveChatbotSessions(): Promise<ChatbotSession[]> {
+  const result = await query(
+    `SELECT * FROM chatbot_sessions 
+     WHERE updated_at > NOW() - INTERVAL '24 hours' 
+     ORDER BY updated_at DESC`,
+  );
+
+  return result.rows;
+}

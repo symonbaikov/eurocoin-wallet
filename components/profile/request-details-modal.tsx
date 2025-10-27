@@ -52,7 +52,7 @@ export function RequestDetailsModal({ open, onClose, request }: RequestDetailsMo
                 <p className="dark:text-dark-foregroundMuted mb-1 text-xs font-semibold uppercase tracking-wide text-foregroundMuted">
                   {key}
                 </p>
-                <p className="dark:text-dark-foreground break-words text-sm text-foreground">
+                <p className="dark:text-dark-foreground break-all text-sm text-foreground">
                   {String(value)}
                 </p>
               </div>

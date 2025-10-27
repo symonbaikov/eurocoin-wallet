@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
@@ -24,6 +25,7 @@ const initialState: FormState = {
 };
 
 export function InternalRequestForm() {
+  const { address } = useAccount();
   const [form, setForm] = useState<FormState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const t = useTranslation();
@@ -78,13 +80,16 @@ export function InternalRequestForm() {
     setIsSubmitting(true);
 
     try {
-      // Send request to API
+      // Send request to API with wallet address
       const response = await fetch("/api/submit-request", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          walletAddress: address,
+        }),
       });
 
       const data = await response.json();
@@ -95,6 +100,9 @@ export function InternalRequestForm() {
 
       // Trigger confetti effect
       triggerConfetti();
+
+      // Dispatch event to update investigation progress
+      window.dispatchEvent(new CustomEvent("new-request-submitted", { detail: data }));
 
       toast.success(t("internalForm.successTitle"));
       setForm(initialState);

@@ -24,6 +24,7 @@ const translations: Messages = {
         exchange: "Обменник",
         faq: "FAQ",
         contact: "Связаться",
+        investigation: "Расследование",
       },
       footer: {
         contact: "Контакты: treasury@company.io",
@@ -415,6 +416,7 @@ const translations: Messages = {
         exchange: "Exchange",
         faq: "FAQ",
         contact: "Contact",
+        investigation: "Investigation",
       },
       footer: {
         contact: "Contact: treasury@company.io",
