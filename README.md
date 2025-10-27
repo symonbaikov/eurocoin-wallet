@@ -90,6 +90,34 @@ pnpm dev
 
 Visit [http://localhost:3000](http://localhost:3000)
 
+### Docker
+
+You can run the project inside containers—with continuous health-check logging per service—without installing Node.js locally.
+
+#### Development mode
+
+```bash
+docker compose -f docker/docker-compose.dev.yml up --build
+```
+
+The dev server will be available at [http://localhost:3000](http://localhost:3000). Source code is mounted for hot reloading. Health logs appear as:
+
+```
+[health][web-dev][info] 2025-10-27T15:00:07Z status=200 OK
+```
+
+#### Production-like mode
+
+```bash
+docker compose -f docker/docker-compose.prod.yml up --build -d
+```
+
+Override environment variables as needed via `.env.local` or `docker compose ... -e VAR=value`. Follow logs with:
+
+```bash
+docker compose -f docker/docker-compose.prod.yml logs -f
+```
+
 ### Environment Variables
 
 ```env
