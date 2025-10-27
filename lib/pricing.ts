@@ -22,8 +22,7 @@ const parseNumber = (value: string | undefined): number | null => {
 };
 
 const pricingConfig: PricingConfig = {
-  source:
-    (process.env.NEXT_PUBLIC_PRICE_SOURCE as PriceSource) ?? "fixed",
+  source: (process.env.NEXT_PUBLIC_PRICE_SOURCE as PriceSource) ?? "fixed",
   fixedPrice: parseNumber(process.env.NEXT_PUBLIC_TOKEN_PRICE_USD),
   revalidate: parseNumber(process.env.NEXT_PUBLIC_PRICE_REVALIDATE_MS) ?? 60_000,
 };
@@ -58,10 +57,7 @@ const fetchFromCoinGecko = async (): Promise<number | null> => {
       throw new Error(`Failed to fetch price: ${response.status}`);
     }
 
-    const data = (await response.json()) as Record<
-      string,
-      { usd: number }
-    >;
+    const data = (await response.json()) as Record<string, { usd: number }>;
     const value = data[coingeckoId]?.usd;
 
     if (typeof value !== "number" || Number.isNaN(value)) {

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { useExchangeRate } from "@/hooks/use-exchange-rate";
+import { useTokenPrice } from "@/hooks/use-token-price";
 import { useTranslation } from "@/hooks/use-translation";
 
 export function ExchangeSection() {
@@ -18,6 +19,7 @@ export function ExchangeSection() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { USD_RUB, loading: rateLoading } = useExchangeRate();
+  const { priceUsd, isLoading: isPriceLoading } = useTokenPrice({ refetchInterval: 60_000 });
   const t = useTranslation();
 
   useEffect(() => {
@@ -27,18 +29,20 @@ export function ExchangeSection() {
   }, []);
 
   useEffect(() => {
-    if (!isMounted || rateLoading) return;
+    if (!isMounted || rateLoading || isPriceLoading || priceUsd === null) return;
 
-    // Calculate RUB amount based on token amount
-    // 1 TOKEN = 1 USD, so we use USD_RUB rate
+    // Calculate RUB amount based on token amount and real EURC price
+    // Use dynamic EURC price from CoinGecko
     const tokens = parseFloat(tokenAmount) || 0;
+    const tokenPriceUsd = priceUsd; // Real EURC price in USD
     const rate = USD_RUB; // Real USD/RUB rate
     const commission = 0.015; // 1.5% commission
-    const rubs = tokens * rate * (1 - commission);
+    // Calculate: tokens * EURC_price_in_USD * USD_to_RUB_rate * (1 - commission)
+    const rubs = tokens * tokenPriceUsd * rate * (1 - commission);
     setTimeout(() => {
       setRubAmount(Math.round(rubs).toLocaleString("ru-RU"));
     }, 100);
-  }, [tokenAmount, isMounted, USD_RUB, rateLoading]);
+  }, [tokenAmount, isMounted, USD_RUB, rateLoading, priceUsd, isPriceLoading]);
 
   const handleTokenAmountChange = (value: string) => {
     // Remove non-numeric characters except dots
@@ -47,10 +51,11 @@ export function ExchangeSection() {
   };
 
   const copyTemplate = () => {
+    const tokenPriceUsd = priceUsd || 1; // Fallback to 1 if price not loaded yet
     const template = `Заявка на обмен токенов:
 Сумма: ${tokenAmount} TOKEN
 Получить: ~${rubAmount} RUB
-Курс: ${USD_RUB.toFixed(2)} RUB за 1 TOKEN (1 TOKEN = 1 USD)
+Курс: ${(tokenPriceUsd * USD_RUB).toFixed(2)} RUB за 1 TOKEN (1 TOKEN = ${tokenPriceUsd.toFixed(2)} USD)
 Комиссия: 1.5%
 Адрес кошелька: ${formData.walletAddress || "не указан"}
 Email: ${formData.email || "не указан"}`;
@@ -68,6 +73,7 @@ Email: ${formData.email || "не указан"}`;
     }
 
     setIsSubmitting(true);
+    const tokenPriceUsd = priceUsd || 1; // Fallback to 1 if price not loaded yet
 
     try {
       const response = await fetch("/api/submit-exchange-request", {
@@ -82,7 +88,7 @@ Email: ${formData.email || "не указан"}`;
           email: formData.email,
           comment: formData.comment,
           commission: "1.5%",
-          rate: `${USD_RUB.toFixed(2)} RUB за 1 TOKEN (1 TOKEN = 1 USD)`,
+          rate: `${(tokenPriceUsd * USD_RUB).toFixed(2)} RUB за 1 TOKEN (1 TOKEN = ${tokenPriceUsd.toFixed(2)} USD)`,
         }),
       });
 
@@ -199,9 +205,9 @@ Email: ${formData.email || "не указан"}`;
                   {t("exchange.details.exchangeRate")}
                 </span>
                 <span className="dark:text-dark-foreground font-medium text-foreground">
-                  {rateLoading
+                  {rateLoading || isPriceLoading || priceUsd === null
                     ? t("exchange.details.rateLoading")
-                    : `${USD_RUB.toFixed(2)} ${t("exchange.details.rateFormat")}`}
+                    : `${((priceUsd || 1) * USD_RUB).toFixed(2)} ${t("exchange.details.rateFormat")}`}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -209,7 +215,9 @@ Email: ${formData.email || "не указан"}`;
                   {t("exchange.details.equivalent")}
                 </span>
                 <span className="dark:text-dark-foreground font-medium text-foreground">
-                  {t("exchange.details.tokenUsd")}
+                  {isPriceLoading || priceUsd === null
+                    ? "Loading..."
+                    : `1 TOKEN = $${(priceUsd || 1).toFixed(2)}`}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
