@@ -390,7 +390,7 @@ bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
       requestId,
       dbStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
     );
-    
+
     // Also update current_stage field
     await updateInternalRequestStage(requestId, newStage);
 
