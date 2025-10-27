@@ -131,7 +131,15 @@ export function SiteHeader() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["wallet", "exchange", "contact", "reviews", "investigation", "token-balance", "faq"];
+      // Order matters - must match the actual page order
+      const sections = [
+        "exchange",
+        "contact",
+        "wallet",
+        "investigation",
+        "token-balance",
+        "faq",
+      ];
       const scrollPosition = window.scrollY + 100; // Offset for header
 
       for (const section of sections) {
