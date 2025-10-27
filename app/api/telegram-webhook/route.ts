@@ -437,6 +437,12 @@ bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
     }
   } catch (error) {
     console.error("[telegram-webhook] Error updating investigation status:", error);
+    console.error("[telegram-webhook] Error details:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      requestId,
+      newStage,
+    });
     ctx.answerCbQuery("❌ Ошибка при обновлении статуса");
   }
 });
