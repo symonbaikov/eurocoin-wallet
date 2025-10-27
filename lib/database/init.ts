@@ -13,9 +13,46 @@ export async function initializeDatabase() {
     // Execute schema
     await query(schema);
 
+    // Apply migrations
+    await applyMigrations();
+
     console.log("Database schema initialized successfully");
   } catch (error) {
     console.error("Failed to initialize database schema:", error);
+    throw error;
+  }
+}
+
+async function applyMigrations() {
+  try {
+    console.log("Applying database migrations...");
+
+    // Migration: Add current_stage column
+    const checkResult = await query(`
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_name = 'internal_requests' 
+      AND column_name = 'current_stage'
+    `);
+
+    if (checkResult.rows.length === 0) {
+      console.log("Applying migration: add_current_stage column");
+      
+      await query(`
+        ALTER TABLE internal_requests 
+        ADD COLUMN current_stage VARCHAR(50)
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS idx_internal_requests_stage 
+        ON internal_requests(current_stage)
+      `);
+
+      console.log("✅ Migration completed: current_stage column added");
+    } else {
+      console.log("✅ Migration already applied: current_stage column exists");
+    }
+  } catch (error) {
+    console.error("Failed to apply migrations:", error);
     throw error;
   }
 }
