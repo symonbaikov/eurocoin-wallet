@@ -942,6 +942,7 @@ const translations: Messages = {
       },
     },
   },
+  },
 
 export const availableLocales: Locale[] = ["ru", "en"];
 
