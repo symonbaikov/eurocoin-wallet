@@ -84,7 +84,9 @@ export function ProfileIcon() {
                   {address.slice(2, 4).toUpperCase()}
                 </div>
                 <div className="flex-1">
-                  <div className="font-medium text-foreground dark:text-dark-foreground">{formatAddress(address)}</div>
+                  <div className="dark:text-dark-foreground font-medium text-foreground">
+                    {formatAddress(address)}
+                  </div>
                   <div className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
                     MetaMask
                   </div>

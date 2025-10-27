@@ -14,7 +14,7 @@ interface ChatWindowProps {
 
 export function ChatWindow({ userAddress }: ChatWindowProps) {
   const { locale } = useLanguage();
-  const { messages, sendMessage, addMessage, loading } = useChatbot({
+  const { messages, sendMessage, addMessage, updateMessage, loading } = useChatbot({
     locale,
     walletAddress: userAddress as `0x${string}` | undefined,
   });
@@ -170,8 +170,8 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
             key={message.id}
             message={message}
             currentLocale={locale}
-            onTranslate={() => {
-              // Translate logic will be handled by hook if needed
+            onTranslate={(translated) => {
+              updateMessage(message.id, translated);
             }}
           />
         ))}

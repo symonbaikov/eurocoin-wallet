@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 interface ChatMessageProps {
   message: ChatMessageType;
   currentLocale: "ru" | "en";
-  onTranslate: () => void;
+  onTranslate: (translated: string) => void;
 }
 
 export function ChatMessage({ message, onTranslate }: ChatMessageProps) {

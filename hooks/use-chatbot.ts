@@ -13,6 +13,7 @@ interface UseChatbotResult {
   messages: ChatMessageType[];
   sendMessage: (text: string) => Promise<void>;
   addMessage: (message: Omit<ChatMessageType, "id" | "timestamp">) => void;
+  updateMessage: (messageId: string, translated: string) => void;
   loading: boolean;
   resetChat: () => void;
 }
@@ -32,6 +33,14 @@ export function useChatbot({ locale, walletAddress }: UseChatbotOptions): UseCha
 
   const resetChat = useCallback(() => {
     setMessages([]);
+  }, []);
+
+  const updateMessage = useCallback((messageId: string, translated: string) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId ? { ...msg, translated, isTranslated: true } : msg,
+      ),
+    );
   }, []);
 
   const sendMessage = useCallback(
@@ -95,6 +104,7 @@ export function useChatbot({ locale, walletAddress }: UseChatbotOptions): UseCha
     messages,
     sendMessage,
     addMessage,
+    updateMessage,
     loading,
     resetChat,
   };
