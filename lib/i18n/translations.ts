@@ -862,8 +862,7 @@ const translations: Messages = {
       backToLogin: "Back to login",
       requests: {
         title: "Withdrawal Requests",
-        description:
-          "Submit withdrawal requests through MetaMask using Ethereum smart contracts",
+        description: "Submit withdrawal requests through MetaMask using Ethereum smart contracts",
         content: `<p>Our platform allows you to submit withdrawal requests directly through your MetaMask wallet.</p>
         
 <p><strong>How it works:</strong></p>
