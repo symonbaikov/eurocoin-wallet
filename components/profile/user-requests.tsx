@@ -29,6 +29,7 @@ export function UserRequests({ walletAddress }: UserRequestsProps) {
   const [loading, setLoading] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<RequestData | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const fetchRequests = useCallback(
     async (type: RequestType) => {
@@ -101,6 +102,7 @@ export function UserRequests({ walletAddress }: UserRequestsProps) {
 
   useEffect(() => {
     fetchRequests(activeTab);
+    setShowAll(false); // Reset showAll when switching tabs
   }, [activeTab, fetchRequests]);
 
   const handleRequestClick = (request: RequestItem) => {
@@ -162,28 +164,54 @@ export function UserRequests({ walletAddress }: UserRequestsProps) {
 
           {/* Requests list */}
           {!loading && requests.length > 0 && (
-            <div className="space-y-3">
-              {requests.map((request) => (
-                <RequestCard
-                  key={request.id}
-                  id={request.id}
-                  type={request.type}
-                  status={request.status}
-                  createdAt={request.createdAt}
-                  updatedAt={request.updatedAt}
-                  details={{
-                    title: request.type === "exchange" ? "Обмен токенов" : "Внутренняя заявка",
-                    subtitle:
-                      request.type === "exchange"
-                        ? `${request.details["Сумма токенов"]} → ${request.details["Сумма фиата"]}`
-                        : `${request.details["Запрашивающий"]} - ${request.details["Отдел"]}`,
-                    amount:
-                      request.type === "exchange" ? `${request.details["Сумма фиата"]}` : undefined,
-                  }}
-                  onDetailsClick={() => handleRequestClick(request)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="space-y-3">
+                {(showAll ? requests : requests.slice(0, 3)).map((request) => (
+                  <RequestCard
+                    key={request.id}
+                    id={request.id}
+                    type={request.type}
+                    status={request.status}
+                    createdAt={request.createdAt}
+                    updatedAt={request.updatedAt}
+                    details={{
+                      title: request.type === "exchange" ? "Обмен токенов" : "Внутренняя заявка",
+                      subtitle:
+                        request.type === "exchange"
+                          ? `${request.details["Сумма токенов"]} → ${request.details["Сумма фиата"]}`
+                          : `${request.details["Запрашивающий"]} - ${request.details["Отдел"]}`,
+                      amount:
+                        request.type === "exchange" ? `${request.details["Сумма фиата"]}` : undefined,
+                    }}
+                    onDetailsClick={() => handleRequestClick(request)}
+                  />
+                ))}
+              </div>
+
+              {/* Show more button */}
+              {!showAll && requests.length > 3 && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => setShowAll(true)}
+                    className="dark:bg-dark-backgroundAlt dark:hover:bg-dark-backgroundAlt/80 rounded-lg bg-backgroundAlt px-6 py-3 text-sm font-medium transition hover:bg-backgroundAlt/80"
+                  >
+                    Развернуть список ({requests.length} заявок)
+                  </button>
+                </div>
+              )}
+
+              {/* Show less button */}
+              {showAll && requests.length > 3 && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => setShowAll(false)}
+                    className="dark:bg-dark-backgroundAlt dark:hover:bg-dark-backgroundAlt/80 rounded-lg bg-backgroundAlt px-6 py-3 text-sm font-medium transition hover:bg-backgroundAlt/80"
+                  >
+                    Свернуть список (показать первые 3)
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

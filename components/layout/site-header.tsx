@@ -12,8 +12,8 @@ import { useLanguage } from "@/components/providers/language-provider";
 const navItems = [
   { href: "/#exchange", key: "common.nav.exchange" },
   { href: "/#contact", key: "common.nav.contact" },
-  { href: "/#investigation", key: "common.nav.investigation" },
   { href: "/#wallet", key: "common.nav.wallet" },
+  { href: "/#investigation", key: "common.nav.investigation" },
   { href: "/#token-balance", key: "common.nav.token" },
   { href: "/#faq", key: "common.nav.faq" },
 ];
@@ -132,40 +132,34 @@ export function SiteHeader() {
   useEffect(() => {
     const handleScroll = () => {
       const sections = ["exchange", "contact", "wallet", "investigation", "token-balance", "faq"];
-      const scrollPosition = window.scrollY;
-      const offset = 200; // Offset before considering section as active
-      
+      const scrollPosition = window.scrollY + 100; // Header offset
+
       let activeSection = "";
 
-      // Go through sections in reverse order to find the last one we've scrolled past
+      // Find the section whose top is closest to but before the current scroll position
       for (let i = sections.length - 1; i >= 0; i--) {
         const section = sections[i];
         const element = document.getElementById(section);
-        
+
         if (element) {
           const rect = element.getBoundingClientRect();
           const elementTop = rect.top + window.scrollY;
-          
-          // If scroll position is past the start of this section (with offset)
-          if (scrollPosition >= elementTop - offset) {
+
+          // If we've scrolled past the beginning of this section
+          if (scrollPosition > elementTop - 150) {
             activeSection = section;
             break;
           }
         }
       }
 
-      // Special case: if we're at the very top, don't highlight anything
-      if (scrollPosition < 100) {
-        setActiveSection("");
-      } else {
-        setActiveSection(activeSection);
-      }
+      setActiveSection(activeSection);
     };
 
     // Check initial position
     handleScroll();
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
