@@ -1264,7 +1264,7 @@ export function getTranslation(
 
 export const availableLocales: Locale[] = ["ru", "en"];
 
-export const defaultLocale: Locale = "ru";
+export const defaultLocale: Locale = "en";
 
 export function isLocale(value: string | null | undefined): value is Locale {
   return value === "ru" || value === "en";
