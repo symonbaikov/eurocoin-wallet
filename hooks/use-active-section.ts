@@ -19,24 +19,28 @@ export function useActiveSection() {
         setActiveSection(hash);
       }
     };
-    
+
     checkHash();
 
     // Listen for hash changes (navigation clicks)
     const handleHashChange = () => {
+      console.log("[useActiveSection] Hashchange event triggered!");
       checkHash();
     };
-
+    
     window.addEventListener("hashchange", handleHashChange);
+    console.log("[useActiveSection] Hashchange listener added");
 
     // Function to setup observer
     const setupObserver = () => {
+      console.log("[useActiveSection] Setting up observer...");
+      
       // Cancel previous observer if exists
       if (observer) {
         const elements = sections.map((id) => document.getElementById(id)).filter(Boolean);
         elements.forEach((el) => observer?.unobserve(el!));
       }
-
+      
       const observerOptions = {
         root: null,
         rootMargin: "-20% 0px -60% 0px",
@@ -60,11 +64,19 @@ export function useActiveSection() {
 
       // Observe all sections
       const sectionElements = sections
-        .map((id) => document.getElementById(id))
+        .map((id) => {
+          const element = document.getElementById(id);
+          console.log(`[useActiveSection] Looking for section "${id}":`, element ? "FOUND" : "NOT FOUND");
+          return element;
+        })
         .filter((el): el is HTMLElement => el !== null);
 
+      console.log("[useActiveSection] Found sections:", sectionElements.map(el => el.id));
+      
       if (observer && sectionElements.length > 0) {
         sectionElements.forEach((section) => observer!.observe(section));
+      } else {
+        console.log("[useActiveSection] No sections found or observer is null!");
       }
     };
 
