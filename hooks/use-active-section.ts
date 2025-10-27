@@ -11,11 +11,13 @@ export function useActiveSection() {
     // Check initial hash
     const checkHash = () => {
       const hash = window.location.hash.slice(1); // Remove '#'
+      console.log("[useActiveSection] Hash changed:", hash);
       if (hash && sections.includes(hash)) {
+        console.log("[useActiveSection] Setting active section from hash:", hash);
         setActiveSection(hash);
       }
     };
-
+    
     checkHash();
 
     // Listen for hash changes (navigation clicks)
@@ -35,7 +37,9 @@ export function useActiveSection() {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const sectionId = entry.target.id;
+          console.log("[useActiveSection] Section intersecting:", sectionId);
           if (sections.includes(sectionId)) {
+            console.log("[useActiveSection] Setting active section:", sectionId);
             setActiveSection(sectionId);
           }
         }

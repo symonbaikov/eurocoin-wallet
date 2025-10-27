@@ -33,7 +33,7 @@ export function PageTitle({ title, description, enableSectionTracking = false }:
 
   const dynamicDescription = useMemo(() => {
     if (!enableSectionTracking) return description;
-    
+
     const descriptions: Record<string, string> = {
       exchange: "Convert corporate tokens to fiat via Telegram",
       contact: "Submit internal token operation requests",
