@@ -12,6 +12,8 @@ interface DexscreenerChartProps {
 export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
   const t = useTranslation();
   const toggleLockRef = useRef(false);
+  const [iframeKey, setIframeKey] = useState(0);
+  const prevThemeRef = useRef<string>("");
 
   // Load saved theme from localStorage or default to 'dark'
   const [dexTheme, setDexTheme] = useState<string>(() => {
@@ -21,11 +23,25 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
     return "dark";
   });
 
+  // Initialize ref
+  useEffect(() => {
+    prevThemeRef.current = dexTheme;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Save theme preference to localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("dexTheme", dexTheme);
     }
+  }, [dexTheme]);
+
+  // Force iframe reload when theme changes
+  useEffect(() => {
+    if (prevThemeRef.current && prevThemeRef.current !== dexTheme) {
+      setIframeKey((prev) => prev + 1);
+    }
+    prevThemeRef.current = dexTheme;
   }, [dexTheme]);
 
   // Toggle theme function with lock to prevent spam clicks
@@ -106,7 +122,7 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
           style={{ paddingBottom: "56.25%", height: 0, overflow: "hidden" }}
         >
           <iframe
-            key={dexUrl} // Force reload when URL changes
+            key={`dex-${dexTheme}-${iframeKey}`} // Force reload when theme changes
             src={dexUrl}
             className="absolute left-0 top-0 h-full w-full border-0"
             title="Dexscreener Chart"
