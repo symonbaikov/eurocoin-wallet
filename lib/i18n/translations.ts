@@ -287,7 +287,7 @@ const translations: Messages = {
       description:
         "Интерфейс для конвертации корпоративных токенов в фиатные средства с передачей заявки через Telegram-бота. Функционал представляется в виде заглушек.",
       calculatorTitle: "Калькулятор обмена",
-      calculatorDescription: "Введите сумму и получите предварительный расчёт. Значения статичны.",
+      calculatorDescription: "Введите сумму и получите предварительный расчёт.",
       qrTitle: "QR-код связи",
       qrDescription: "Сканируйте, чтобы открыть чат с корпоративным ботом.",
       faqTitle: "FAQ по обмену",
@@ -733,7 +733,7 @@ const translations: Messages = {
       description:
         "Interface for converting corporate tokens to fiat with a request sent via Telegram bot. Presented as placeholders.",
       calculatorTitle: "Conversion calculator",
-      calculatorDescription: "Enter an amount to see a pre-calculated value. Static for now.",
+      calculatorDescription: "Enter an amount to see a pre-calculated value.",
       qrTitle: "QR code",
       qrDescription: "Scan to open a chat with the corporate bot.",
       faqTitle: "Exchange FAQ",

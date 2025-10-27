@@ -132,14 +132,19 @@ Email: ${formData.email || "не указан"}`;
         <CardHeader>
           <div className="mb-8 text-center">
             <h2 className="mb-4 font-display text-4xl font-bold tracking-tight">
-              <span className="bg-gradient-to-r from-accent to-accentAlt bg-clip-text text-transparent">
-                Telegram
-              </span>{" "}
-              <span className="text-foreground dark:text-white">Обменник</span>
+              {t("exchange.title").includes("Обменник") ? (
+                <>
+                  <span className="bg-gradient-to-r from-accent to-accentAlt bg-clip-text text-transparent">
+                    Telegram
+                  </span>{" "}
+                  <span className="text-foreground dark:text-white">Обменник</span>
+                </>
+              ) : (
+                <span className="text-foreground dark:text-white">{t("exchange.title")}</span>
+              )}
             </h2>
             <CardDescription className="text-lg">
-              Интерфейс для конвертации корпоративных токенов в фиатные средства с передачей заявки
-              через Telegram-бота.
+              {t("exchange.description")}
             </CardDescription>
           </div>
         </CardHeader>

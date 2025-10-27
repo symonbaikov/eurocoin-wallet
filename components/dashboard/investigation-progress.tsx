@@ -28,8 +28,18 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
         completed: true,
         current: false,
       },
-      { id: "checking", label: t("investigation.stages.checking"), completed: true, current: false },
-      { id: "analyzing", label: t("investigation.stages.analyzing"), completed: true, current: true },
+      {
+        id: "checking",
+        label: t("investigation.stages.checking"),
+        completed: true,
+        current: false,
+      },
+      {
+        id: "analyzing",
+        label: t("investigation.stages.analyzing"),
+        completed: true,
+        current: true,
+      },
       {
         id: "investigating",
         label: t("investigation.stages.investigating"),
