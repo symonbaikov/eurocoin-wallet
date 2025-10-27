@@ -1,108 +1,98 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-export function useActiveSection() {
-  const [activeSection, setActiveSection] = useState<string>("home");
+const SECTION_IDS = [
+  "exchange",
+  "contact",
+  "wallet",
+  "investigation",
+  "token-balance",
+  "faq",
+];
+
+const DEFAULT_SECTION = "home";
+
+export function useActiveSection(): string {
+  const [activeSection, setActiveSection] = useState<string>(DEFAULT_SECTION);
+
+  const sections = useMemo(() => SECTION_IDS, []);
 
   useEffect(() => {
-    const sections = ["exchange", "contact", "wallet", "investigation", "token-balance", "faq"];
-    let observer: IntersectionObserver | null = null;
-    let checkInterval: NodeJS.Timeout | null = null;
+    if (typeof window === "undefined") {
+      return undefined;
+    }
 
-    // Check initial hash and update immediately
-    const checkHash = () => {
-      const hash = window.location.hash.slice(1); // Remove '#'
-      console.log("[useActiveSection] Hash check:", hash);
-      if (hash && sections.includes(hash)) {
-        console.log("[useActiveSection] Setting active section from hash:", hash);
-        setActiveSection(hash);
-      }
+    const getSectionFromHash = (): string | null => {
+      const hash = window.location.hash?.slice(1);
+      return hash && sections.includes(hash) ? hash : null;
     };
 
-    checkHash();
+    const computeActiveSection = (): string => {
+      const scrollPosition = window.scrollY + 160; // account for sticky header
 
-    // Listen for hash changes (navigation clicks)
+      let current: string = DEFAULT_SECTION;
+      for (const id of sections) {
+        const element = document.getElementById(id);
+        if (!element) {
+          continue;
+        }
+
+        const elementTop = element.offsetTop;
+        if (scrollPosition >= elementTop) {
+          current = id;
+        } else {
+          break;
+        }
+      }
+
+      return current;
+    };
+
+    const applyActiveSection = (next: string) => {
+      setActiveSection((prev) => (prev === next ? prev : next));
+    };
+
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (ticking) {
+        return;
+      }
+
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        ticking = false;
+        const next = computeActiveSection();
+        applyActiveSection(next);
+      });
+    };
+
     const handleHashChange = () => {
-      console.log("[useActiveSection] Hashchange event triggered!");
-      checkHash();
-    };
-
-    window.addEventListener("hashchange", handleHashChange);
-    console.log("[useActiveSection] Hashchange listener added");
-
-    // Function to setup observer
-    const setupObserver = () => {
-      console.log("[useActiveSection] Setting up observer...");
-
-      // Cancel previous observer if exists
-      if (observer) {
-        const elements = sections.map((id) => document.getElementById(id)).filter(Boolean);
-        elements.forEach((el) => observer?.unobserve(el!));
-      }
-
-      const observerOptions = {
-        root: null,
-        rootMargin: "-20% 0px -60% 0px",
-        threshold: 0.3,
-      };
-
-      const observerCallback = (entries: IntersectionObserverEntry[]) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const sectionId = entry.target.id;
-            console.log("[useActiveSection] Section intersecting:", sectionId);
-            if (sections.includes(sectionId)) {
-              console.log("[useActiveSection] Setting active section from scroll:", sectionId);
-              setActiveSection(sectionId);
-            }
-          }
-        });
-      };
-
-      observer = new IntersectionObserver(observerCallback, observerOptions);
-
-      // Observe all sections
-      const sectionElements = sections
-        .map((id) => {
-          const element = document.getElementById(id);
-          console.log(
-            `[useActiveSection] Looking for section "${id}":`,
-            element ? "FOUND" : "NOT FOUND",
-          );
-          return element;
-        })
-        .filter((el): el is HTMLElement => el !== null);
-
-      console.log(
-        "[useActiveSection] Found sections:",
-        sectionElements.map((el) => el.id),
-      );
-
-      if (observer && sectionElements.length > 0) {
-        sectionElements.forEach((section) => observer!.observe(section));
+      const fromHash = getSectionFromHash();
+      if (fromHash) {
+        applyActiveSection(fromHash);
       } else {
-        console.log("[useActiveSection] No sections found or observer is null!");
+        handleScroll();
       }
     };
 
-    // Try to setup observer immediately
-    setupObserver();
+    // Initialize from hash or current scroll position
+    const initialFromHash = getSectionFromHash();
+    if (initialFromHash) {
+      applyActiveSection(initialFromHash);
+    } else {
+      handleScroll();
+    }
 
-    // Also check periodically to catch late-rendered sections
-    checkInterval = setInterval(() => {
-      setupObserver();
-    }, 1000);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("hashchange", handleHashChange);
 
     return () => {
-      if (checkInterval) clearInterval(checkInterval);
+      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("hashchange", handleHashChange);
-      if (observer) {
-        const elements = sections.map((id) => document.getElementById(id)).filter(Boolean);
-        elements.forEach((el) => observer?.unobserve(el!));
-      }
     };
-  }, []);
+  }, [sections]);
 
   return activeSection;
 }
