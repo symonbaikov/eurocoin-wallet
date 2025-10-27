@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/use-translation";
@@ -47,7 +47,9 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
     "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586";
 
   // Create Dexscreener embed URL with manual theme control
-  const dexUrl = `https://dexscreener.com/ethereum/${address}?embed=1&theme=${dexTheme}&trades=0&info=0`;
+  const dexUrl = useMemo(() => {
+    return `https://dexscreener.com/ethereum/${address}?embed=1&theme=${dexTheme}&trades=0&info=0`;
+  }, [address, dexTheme]);
 
   return (
     <Card>
@@ -104,7 +106,7 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
           style={{ paddingBottom: "56.25%", height: 0, overflow: "hidden" }}
         >
           <iframe
-            key={dexTheme} // Force reload when theme changes
+            key={dexUrl} // Force reload when URL changes
             src={dexUrl}
             className="absolute left-0 top-0 h-full w-full border-0"
             title="Dexscreener Chart"
