@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "@/hooks/use-translation";
 
 interface InvestigationStage {
   id: string;
@@ -15,13 +16,14 @@ interface InvestigationProgressProps {
 }
 
 export function InvestigationProgress({ requestId }: InvestigationProgressProps) {
+  const t = useTranslation();
   const [stages, setStages] = useState<InvestigationStage[]>([
-    { id: "submitted", label: "Заявка подана", completed: true, current: false },
-    { id: "checking", label: "Проверка документов", completed: true, current: false },
-    { id: "analyzing", label: "Анализ транзакций", completed: true, current: true },
-    { id: "investigating", label: "Расследование", completed: false, current: false },
-    { id: "recovering", label: "Восстановление средств", completed: false, current: false },
-    { id: "completed", label: "Завершено", completed: false, current: false },
+    { id: "submitted", label: t("investigation.stages.submitted"), completed: true, current: false },
+    { id: "checking", label: t("investigation.stages.checking"), completed: true, current: false },
+    { id: "analyzing", label: t("investigation.stages.analyzing"), completed: true, current: true },
+    { id: "investigating", label: t("investigation.stages.investigating"), completed: false, current: false },
+    { id: "recovering", label: t("investigation.stages.recovering"), completed: false, current: false },
+    { id: "completed", label: t("investigation.stages.completed"), completed: false, current: false },
   ]);
   // Fetch data immediately on mount
   useEffect(() => {
@@ -102,8 +104,8 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
     <Card>
       <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <CardTitle>Расследование</CardTitle>
-          <CardDescription>Отслеживайте прогресс вашей заявки в реальном времени</CardDescription>
+          <CardTitle>{t("investigation.title")}</CardTitle>
+          <CardDescription>{t("investigation.description")}</CardDescription>
         </div>
         <span
           className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] ${
@@ -112,14 +114,14 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
               : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
           }`}
         >
-          {isCompleted ? "Завершено" : "В обработке"}
+          {isCompleted ? t("investigation.statusCompleted") : t("investigation.statusInProgress")}
         </span>
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         {/* Progress Bar */}
         <div className="space-y-3">
           <div className="dark:text-dark-foregroundMuted flex items-center justify-between text-xs text-foregroundMuted">
-            <span>Прогресс</span>
+            <span>{t("investigation.progress")}</span>
             <span>{progressPercentage}%</span>
           </div>
           <div className="dark:bg-dark-outline h-3 w-full rounded-full bg-outline">
@@ -186,13 +188,13 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
                   {stage.label}
                 </h4>
                 {stage.completed && !stage.current && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Завершено</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t("investigation.statusCompleted")}</p>
                 )}
                 {stage.current && !isCompleted && (
-                  <p className="text-xs text-blue-600 dark:text-blue-400">В процессе...</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">{t("investigation.stageInProgress")}</p>
                 )}
                 {isCompleted && stage.id === "completed" && (
-                  <p className="text-xs text-green-600 dark:text-green-400">Завершено</p>
+                  <p className="text-xs text-green-600 dark:text-green-400">{t("investigation.statusCompleted")}</p>
                 )}
               </div>
             </div>
@@ -201,7 +203,7 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
 
         {/* Additional Info */}
         <p className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
-          Обновление в реальном времени · Следующее обновление через несколько секунд
+          {t("investigation.updating")}
         </p>
       </CardContent>
     </Card>

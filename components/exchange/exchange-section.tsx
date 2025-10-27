@@ -200,7 +200,9 @@ Email: ${formData.email || "не указан"}`;
                   {t("exchange.details.exchangeRate")}
                 </span>
                 <span className="dark:text-dark-foreground font-medium text-foreground">
-                  {rateLoading ? t("exchange.details.rateLoading") : `${USD_RUB.toFixed(2)} ${t("exchange.details.rateFormat")}`}
+                  {rateLoading
+                    ? t("exchange.details.rateLoading")
+                    : `${USD_RUB.toFixed(2)} ${t("exchange.details.rateFormat")}`}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -294,9 +296,15 @@ Email: ${formData.email || "не указан"}`;
                   />
                 </svg>
                 <span className="hidden md:inline">
-                  {isSubmitting ? t("exchange.buttons.submitting") : t("exchange.buttons.submitFull")}
+                  {isSubmitting
+                    ? t("exchange.buttons.submitting")
+                    : t("exchange.buttons.submitFull")}
                 </span>
-                <span className="md:hidden">{isSubmitting ? t("exchange.buttons.submitting") : t("exchange.buttons.submitShort")}</span>
+                <span className="md:hidden">
+                  {isSubmitting
+                    ? t("exchange.buttons.submitting")
+                    : t("exchange.buttons.submitShort")}
+                </span>
               </Button>
               <Button variant="outline" onClick={copyTemplate} className="md:w-auto">
                 <svg
