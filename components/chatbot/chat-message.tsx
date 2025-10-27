@@ -24,34 +24,40 @@ export function ChatMessage({ message, onTranslate }: ChatMessageProps) {
 
   return (
     <div className={cn("flex gap-3", isUser ? "flex-row-reverse" : "flex-row")}>
-      {/* Avatar */}
-      <div
-        className={cn(
-          "relative h-10 w-10 shrink-0 overflow-hidden rounded-full",
-          isUser ? "bg-blue-700" : "",
-        )}
-      >
-        {isUser ? (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/user.png" alt="User avatar" className="h-full w-full object-cover" />
-          </>
-        ) : isAutomatedMessage ? (
-          // Bot avatar for automated messages
-          <div className="flex h-full w-full items-center justify-center bg-blue-600 text-white">
-            🤖
-          </div>
-        ) : (
-          // Specialist avatar for human responses
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/specialist.png"
-              alt="Support specialist"
-              className="h-full w-full object-cover"
-            />
-            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500" />
-          </>
+      {/* Avatar container with online indicator */}
+      <div className="relative">
+        {/* Avatar */}
+        <div
+          className={cn(
+            "h-10 w-10 shrink-0 overflow-hidden rounded-full",
+            isUser ? "bg-blue-700" : "",
+          )}
+        >
+          {isUser ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/user.png" alt="User avatar" className="h-full w-full object-cover" />
+            </>
+          ) : isAutomatedMessage ? (
+            // Bot avatar for automated messages
+            <div className="flex h-full w-full items-center justify-center bg-blue-600 text-white">
+              🤖
+            </div>
+          ) : (
+            // Specialist avatar for human responses
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/specialist.png"
+                alt="Support specialist"
+                className="h-full w-full object-cover"
+              />
+            </>
+          )}
+        </div>
+        {/* Online indicator - positioned outside the avatar */}
+        {!isUser && !isAutomatedMessage && (
+          <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-green-500" />
         )}
       </div>
 
