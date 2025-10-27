@@ -2,7 +2,6 @@
 
 import { Helmet } from "react-helmet-async";
 import { useMemo } from "react";
-import { useTranslation } from "@/hooks/use-translation";
 import { useActiveSection } from "@/hooks/use-active-section";
 
 interface PageTitleProps {
