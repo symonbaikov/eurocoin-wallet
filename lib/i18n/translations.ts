@@ -941,7 +941,6 @@ const translations: Messages = {
         internal: "📝 Internal",
       },
     },
-    },
   },
 };
 
