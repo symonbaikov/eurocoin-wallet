@@ -286,7 +286,7 @@ const translations: Messages = {
     exchange: {
       title: "Telegram обменник",
       description:
-        "Интерфейс для конвертации корпоративных токенов в фиатные средства с передачей заявки через Telegram-бота. Функционал представляется в виде заглушек.",
+        "Интерфейс для конвертации корпоративных токенов в фиатные средства с передачей заявки через Telegram-бота.",
       calculatorTitle: "Калькулятор обмена",
       calculatorDescription: "Введите сумму и получите предварительный расчёт.",
       qrTitle: "QR-код связи",
@@ -414,7 +414,8 @@ const translations: Messages = {
           "Зарегистрируйтесь в личном кабинете и отправьте заявку с документами — наши специалисты начнут предварительный анализ сразу после получения информации.",
       },
       contactCTA: {
-        description: "Свяжитесь с нашей службой поддержки, и мы поможем вам разобраться с любыми вопросами",
+        description:
+          "Свяжитесь с нашей службой поддержки, и мы поможем вам разобраться с любыми вопросами",
         telegramButton: "Написать в Telegram",
         emailButton: "Написать на email",
       },
@@ -788,7 +789,7 @@ const translations: Messages = {
     exchange: {
       title: "Telegram exchange",
       description:
-        "Interface for converting corporate tokens to fiat with a request sent via Telegram bot. Presented as placeholders.",
+        "Interface for converting corporate tokens to fiat with a request sent via Telegram bot.",
       calculatorTitle: "Conversion calculator",
       calculatorDescription: "Enter an amount to see a pre-calculated value.",
       qrTitle: "QR code",
