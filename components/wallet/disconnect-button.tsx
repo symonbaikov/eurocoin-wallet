@@ -5,10 +5,12 @@ import toast from "react-hot-toast";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/hooks/use-translation";
 
 export function DisconnectButton() {
   const { isConnected, isDisconnecting, disconnect } = useWalletConnection();
   const router = useRouter();
+  const t = useTranslation();
 
   if (!isConnected) {
     return null;
@@ -19,20 +21,20 @@ export function DisconnectButton() {
       await disconnect();
       // Remove authentication cookie
       Cookies.remove("metamask_connected");
-      toast.success("Подключение MetaMask завершено. Перенаправляем на страницу входа...");
+      toast.success(t("wallet.disconnected"));
       // Redirect to login page after disconnection
       setTimeout(() => {
         router.push("/login");
       }, 1500);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Не удалось отключить MetaMask.";
+      const message = error instanceof Error ? error.message : t("wallet.error");
       toast.error(message);
     }
   };
 
   return (
     <Button variant="outline" onClick={handleDisconnect} disabled={isDisconnecting}>
-      {isDisconnecting ? "Отключение..." : "Отключить"}
+      {isDisconnecting ? t("profile.connectedWallet.disconnecting") : t("profile.connectedWallet.disconnect")}
     </Button>
   );
 }
