@@ -59,14 +59,14 @@ export function useActiveSection() {
         .map((id) => document.getElementById(id))
         .filter((el): el is HTMLElement => el !== null);
 
-      if (observer) {
-        sectionElements.forEach((section) => observer.observe(section));
+      if (observer && sectionElements.length > 0) {
+        sectionElements.forEach((section) => observer!.observe(section));
       }
     };
-    
+
     // Try to setup observer immediately
     setupObserver();
-    
+
     // Also check periodically to catch late-rendered sections
     checkInterval = setInterval(() => {
       setupObserver();
