@@ -63,7 +63,17 @@ export function PageTitle({ title, description, enableSectionTracking = false }:
     console.log("[PageTitle] Active section:", activeSection);
     console.log("[PageTitle] Dynamic title:", dynamicTitle);
     console.log("[PageTitle] Setting document.title to:", dynamicTitle);
+    
+    // Force update the title
     document.title = dynamicTitle;
+    
+    // Also update the meta tag if it exists
+    const metaTitle = document.querySelector('meta[property="og:title"]');
+    if (metaTitle) {
+      metaTitle.setAttribute('content', dynamicTitle);
+    }
+    
+    console.log("[PageTitle] Updated! Current document.title:", document.title);
   }, [dynamicTitle, activeSection]);
 
   return (
