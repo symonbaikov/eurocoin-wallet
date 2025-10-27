@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/use-translation";
+import { useLanguage } from "@/components/providers/language-provider";
 
 interface InvestigationStage {
   id: string;
@@ -17,14 +18,44 @@ interface InvestigationProgressProps {
 
 export function InvestigationProgress({ requestId }: InvestigationProgressProps) {
   const t = useTranslation();
-  const [stages, setStages] = useState<InvestigationStage[]>([
-    { id: "submitted", label: t("investigation.stages.submitted"), completed: true, current: false },
-    { id: "checking", label: t("investigation.stages.checking"), completed: true, current: false },
-    { id: "analyzing", label: t("investigation.stages.analyzing"), completed: true, current: true },
-    { id: "investigating", label: t("investigation.stages.investigating"), completed: false, current: false },
-    { id: "recovering", label: t("investigation.stages.recovering"), completed: false, current: false },
-    { id: "completed", label: t("investigation.stages.completed"), completed: false, current: false },
-  ]);
+  const [fetchedStages, setFetchedStages] = useState<InvestigationStage[] | null>(null);
+
+  // Default stages with translations - updates when locale changes
+  const defaultStages: InvestigationStage[] = useMemo(
+    () => [
+      {
+        id: "submitted",
+        label: t("investigation.stages.submitted"),
+        completed: true,
+        current: false,
+      },
+      { id: "checking", label: t("investigation.stages.checking"), completed: true, current: false },
+      { id: "analyzing", label: t("investigation.stages.analyzing"), completed: true, current: true },
+      {
+        id: "investigating",
+        label: t("investigation.stages.investigating"),
+        completed: false,
+        current: false,
+      },
+      {
+        id: "recovering",
+        label: t("investigation.stages.recovering"),
+        completed: false,
+        current: false,
+      },
+      {
+        id: "completed",
+        label: t("investigation.stages.completed"),
+        completed: false,
+        current: false,
+      },
+    ],
+    [t],
+  );
+
+  // Use fetched stages if available, otherwise use default stages
+  const stages = fetchedStages || defaultStages;
+
   // Fetch data immediately on mount
   useEffect(() => {
     const fetchData = async () => {
@@ -36,7 +67,12 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
         if (response.ok) {
           const data = await response.json();
           if (data.stages && Array.isArray(data.stages)) {
-            setStages(data.stages);
+            // Map fetched stages to include translated labels
+            const mappedStages = data.stages.map((stage: InvestigationStage) => ({
+              ...stage,
+              label: t(`investigation.stages.${stage.id}`),
+            }));
+            setFetchedStages(mappedStages);
           }
         }
       } catch (error) {
@@ -45,7 +81,7 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
     };
 
     fetchData();
-  }, [requestId]);
+  }, [requestId, t]);
 
   // Listen for custom event when new request is submitted
   useEffect(() => {
@@ -63,7 +99,12 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
         .then((response) => response.json())
         .then((data) => {
           if (data.stages && Array.isArray(data.stages)) {
-            setStages(data.stages);
+            // Map fetched stages to include translated labels
+            const mappedStages = data.stages.map((stage: InvestigationStage) => ({
+              ...stage,
+              label: t(`investigation.stages.${stage.id}`),
+            }));
+            setFetchedStages(mappedStages);
           }
         })
         .catch((error) => console.error("Error fetching status:", error));
@@ -71,7 +112,7 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
 
     window.addEventListener("new-request-submitted", handleNewRequest);
     return () => window.removeEventListener("new-request-submitted", handleNewRequest);
-  }, [requestId]);
+  }, [requestId, t]);
 
   // Poll for updates from Telegram every 3 seconds
   useEffect(() => {
@@ -84,7 +125,12 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
         if (response.ok) {
           const data = await response.json();
           if (data.stages && Array.isArray(data.stages)) {
-            setStages(data.stages);
+            // Map fetched stages to include translated labels
+            const mappedStages = data.stages.map((stage: InvestigationStage) => ({
+              ...stage,
+              label: t(`investigation.stages.${stage.id}`),
+            }));
+            setFetchedStages(mappedStages);
           }
         }
       } catch (error) {
@@ -93,7 +139,7 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
     }, 3000);
 
     return () => clearInterval(pollInterval);
-  }, [requestId]);
+  }, [requestId, t]);
 
   const completedCount = stages.filter((s) => s.completed).length;
   const totalStages = stages.length;
@@ -188,13 +234,19 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
                   {stage.label}
                 </h4>
                 {stage.completed && !stage.current && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{t("investigation.statusCompleted")}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {t("investigation.statusCompleted")}
+                  </p>
                 )}
                 {stage.current && !isCompleted && (
-                  <p className="text-xs text-blue-600 dark:text-blue-400">{t("investigation.stageInProgress")}</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">
+                    {t("investigation.stageInProgress")}
+                  </p>
                 )}
                 {isCompleted && stage.id === "completed" && (
-                  <p className="text-xs text-green-600 dark:text-green-400">{t("investigation.statusCompleted")}</p>
+                  <p className="text-xs text-green-600 dark:text-green-400">
+                    {t("investigation.statusCompleted")}
+                  </p>
                 )}
               </div>
             </div>
