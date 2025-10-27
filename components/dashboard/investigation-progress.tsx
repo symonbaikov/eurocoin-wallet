@@ -27,7 +27,7 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const url = requestId 
+        const url = requestId
           ? `/api/investigation/status?requestId=${requestId}`
           : "/api/investigation/status";
         const response = await fetch(url);
@@ -50,7 +50,7 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
     const handleNewRequest = (event: CustomEvent) => {
       console.log("[Investigation] New request submitted, fetching latest data", event.detail);
       const newRequestId = event.detail?.requestId;
-      const url = newRequestId 
+      const url = newRequestId
         ? `/api/investigation/status?requestId=${newRequestId}`
         : "/api/investigation/status";
       fetch(url)
@@ -71,7 +71,7 @@ export function InvestigationProgress({ requestId }: InvestigationProgressProps)
   useEffect(() => {
     const pollInterval = setInterval(async () => {
       try {
-        const url = requestId 
+        const url = requestId
           ? `/api/investigation/status?requestId=${requestId}`
           : "/api/investigation/status";
         const response = await fetch(url);
