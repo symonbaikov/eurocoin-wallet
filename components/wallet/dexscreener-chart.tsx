@@ -61,6 +61,7 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
           style={{ paddingBottom: "56.25%", height: 0, overflow: "hidden" }}
         >
           <iframe
+            key={chartTheme} // Force reload when theme changes
             src={dexUrl}
             className="absolute left-0 top-0 h-full w-full border-0"
             title="Dexscreener Chart"
