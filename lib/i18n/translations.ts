@@ -184,12 +184,15 @@ const translations: Messages = {
       requestType: "Тип заявки*",
       priority: "Приоритет",
       descriptionField: "Описание задачи / детали операции*",
+      walletAddress: "Адрес кошелька*",
+      walletAddressAutoFilled: "Адрес автоматически заполнен из вашего MetaMask кошелька",
       helper: "Поля, отмеченные *, обязательны. После отправки заявка попадёт в общий дашборд.",
       placeholders: {
         requester: "ФИО или корпоративный email",
         description: "Укажите адрес кошелька, сумму, дедлайн, ID тикета и другие детали...",
         department: "Выберите отдел",
         type: "Укажите тип",
+        walletAddress: "Введите адрес кошелька",
       },
       requestTypes: {
         topUp: "Пополнение токенов",
@@ -512,6 +515,7 @@ const translations: Messages = {
         tokenUnit: "TOKEN",
         rubUnit: "RUB",
         walletAddress: "Адрес кошелька для получения фиата *",
+        walletAddressAutoFilled: "Адрес автоматически заполнен из вашего MetaMask кошелька",
         email: "Email для связи *",
         comment: "Комментарий (необязательно)",
       },
@@ -901,6 +905,8 @@ const translations: Messages = {
       requestType: "Request type*",
       priority: "Priority",
       descriptionField: "Task description / details*",
+      walletAddress: "Wallet address*",
+      walletAddressAutoFilled: "Address automatically filled from your MetaMask wallet",
       helper:
         "Fields marked with * are required. After submission the request appears in the internal dashboard.",
       placeholders: {
@@ -908,6 +914,7 @@ const translations: Messages = {
         description: "Wallet address, amount, deadline, ticket ID…",
         department: "Select department",
         type: "Choose type",
+        walletAddress: "Enter wallet address",
       },
       requestTypes: {
         topUp: "Token top-up",
@@ -1226,6 +1233,7 @@ const translations: Messages = {
         tokenUnit: "TOKEN",
         rubUnit: "RUB",
         walletAddress: "Wallet address for receiving fiat *",
+        walletAddressAutoFilled: "Address automatically filled from your MetaMask wallet",
         email: "Email for contact *",
         comment: "Comment (optional)",
       },

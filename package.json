@@ -11,9 +11,12 @@
     "format": "prettier --check .",
     "db:init": "tsx scripts/init-database.ts",
     "db:test": "tsx scripts/test-database.ts",
-    "db:migrate": "node scripts/check-and-apply-migration.js",
+    "db:migrate": "tsx scripts/migrate-database.ts",
+    "db:migrate:legacy": "node scripts/check-and-apply-migration.js",
     "db:test-current-stage": "tsx scripts/test-current-stage.ts",
+    "test:email": "tsx scripts/test-email-send.ts",
     "auth:migrate": "tsx scripts/apply-auth-migration.ts",
+    "auth:create-tables": "tsx scripts/create-nextauth-tables.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
