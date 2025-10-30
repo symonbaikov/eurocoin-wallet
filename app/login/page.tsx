@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { PageTitle } from "@/components/layout/page-title";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
 import { OAuthButtons, AuthDivider, EmailSignInForm } from "@/components/auth";
@@ -21,14 +21,21 @@ export default function LoginPage() {
   const { connect, isConnecting, isConnected } = useWalletConnection();
   const { isAuthenticated, authType, isLoading } = useAuth();
   const t = useTranslation();
+  const hasRedirected = useRef(false);
 
   // Redirect if already authenticated
+  // NOTE: Server-side middleware handles redirects, but we keep this for client-side only scenarios
   useEffect(() => {
+    console.log('[Login] useEffect triggered', { isAuthenticated, isLoading, hasRedirected: hasRedirected.current });
+
+    // Let middleware handle redirects - don't do anything here
+    // This prevents infinite redirect loops between client and server
+
+    // Only log authentication status for debugging
     if (isAuthenticated && !isLoading) {
-      console.log('[Login] User already authenticated, redirecting to home');
-      router.push('/');
+      console.log('[Login] User authenticated (middleware will handle redirect)');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading]);
 
   const handleMetaMaskConnect = async () => {
     try {

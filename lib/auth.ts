@@ -9,6 +9,8 @@ import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import { Resend } from "resend";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { db } from "@/lib/database/drizzle";
+import { users, accounts, sessions, verificationTokens } from "@/lib/database/auth-schema";
 import type { AuthType } from "@/types/auth";
 
 // =============================================================================
@@ -42,14 +44,34 @@ declare module "next-auth/jwt" {
 // Database Adapter Configuration
 // =============================================================================
 
-// NOTE: Database adapter is disabled for now to prevent connection issues during development
-// NextAuth will work in JWT-only mode (sessions stored in tokens, not database)
-// This is acceptable for development and testing
-const adapter = undefined;
+// Email provider requires adapter for storing verification tokens
+// Enable adapter only if DATABASE_URL is available
+let adapter: ReturnType<typeof DrizzleAdapter> | undefined;
 
-console.warn("[AUTH] ⚠️  Running in JWT-only mode (database adapter disabled)");
-console.warn("[AUTH] Sessions will be stored in JWT tokens, not in the database");
-console.warn("[AUTH] OAuth sign-in will work, but user data won't persist in database");
+try {
+  if (process.env.DATABASE_URL) {
+    // Use DrizzleAdapter with custom schema
+    // This ensures it uses the correct table names: users, accounts, sessions, verification_tokens
+    adapter = DrizzleAdapter(db, {
+      usersTable: users,
+      accountsTable: accounts,
+      sessionsTable: sessions,
+      verificationTokensTable: verificationTokens,
+    });
+    console.log("[AUTH] ✅ Database adapter enabled for email authentication");
+  } else {
+    console.warn(
+      "[AUTH] ⚠️  DATABASE_URL not set - email authentication requires database adapter",
+    );
+    console.warn(
+      "[AUTH] ⚠️  Set DATABASE_URL and run 'npm run auth:migrate' to enable email login",
+    );
+  }
+} catch (error) {
+  console.error("[AUTH] ❌ Failed to initialize database adapter:", error);
+  console.warn("[AUTH] ⚠️  Email authentication will not work without adapter");
+  adapter = undefined;
+}
 
 // =============================================================================
 // NextAuth Configuration
@@ -256,25 +278,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 // =============================================================================
 
 function createEmailProvider() {
-  // Hard-disable Email provider in development to avoid Nodemailer server requirement
-  if (process.env.NODE_ENV !== "production") {
-    console.warn("[AUTH] Email provider disabled in development environment.");
-    return [];
-  }
-
-  // Feature flag to enable email auth explicitly in production
-  const enableEmailAuth = process.env.ENABLE_EMAIL_AUTH === "true";
-  if (!enableEmailAuth) {
-    console.warn("[AUTH] Email provider disabled. Set ENABLE_EMAIL_AUTH=true to enable.");
-    return [];
-  }
-
   const resendApiKey = process.env.RESEND_API_KEY;
   const fromAddress = process.env.SENDER_EMAIL ?? "noreply@resend.dev";
 
+  // Check if email auth is explicitly disabled
+  if (process.env.DISABLE_EMAIL_AUTH === "true") {
+    console.warn("[AUTH] Email provider disabled by DISABLE_EMAIL_AUTH=true");
+    return [];
+  }
+
+  // Check if RESEND_API_KEY is set
   if (!resendApiKey) {
     console.warn("[AUTH] RESEND_API_KEY is not set. Email sign-in is disabled.");
+    console.warn("[AUTH] To enable email auth, set RESEND_API_KEY in your .env.local");
     return [];
+  }
+
+  // In development, use feature flag (optional check)
+  // In production, email auth works if RESEND_API_KEY is set
+  if (process.env.NODE_ENV !== "production") {
+    const enableEmailAuth = process.env.ENABLE_EMAIL_AUTH !== "false"; // Default: enabled if key is set
+    if (!enableEmailAuth) {
+      console.warn(
+        "[AUTH] Email provider disabled in development. Set ENABLE_EMAIL_AUTH=true to enable.",
+      );
+      return [];
+    }
+    console.log("[AUTH] Email provider enabled in development mode");
   }
 
   const resend = new Resend(resendApiKey);
@@ -284,9 +314,24 @@ function createEmailProvider() {
     Email({
       from: fromAddress,
       maxAge: 24 * 60 * 60, // 24 hours
-      // By providing a custom sender we avoid nodemailer `server` requirement
+      // Provide minimal dummy server config to satisfy NextAuth requirement
+      // This config is never actually used because sendVerificationRequest overrides it
+      server: {
+        host: "localhost",
+        port: 587,
+        auth: {
+          user: "resend",
+          pass: "dummy",
+        },
+      },
+      // Custom email sending function using Resend API (this overrides default Nodemailer behavior)
       async sendVerificationRequest({ identifier, url }) {
         try {
+          console.log("[AUTH][EMAIL] Attempting to send verification email", {
+            to: identifier,
+            from: fromAddress,
+          });
+
           const result = await resend.emails.send({
             from: fromAddress,
             to: identifier,
@@ -296,12 +341,25 @@ function createEmailProvider() {
           });
 
           if (result.error) {
+            console.error("[AUTH][EMAIL] Resend API error:", {
+              error: result.error,
+              code: result.error.name,
+              message: result.error.message,
+            });
             throw result.error;
           }
 
-          console.log("[AUTH][EMAIL] Verification email sent", { identifier });
+          console.log("[AUTH][EMAIL] Verification email sent successfully", {
+            identifier,
+            emailId: result.data?.id,
+          });
         } catch (error) {
-          console.error("[AUTH][EMAIL] Failed to send verification email", error);
+          console.error("[AUTH][EMAIL] Failed to send verification email", {
+            identifier,
+            error: error instanceof Error ? error.message : String(error),
+            errorDetails: error,
+          });
+          // Re-throw to let NextAuth handle it
           throw error;
         }
       },
@@ -324,7 +382,7 @@ function buildVerificationEmailHtml(params: { url: string; appName: string }) {
           .logo { font-size: 20px; font-weight: 700; color: #2f4cff; text-transform: uppercase; letter-spacing: 0.2em; }
           .headline { font-size: 24px; font-weight: 600; margin: 24px 0 12px; color: #111827; }
           .muted { color: #6b7280; font-size: 14px; line-height: 1.6; }
-          .button { display: inline-block; margin: 32px 0; padding: 14px 24px; background: linear-gradient(135deg, #2f4cff, #6c7bff); color: #ffffff; text-decoration: none; border-radius: 999px; font-weight: 600; }
+          .button { display: inline-block; margin: 32px 0; padding: 14px 24px; background: linear-gradient(135deg, #2f4cff, #6c7bff); color: #ffffff !important; text-decoration: none; border-radius: 999px; font-weight: 600; }
           .link { word-break: break-all; color: #2f4cff; text-decoration: none; font-size: 13px; }
           .footer { margin-top: 32px; font-size: 12px; color: #9ca3af; line-height: 1.5; }
         </style>
@@ -337,7 +395,7 @@ function buildVerificationEmailHtml(params: { url: string; appName: string }) {
             Мы получили запрос на вход в ${appName}. Нажмите на кнопку ниже, чтобы завершить авторизацию.
             Ссылка действует 24 часа и может быть использована только один раз.
           </p>
-          <a class="button" href="${url}">Войти в аккаунт</a>
+          <a class="button" href="${url}" style="display: inline-block; margin: 32px 0; padding: 14px 24px; background: linear-gradient(135deg, #2f4cff, #6c7bff); color: #ffffff !important; text-decoration: none; border-radius: 999px; font-weight: 600;">Войти в аккаунт</a>
           <p class="muted">
             Если кнопка не работает, скопируйте и вставьте эту ссылку в адресную строку браузера:
           </p>

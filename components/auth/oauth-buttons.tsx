@@ -29,8 +29,27 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
     try {
       setIsGoogleLoading(true);
 
-      // Redirect to NextAuth Google OAuth endpoint
-      window.location.href = `/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+      // Create form and submit to NextAuth Google OAuth endpoint
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/api/auth/signin/google';
+
+      // Add callbackUrl as hidden input
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'callbackUrl';
+      input.value = callbackUrl;
+      form.appendChild(input);
+
+      // Add CSRF token
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = 'csrfToken';
+      csrfInput.value = await getCsrfToken();
+      form.appendChild(csrfInput);
+
+      document.body.appendChild(form);
+      form.submit();
     } catch (error) {
       console.error('[OAuth] Google sign-in error:', error);
 
@@ -46,8 +65,27 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
     try {
       setIsGitHubLoading(true);
 
-      // Redirect to NextAuth GitHub OAuth endpoint
-      window.location.href = `/api/auth/signin/github?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+      // Create form and submit to NextAuth GitHub OAuth endpoint
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/api/auth/signin/github';
+
+      // Add callbackUrl as hidden input
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'callbackUrl';
+      input.value = callbackUrl;
+      form.appendChild(input);
+
+      // Add CSRF token
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = 'csrfToken';
+      csrfInput.value = await getCsrfToken();
+      form.appendChild(csrfInput);
+
+      document.body.appendChild(form);
+      form.submit();
     } catch (error) {
       console.error('[OAuth] GitHub sign-in error:', error);
 
@@ -58,6 +96,18 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
       setIsGitHubLoading(false);
     }
   };
+
+  // Helper function to get CSRF token
+  async function getCsrfToken(): Promise<string> {
+    try {
+      const response = await fetch('/api/auth/csrf');
+      const data = await response.json();
+      return data.csrfToken || '';
+    } catch (error) {
+      console.error('[OAuth] Failed to get CSRF token:', error);
+      return '';
+    }
+  }
 
   const isAnyLoading = isGoogleLoading || isGitHubLoading;
 

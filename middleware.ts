@@ -3,7 +3,25 @@ import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Check MetaMask cookie
   const isMetaMaskConnected = request.cookies.get("metamask_connected")?.value === "true";
+
+  // Check NextAuth session cookie (OAuth authentication)
+  // Cookie name is "next-auth.session-token" in development, "__Secure-next-auth.session-token" in production
+  const hasNextAuthSession = request.cookies.has("next-auth.session-token") ||
+                             request.cookies.has("__Secure-next-auth.session-token");
+
+  // User is authenticated if they have either MetaMask connection OR OAuth session
+  const isAuthenticated = isMetaMaskConnected || hasNextAuthSession;
+
+  console.log('[Middleware]', {
+    pathname,
+    isMetaMaskConnected,
+    hasNextAuthSession,
+    isAuthenticated,
+    cookies: request.cookies.getAll().map(c => c.name)
+  });
 
   // Define public paths that don't require authentication
   const publicPaths = [
@@ -26,13 +44,13 @@ export function middleware(request: NextRequest) {
   // Check if the current path is a public path
   const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
 
-  // If connected and trying to access login, redirect to home
-  if (isMetaMaskConnected && pathname === "/login") {
+  // If authenticated and trying to access login, redirect to home
+  if (isAuthenticated && pathname === "/login") {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // If not connected and trying to access a protected path, redirect to login
-  if (!isMetaMaskConnected && !isPublicPath) {
+  // If not authenticated and trying to access a protected path, redirect to login
+  if (!isAuthenticated && !isPublicPath) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
