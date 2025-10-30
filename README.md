@@ -68,7 +68,7 @@ EuroCoin Web Wallet is a comprehensive dashboard for managing corporate ERC-20 t
 ### Prerequisites
 
 - Node.js 20.17.0+ (see `.nvmrc`)
-- pnpm 8.0+
+- npm 10.0+
 - MetaMask browser extension
 - PostgreSQL database
 
@@ -76,7 +76,7 @@ EuroCoin Web Wallet is a comprehensive dashboard for managing corporate ERC-20 t
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
 # Set up environment variables
 cp .env.sample .env.local
@@ -85,7 +85,7 @@ cp .env.sample .env.local
 npm run db:init
 
 # Start development server
-pnpm dev
+npm run dev
 ```
 
 Visit [http://localhost:3000](http://localhost:3000)
@@ -196,7 +196,7 @@ web-wallet/
 - **Language:** TypeScript 5.0 (strict mode)
 - **Styling:** TailwindCSS 3.0
 - **Database:** PostgreSQL
-- **Package Manager:** pnpm 8
+- **Package Manager:** npm 10
 
 ### Web3
 
@@ -263,13 +263,13 @@ User Message → Telegram Forward → Admin Response → Real-time Update → Tr
 
 ```bash
 # Development server
-pnpm dev
+npm run dev
 
 # Build for production
-pnpm build
+npm run build
 
 # Start production server
-pnpm start
+npm run start
 
 # Database operations
 npm run db:init       # Initialize database
@@ -277,13 +277,13 @@ npm run db:migrate    # Run migrations
 npm run db:test       # Test database
 
 # Type checking
-pnpm type-check
+npm run type-check
 
 # Linting
-pnpm lint
+npm run lint
 
 # Format code
-pnpm format
+npm run format
 ```
 
 ## 🚢 Deployment
@@ -303,8 +303,8 @@ vercel --prod
 ### Manual Build
 
 ```bash
-pnpm build
-pnpm start
+npm run build
+npm run start
 ```
 
 ## 📝 License

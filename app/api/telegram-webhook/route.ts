@@ -9,6 +9,7 @@ import {
   updateInternalRequestStatus,
   updateInternalRequestStage,
 } from "@/lib/database/queries";
+import { query } from "@/lib/database/db";
 
 const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
 
@@ -632,6 +633,150 @@ bot.on("text", async (ctx) => {
       "/chats - активные чат-сессии\n\n" +
       "Для получения подробной справки используйте /help",
   );
+});
+
+// Newsletter subscription commands
+bot.command("subscribe", async (ctx) => {
+  try {
+    const chatId = ctx.chat.id.toString();
+    const username = ctx.from.first_name || "User";
+
+    // Check if already subscribed
+    const existing = await query("SELECT * FROM newsletter_subscribers WHERE chat_id = $1", [
+      chatId,
+    ]);
+
+    if (existing.rows.length > 0) {
+      // Update to active
+      await query("UPDATE newsletter_subscribers SET is_active = true WHERE chat_id = $1", [
+        chatId,
+      ]);
+      ctx.reply(
+        "✅ Вы уже подписаны на рассылку!\n\n" +
+          "Вы будете получать новости и обновления о EuroCoin.",
+      );
+    } else {
+      // Add new subscriber
+      await query("INSERT INTO newsletter_subscribers (chat_id, language) VALUES ($1, 'ru')", [
+        chatId,
+      ]);
+      ctx.reply(
+        `🎉 Спасибо за подписку, ${username}!\n\n` +
+          `Вы теперь будете получать рассылку новостей и обновлений о EuroCoin.\n\n` +
+          `Для отписки используйте /unsubscribe`,
+      );
+    }
+  } catch (error) {
+    console.error("Error in subscribe command:", error);
+    ctx.reply("❌ Ошибка при подписке. Попробуйте позже.");
+  }
+});
+
+bot.command("unsubscribe", async (ctx) => {
+  try {
+    const chatId = ctx.chat.id.toString();
+
+    await query("UPDATE newsletter_subscribers SET is_active = false WHERE chat_id = $1", [chatId]);
+
+    ctx.reply(
+      "👋 Вы отписались от рассылки.\n\n" +
+        "Мы будем скучать! Подпишитесь снова командой /subscribe",
+    );
+  } catch (error) {
+    console.error("Error in unsubscribe command:", error);
+    ctx.reply("❌ Ошибка при отписке. Попробуйте позже.");
+  }
+});
+
+// Newsletter command for admins - send newsletter to all email subscribers
+bot.command("newsletter", async (ctx) => {
+  try {
+    const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
+    const chatId = ctx.chat.id.toString();
+
+    // Check if user is admin
+    if (chatId !== managerChatId) {
+      ctx.reply("❌ У вас нет доступа к этой команде");
+      return;
+    }
+
+    // Get count of verified subscribers
+    const subscribers = await query(
+      "SELECT COUNT(*) as count FROM newsletter_subscribers WHERE verified = true AND is_active = true",
+    );
+
+    const count = subscribers.rows[0]?.count || 0;
+
+    ctx.reply(
+      `📧 *Рассылка для подписчиков*\n\n` +
+        `Активных подписчиков: ${count}\n\n` +
+        `Отправьте текст рассылки следующим сообщением:\n` +
+        `Пример:\n` +
+        `\`Отправьте рассылку:\n\nДобро пожаловать в EuroCoin! Новые возможности для вашего бизнеса.\``,
+      { parse_mode: "Markdown" },
+    );
+  } catch (error) {
+    console.error("Error in newsletter command:", error);
+    ctx.reply("❌ Ошибка при получении информации о рассылке");
+  }
+});
+
+// Handler for newsletter text (expects text after /newsletter command)
+bot.on("text", async (ctx) => {
+  try {
+    const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
+    const chatId = ctx.chat.id.toString();
+
+    // Check if user is admin
+    if (chatId !== managerChatId) {
+      return; // Not admin, skip
+    }
+
+    // Check if message looks like newsletter text (has multiple lines or special format)
+    const text = ctx.message.text;
+    if (text.startsWith("/")) {
+      return; // It's a command, skip
+    }
+
+    // Get all verified email subscribers
+    const subscribers = await query(
+      "SELECT email FROM newsletter_subscribers WHERE verified = true AND is_active = true AND email IS NOT NULL",
+    );
+
+    if (subscribers.rows.length === 0) {
+      ctx.reply("❌ Нет активных подписчиков");
+      return;
+    }
+
+    ctx.reply(`📤 Отправка рассылки ${subscribers.rows.length} подписчикам...`);
+
+    // Call API to send newsletters
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/newsletter/send-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          authToken: process.env.NEWSLETTER_AUTH_TOKEN,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        ctx.reply(
+          `✅ Рассылка отправлена!\n\n` + `Отправлено: ${data.sent}\n` + `Ошибок: ${data.failed}`,
+        );
+      } else {
+        ctx.reply(`❌ Ошибка при отправке: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error calling newsletter API:", error);
+      ctx.reply("❌ Ошибка при отправке рассылки");
+    }
+  } catch (error) {
+    console.error("Error in newsletter text handler:", error);
+  }
 });
 
 export async function POST(request: NextRequest) {

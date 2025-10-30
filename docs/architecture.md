@@ -73,7 +73,7 @@ web-wallet/
 | **Web3 Integration**   | wagmi + viem | 2.x    | Взаимодействие с блокчейном        |
 | **State Management**   | React Query  | 5.x    | Кеширование и синхронизация данных |
 | **Styling**            | TailwindCSS  | 3.x    | Utility-first CSS фреймворк        |
-| **Package Manager**    | pnpm         | Latest | Менеджер пакетов                   |
+| **Package Manager**    | npm          | Latest | Менеджер пакетов                   |
 | **Runtime**            | Node.js      | 20+    | Среда выполнения                   |
 
 ### Архитектурные принципы
@@ -393,7 +393,14 @@ NEXT_PUBLIC_APP_DESCRIPTION="Internal token management system"
 ---
 
 **Версия документа:** 1.0  
-**Последнее обновление:** 23 октября 2025  
+**Последнее обновление:** 30 октября 2025  
 **Статус:** Актуальный
 
 > ⚠️ **Важно:** Архитектура должна следовать принципам, описанным в `arch-rules.md`, и требованиям из `requirements.md`.
+
+---
+
+## Изменения провайдеров SEO/мета-тегов
+
+- Провайдер `react-helmet-async` удалён из приложения из-за несовместимости по peerDependencies с React 19.
+- Для установки мета-тегов используем встроенный механизм Next.js (`metadata` в серверных компонентах или `next/head` в клиентских компонентах при необходимости).

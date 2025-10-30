@@ -4,7 +4,7 @@
 
 **Цель:** Разработать веб-интерфейс для внутренней системы компании с управлением токенами Ethereum, включающий подключение MetaMask, просмотр баланса и базовые операции с токеном.
 
-**Стек:** Next.js 14+ (App Router), TypeScript, wagmi v2 + viem, TailwindCSS, pnpm
+**Стек:** Next.js 14+ (App Router), TypeScript, wagmi v2 + viem, TailwindCSS, npm
 
 **Сроки:** 4-5 дней
 

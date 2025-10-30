@@ -27,9 +27,9 @@ const translations: Messages = {
         investigation: "Расследование",
       },
       footer: {
-        contact: "Контакты: treasury@company.io",
+        contact: "Контакты: eurocoinfinance@gmail.com",
         policy: "Политика безопасности",
-        copyright: "© {year} TOKEN Labs. Только для внутреннего использования.",
+        copyright: "Все права защищены.",
         version: "v0.4.0-beta",
       },
       buttons: {
@@ -112,6 +112,51 @@ const translations: Messages = {
         spec1: "Сеть: Ethereum Mainnet / Sepolia",
         spec2: "Децимализация: 18 знаков",
         spec3: "Максимальная эмиссия: 1,000,000 токенов",
+      },
+      info: {
+        title: "О EuroCoin (EURC)",
+        subtitle:
+          "EuroCoin (EURC) — это цифровая валюта, основанная на технологии блокчейн и предназначенная для обеспечения стабильной евро-ликвидности в экосистеме Web3.",
+        description: {
+          paragraph1:
+            "Токен создан с целью упростить международные расчёты, переводы и DeFi-операции в рамках Европейского финансового пространства. EuroCoin обеспечивает прозрачность, безопасность и совместимость с современными децентрализованными протоколами.",
+          paragraph2:
+            "Благодаря использованию смарт-контрактов стандарта ERC-20, EURC может быть интегрирован в любые DeFi-сервисы, поддерживающие Ethereum-сеть.",
+        },
+        features: {
+          title: "Основные характеристики",
+          type: {
+            label: "Тип",
+            value: "ERC-20",
+          },
+          decimals: {
+            label: "Десятичность",
+            value: "18",
+          },
+          blockchain: {
+            label: "Блокчейн",
+            value: "Ethereum",
+          },
+          symbol: {
+            label: "Символ",
+            value: "EURC",
+          },
+          contract: {
+            label: "Адрес контракта",
+            value: "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586",
+          },
+          fee: {
+            label: "Комиссия за операции",
+            value: "3% (фиксированная, регулируется контрактом владельца)",
+          },
+        },
+        additional:
+          "EuroCoin соответствует нормам прозрачности и надёжности, предоставляя пользователям возможность проводить расчёты в евро-эквиваленте без участия банков.",
+        license: {
+          title: "Лицензия",
+          description:
+            "Проект работает в рамках модели цифрового актива и проходит юридическую сертификацию в соответствии с регламентом ЕС MiCA.",
+        },
       },
     },
     timer: {
@@ -280,9 +325,45 @@ const translations: Messages = {
         "Мы возвращаем утерянные деньги и возрождаем надежду. Подключите MetaMask для безопасного доступа к функциям восстановления средств и защиты от мошенников.",
       connecting: "Подключение...",
       continue: "Продолжить с MetaMask",
+      email: {
+        title: "Войти по электронной почте",
+        description: "Мы отправим одноразовую ссылку для входа на указанный email.",
+        label: "Email",
+        placeholder: "you@example.com",
+        button: "Отправить ссылку для входа",
+        loading: "Отправляем письмо...",
+        success: "Ссылка для входа отправлена. Проверьте почту и папку спам.",
+        error: "Не удалось отправить письмо. Повторите попытку позже.",
+        invalid: "Введите корректный адрес электронной почты.",
+      },
+      oauth: {
+        google: "Войти через Google",
+        github: "Войти через GitHub",
+        googleLoading: "Вход через Google...",
+        githubLoading: "Вход через GitHub...",
+        googleError: "Ошибка входа через Google",
+        githubError: "Ошибка входа через GitHub",
+      },
+      divider: {
+        or: "или",
+      },
       walletConnected: "Кошелёк уже подключён. Перенаправляем на главную страницу...",
       walletConnectedSuccess: "MetaMask успешно подключён. Перенаправляем на главную страницу...",
       connectError: "Не удалось подключить кошелёк",
+    },
+    auth: {
+      signOut: "Выйти",
+      signingOut: "Выход...",
+      signOutSuccess: "Вы успешно вышли из системы",
+      signOutError: "Ошибка при выходе из системы",
+      upgradeSuccess: "MetaMask успешно подключен. Теперь доступны все функции!",
+      upgradeError: "Не удалось подключить MetaMask",
+      readOnly: {
+        title: "Режим только для чтения",
+        description: "Вы вошли через email. Подключите MetaMask для отправки токенов и создания запросов.",
+        upgradeButton: "Подключить MetaMask",
+        upgrading: "Подключение...",
+      },
     },
     info: {
       notFound: "Страница не найдена",
@@ -352,6 +433,26 @@ const translations: Messages = {
 
 <p><strong>Безопасность:</strong></p>
 <p>Все обмены проходят через смарт-контракты Ethereum, что гарантирует надёжность и прозрачность операций.</p>`,
+      },
+      security: {
+        title: "Политика безопасности",
+        description: "Меры безопасности сервиса EuroCoin",
+        content: `<p>Мы придаём большое значение безопасности наших пользователей и их средств.</p>
+
+<h3>1. Защита данных</h3>
+<p>Мы не храним ваши приватные ключи и не имеем доступа к вашему кошельку. Все операции проводятся непосредственно через ваш MetaMask.</p>
+
+<h3>2. Смарт-контракты</h3>
+<p>Все транзакции выполняются через защищённые смарт-контракты Ethereum, что гарантирует прозрачность и невозможность изменения условий транзакции.</p>
+
+<h3>3. Приватность</h3>
+<p>Ваши персональные данные защищены в соответствии с международными стандартами безопасности. Мы не передаём ваши данные третьим лицам.</p>
+
+<h3>4. Мониторинг</h3>
+<p>Мы ведём постоянный мониторинг системы на предмет подозрительной активности и немедленно реагируем на любые попытки компрометации.</p>
+
+<h3>5. Ответственность пользователя</h3>
+<p>Вы несёте полную ответственность за безопасность своего кошелька MetaMask и приватных ключей. Мы не можем вернуть средства, утерянные из-за компрометации вашего кошелька.</p>`,
       },
     },
     metamask: {
@@ -528,6 +629,7 @@ const translations: Messages = {
           "Свяжитесь с нашей службой поддержки, и мы поможем вам разобраться с любыми вопросами",
         telegramButton: "Написать в Telegram",
         emailButton: "Написать на email",
+        newsletterButton: "Рассылка",
       },
     },
     tokenSection: {
@@ -642,9 +744,9 @@ const translations: Messages = {
         investigation: "Investigation",
       },
       footer: {
-        contact: "Contact: treasury@company.io",
+        contact: "Contact: eurocoinfinance@gmail.com",
         policy: "Security policy",
-        copyright: "© {year} EuroCoin Labs. Internal use only.",
+        copyright: "All rights reserved.",
         version: "v0.4.0-beta",
       },
       buttons: {
@@ -727,6 +829,51 @@ const translations: Messages = {
         spec1: "Network: Ethereum Mainnet / Sepolia",
         spec2: "Decimals: 18 digits",
         spec3: "Max supply: 1,000,000 tokens",
+      },
+      info: {
+        title: "About EuroCoin (EURC)",
+        subtitle:
+          "EuroCoin (EURC) is a digital currency based on blockchain technology, designed to provide stable euro liquidity in the Web3 ecosystem.",
+        description: {
+          paragraph1:
+            "The token was created to simplify international settlements, transfers, and DeFi operations within the European financial space. EuroCoin ensures transparency, security, and compatibility with modern decentralized protocols.",
+          paragraph2:
+            "Thanks to the use of ERC-20 standard smart contracts, EURC can be integrated into any DeFi services that support the Ethereum network.",
+        },
+        features: {
+          title: "Key Characteristics",
+          type: {
+            label: "Type",
+            value: "ERC-20",
+          },
+          decimals: {
+            label: "Decimals",
+            value: "18",
+          },
+          blockchain: {
+            label: "Blockchain",
+            value: "Ethereum",
+          },
+          symbol: {
+            label: "Symbol",
+            value: "EURC",
+          },
+          contract: {
+            label: "Contract Address",
+            value: "0x88F43B9f5A6d4ADEF8f80D646732F5b6153C2586",
+          },
+          fee: {
+            label: "Transaction Fee",
+            value: "3% (fixed, regulated by owner contract)",
+          },
+        },
+        additional:
+          "EuroCoin complies with transparency and reliability standards, providing users with the ability to conduct settlements in euro equivalent without bank involvement.",
+        license: {
+          title: "License",
+          description:
+            "The project operates within the digital asset model framework and is undergoing legal certification in accordance with EU MiCA regulation.",
+        },
       },
     },
     timer: {
@@ -893,9 +1040,45 @@ const translations: Messages = {
         "We recover lost funds and restore hope. Connect MetaMask for secure access to fund recovery and fraud protection features.",
       connecting: "Connecting...",
       continue: "Continue with MetaMask",
+      email: {
+        title: "Sign in with email",
+        description: "Receive a one-time sign-in link directly to your inbox.",
+        label: "Email",
+        placeholder: "you@example.com",
+        button: "Send sign-in link",
+        loading: "Sending email...",
+        success: "Magic link sent. Please check your inbox and spam folder.",
+        error: "Unable to send sign-in email. Please try again later.",
+        invalid: "Enter a valid email address.",
+      },
+      oauth: {
+        google: "Sign in with Google",
+        github: "Sign in with GitHub",
+        googleLoading: "Signing in with Google...",
+        githubLoading: "Signing in with GitHub...",
+        googleError: "Google sign-in error",
+        githubError: "GitHub sign-in error",
+      },
+      divider: {
+        or: "or",
+      },
       walletConnected: "Wallet already connected. Redirecting to home page...",
       walletConnectedSuccess: "MetaMask successfully connected. Redirecting to home page...",
       connectError: "Failed to connect wallet",
+    },
+    auth: {
+      signOut: "Sign out",
+      signingOut: "Signing out...",
+      signOutSuccess: "You have successfully signed out",
+      signOutError: "Error signing out",
+      upgradeSuccess: "MetaMask successfully connected. All features now available!",
+      upgradeError: "Failed to connect MetaMask",
+      readOnly: {
+        title: "Read-only mode",
+        description: "You signed in with email. Connect MetaMask to send tokens and create requests.",
+        upgradeButton: "Connect MetaMask",
+        upgrading: "Connecting...",
+      },
     },
     info: {
       notFound: "Page not found",
@@ -964,6 +1147,26 @@ const translations: Messages = {
 
 <p><strong>Security:</strong></p>
 <p>All exchanges are conducted through Ethereum smart contracts, ensuring reliability and transparency of operations.</p>`,
+      },
+      security: {
+        title: "Security Policy",
+        description: "EuroCoin service security measures",
+        content: `<p>We place great importance on the security of our users and their funds.</p>
+
+<h3>1. Data Protection</h3>
+<p>We do not store your private keys and do not have access to your wallet. All operations are conducted directly through your MetaMask.</p>
+
+<h3>2. Smart Contracts</h3>
+<p>All transactions are executed through secure Ethereum smart contracts, ensuring transparency and impossibility of changing transaction terms.</p>
+
+<h3>3. Privacy</h3>
+<p>Your personal data is protected in accordance with international security standards. We do not share your data with third parties.</p>
+
+<h3>4. Monitoring</h3>
+<p>We conduct continuous monitoring of the system for suspicious activity and immediately respond to any attempts of compromise.</p>
+
+<h3>5. User Responsibility</h3>
+<p>You are fully responsible for the security of your MetaMask wallet and private keys. We cannot recover funds lost due to your wallet compromise.</p>`,
       },
     },
     metamask: {
@@ -1138,6 +1341,7 @@ const translations: Messages = {
         description: "Contact our support service, and we will help you with any questions",
         telegramButton: "Write in Telegram",
         emailButton: "Write to email",
+        newsletterButton: "Newsletter",
       },
     },
     tokenSection: {

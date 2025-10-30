@@ -7,7 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { wagmiConfig } from "@/lib/wagmi";
 import { LanguageProvider } from "@/components/providers/language-provider";
 import { ConsoleFilter } from "@/components/providers/console-filter";
-import { HelmetProvider } from "@/components/providers/helmet-provider";
+import { SessionProvider } from "@/components/auth/session-provider";
 
 export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(
@@ -23,7 +23,7 @@ export function AppProviders({ children }: PropsWithChildren) {
   );
 
   return (
-    <HelmetProvider>
+    <SessionProvider>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
         <LanguageProvider>
           <WagmiProvider config={wagmiConfig}>
@@ -34,6 +34,6 @@ export function AppProviders({ children }: PropsWithChildren) {
           </WagmiProvider>
         </LanguageProvider>
       </ThemeProvider>
-    </HelmetProvider>
+    </SessionProvider>
   );
 }

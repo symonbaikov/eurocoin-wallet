@@ -4,19 +4,31 @@ import Link from "next/link";
 import Image from "next/image";
 import { PageTitle } from "@/components/layout/page-title";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
+import { OAuthButtons, AuthDivider, EmailSignInForm } from "@/components/auth";
 import { MetaMaskQR } from "@/components/metamask";
-import { EuroCoin3D } from "@/components/eurocoin";
+import { EuroCoin3D, EuroCoinInfoSection } from "@/components/eurocoin";
 import { ReviewsCarousel } from "@/components/reviews";
 import { useTranslation } from "@/hooks/use-translation";
+import { useAuth } from "@/hooks/use-auth";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const router = useRouter();
   const { connect, isConnecting, isConnected } = useWalletConnection();
+  const { isAuthenticated, authType, isLoading } = useAuth();
   const t = useTranslation();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      console.log('[Login] User already authenticated, redirecting to home');
+      router.push('/');
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   const handleMetaMaskConnect = async () => {
     try {
@@ -61,13 +73,32 @@ export default function LoginPage() {
               {t("login.descriptionText")}
             </p>
             <div className="dark:border-dark-outline dark:bg-dark-surface flex flex-col gap-3 rounded-2xl border border-outline bg-surface p-4 shadow-card sm:gap-4 sm:rounded-3xl sm:p-6">
-              <Button size="lg" fullWidth onClick={handleMetaMaskConnect} disabled={isConnecting}>
+              {/* MetaMask Button */}
+              <Button
+                size="lg"
+                fullWidth
+                onClick={handleMetaMaskConnect}
+                disabled={isConnecting || isLoading}
+              >
                 {isConnecting
                   ? t("login.connecting")
                   : isConnected
                     ? t("login.continue")
                     : t("login.connect")}
               </Button>
+
+              {/* Divider */}
+              <AuthDivider />
+
+              {/* OAuth Buttons */}
+              <OAuthButtons callbackUrl="/" disabled={isLoading} />
+
+              {/* Divider */}
+              <AuthDivider />
+
+              {/* Email login */}
+              <EmailSignInForm callbackUrl="/" disabled={isLoading} />
+
               <p className="dark:text-dark-foregroundMuted text-[10px] text-foregroundMuted sm:text-xs">
                 {t("login.disclaimer")}
               </p>
@@ -105,6 +136,9 @@ export default function LoginPage() {
             />
           </div>
         </div>
+
+        {/* EuroCoin Info Section */}
+        <EuroCoinInfoSection />
 
         {/* EuroCoin 3D Presentation Section */}
         <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12 md:px-10">

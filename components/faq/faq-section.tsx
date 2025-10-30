@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/use-translation";
+import { NewsletterModal } from "@/components/modal/newsletter-modal";
 
 export function FAQSection() {
   const t = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+  const [showNewsletterModal, setShowNewsletterModal] = useState(false);
 
   useEffect(() => {
     setTimeout(() => {
@@ -133,12 +135,12 @@ export function FAQSection() {
               <p className="dark:text-dark-foregroundMuted mb-6 text-foregroundMuted">
                 {t("faq.contactCTA.description")}
               </p>
-              <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center md:flex-nowrap">
                 <a
                   href="https://t.me/corporate_bot"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 text-white transition-colors hover:bg-accent/90"
+                  className="dark:bg-dark-surfaceAlt dark:hover:bg-dark-surface inline-flex items-center justify-center gap-2 rounded-lg bg-surfaceAlt px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"
                 >
                   <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.568 8.16l-1.61 7.59c-.12.54-.44.68-.89.42l-2.46-1.81-1.19 1.15c-.13.13-.24.24-.49.24l.18-2.55 4.57-4.12c.2-.18-.04-.28-.31-.1l-5.64 3.55-2.43-.76c-.53-.16-.54-.53.11-.79l9.46-3.65c.44-.16.83.1.69.79z" />
@@ -146,8 +148,8 @@ export function FAQSection() {
                   {t("faq.contactCTA.telegramButton")}
                 </a>
                 <a
-                  href="mailto:treasury@company.io"
-                  className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt inline-flex items-center justify-center gap-2 rounded-lg border border-outline bg-surface px-6 py-3 text-foreground transition-colors hover:bg-surfaceAlt"
+                  href="mailto:eurocoinfinance@gmail.com"
+                  className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt inline-flex items-center justify-center gap-2 rounded-lg border border-outline bg-surface px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surfaceAlt"
                 >
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -159,11 +161,27 @@ export function FAQSection() {
                   </svg>
                   {t("faq.contactCTA.emailButton")}
                 </a>
+                <button
+                  onClick={() => setShowNewsletterModal(true)}
+                  className="dark:border-dark-accent inline-flex items-center justify-center gap-2 rounded-lg border border-accent bg-accent px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent/90 dark:bg-accent dark:text-white"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                  {t("faq.contactCTA.newsletterButton")}
+                </button>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <NewsletterModal open={showNewsletterModal} onClose={() => setShowNewsletterModal(false)} />
     </section>
   );
 }

@@ -41,7 +41,7 @@
 ### 1.2 Установка зависимостей
 
 ```bash
-pnpm add telegraf
+npm install telegraf
 ```
 
 ### 1.3 Настройка переменных окружения
@@ -470,7 +470,7 @@ curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getWebhookInfo"
 
 ### 5.1 Тестирование калькулятора
 
-1. Запустите dev сервер: `pnpm dev`
+1. Запустите dev сервер: `npm run dev`
 2. Откройте страницу с обменником
 3. Введите сумму в токенах
 4. Проверьте, что сумма в RUB пересчитывается с учетом комиссии
@@ -502,7 +502,7 @@ curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getWebhookInfo"
 ### 6.1 Деплой на Vercel
 
 ```bash
-pnpm build
+npm run build
 vercel --prod
 ```
 

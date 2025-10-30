@@ -60,7 +60,7 @@ services:
     stdin_open: true
     tty: true
     command: >
-      sh -c "npm run db:init && npm run db:migrate && npm run dev -- -H 0.0.0.0"
+      sh -c "npm run db:init && npm run db:migrate && npm run auth:migrate && npm run dev -- -H 0.0.0.0"
 
 volumes:
   postgres-data:

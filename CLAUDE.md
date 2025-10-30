@@ -11,26 +11,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ### Package Manager
-**IMPORTANT:** This project uses `pnpm` exclusively. Do not use `npm` or `yarn`.
+**IMPORTANT:** This project uses `npm`. Do not use `pnpm` or `yarn`.
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
 # Development server (http://localhost:3000)
-pnpm dev
+npm run dev
 
 # Production build
-pnpm build
+npm run build
 
 # Start production server
-pnpm start
+npm run start
 
 # Lint code
-pnpm lint
+npm run lint
 
 # Format code
-pnpm format
+npm run format
 ```
 
 ### Node.js Version
@@ -271,7 +271,7 @@ When implementing tests:
 **Primary Platform:** Vercel (recommended)
 **Alternative:** Netlify
 
-Build command: `pnpm build`
+Build command: `npm run build`
 Output directory: `.next`
 
 ## Additional Resources

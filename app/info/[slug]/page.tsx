@@ -26,6 +26,11 @@ export default function InfoPage() {
       content: t("info.exchange.content"),
       description: t("info.exchange.description"),
     },
+    security: {
+      title: t("info.security.title"),
+      content: t("info.security.content"),
+      description: t("info.security.description"),
+    },
   };
 
   const page = pages[slug as keyof typeof pages];
@@ -86,7 +91,7 @@ export default function InfoPage() {
           </CardHeader>
           <CardContent>
             <div
-              className="dark:text-dark-foregroundMuted prose prose-slate max-w-none text-foregroundMuted dark:prose-invert"
+              className="dark:text-dark-foregroundMuted prose prose-slate dark:prose-invert max-w-none text-foregroundMuted"
               dangerouslySetInnerHTML={{ __html: page.content }}
             />
           </CardContent>
@@ -95,4 +100,3 @@ export default function InfoPage() {
     </>
   );
 }
-

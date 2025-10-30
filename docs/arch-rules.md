@@ -22,7 +22,7 @@
 | **Язык программирования** | TypeScript (строго) | JavaScript |
 | **Фреймворк** | Next.js 14+ (App Router) | Pages Router |
 | **Web3** | `wagmi v2` + `viem` | `ethers.js`, прямой `window.ethereum`* |
-| **Менеджер пакетов** | `pnpm` | `npm`, `yarn` |
+| **Менеджер пакетов** | `npm` | `pnpm`, `yarn` |
 | **Node.js** | `>= 20.x` | Более старые версии |
 | **CSS** | TailwindCSS + PostCSS | CSS-in-JS без согласования |
 | **Деплой** | Vercel / Netlify | Не согласованные платформы |

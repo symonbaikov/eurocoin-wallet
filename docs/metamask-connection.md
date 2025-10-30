@@ -9,7 +9,7 @@ This document describes how the dashboard connects a user wallet with MetaMask u
   - `NEXT_PUBLIC_RPC_URL`
   - `NEXT_PUBLIC_TOKEN_ADDRESS`
   - `NEXT_PUBLIC_TOKEN_CHAIN_ID`
-- The app running via `pnpm dev` or deployed build.
+- The app running via `npm run dev` or deployed build.
 
 ## How the Flow Works
 
@@ -41,7 +41,7 @@ This document describes how the dashboard connects a user wallet with MetaMask u
 ## Testing the Flow Locally
 
 1. Configure `.env.local` with your RPC, token, and chain ID.
-2. Start the dev server: `pnpm dev`.
+2. Start the dev server: `npm run dev`.
 3. Open the app in a MetaMask-enabled browser.
 4. Click **“Подключить MetaMask”**:
    - MetaMask should prompt for connection and (if needed) a network switch.

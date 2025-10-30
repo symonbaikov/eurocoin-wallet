@@ -62,8 +62,8 @@ SENDER_EMAIL=noreply@yourdomain.com
 ### 1. Установка Nodemailer
 
 ```bash
-pnpm add nodemailer
-pnpm add -D @types/nodemailer
+npm install nodemailer
+npm install -D @types/nodemailer
 ```
 
 ### 2. Настройка в `.env.local`
@@ -89,7 +89,7 @@ RECIPIENT_EMAIL=treasury@company.io
 
 ### Локально
 
-1. Запустите `pnpm dev`
+1. Запустите `npm run dev`
 2. Откройте форму внутренних заявок
 3. Заполните и отправьте форму
 4. Проверьте inbox указанного `RECIPIENT_EMAIL`

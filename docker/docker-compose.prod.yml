@@ -55,7 +55,7 @@ services:
       - "3000:3000"
     restart: unless-stopped
     command: >
-      sh -c "npm run db:init && npm run db:migrate && npm run start"
+      sh -c "npm run db:init && npm run db:migrate && npm run auth:migrate && npm run start"
 
 volumes:
   postgres-data:
