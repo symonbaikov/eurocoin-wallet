@@ -3,25 +3,25 @@
  * Unified authentication system supporting OAuth (Google, GitHub) and MetaMask
  */
 
-import NextAuth, { type DefaultSession } from 'next-auth';
-import Email from 'next-auth/providers/email';
-import Google from 'next-auth/providers/google';
-import GitHub from 'next-auth/providers/github';
-import { Resend } from 'resend';
-import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import type { AuthType } from '@/types/auth';
+import NextAuth, { type DefaultSession } from "next-auth";
+import Email from "next-auth/providers/email";
+import Google from "next-auth/providers/google";
+import GitHub from "next-auth/providers/github";
+import { Resend } from "resend";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import type { AuthType } from "@/types/auth";
 
 // =============================================================================
 // TypeScript Module Augmentation
 // =============================================================================
 
-declare module 'next-auth' {
+declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
       authType: AuthType;
       walletAddress?: `0x${string}`;
-    } & DefaultSession['user'];
+    } & DefaultSession["user"];
   }
 
   interface User {
@@ -30,7 +30,7 @@ declare module 'next-auth' {
   }
 }
 
-declare module 'next-auth/jwt' {
+declare module "next-auth/jwt" {
   interface JWT {
     userId: string;
     authType: AuthType;
@@ -47,9 +47,9 @@ declare module 'next-auth/jwt' {
 // This is acceptable for development and testing
 const adapter = undefined;
 
-console.warn('[AUTH] ⚠️  Running in JWT-only mode (database adapter disabled)');
-console.warn('[AUTH] Sessions will be stored in JWT tokens, not in the database');
-console.warn('[AUTH] OAuth sign-in will work, but user data won\'t persist in database');
+console.warn("[AUTH] ⚠️  Running in JWT-only mode (database adapter disabled)");
+console.warn("[AUTH] Sessions will be stored in JWT tokens, not in the database");
+console.warn("[AUTH] OAuth sign-in will work, but user data won't persist in database");
 
 // =============================================================================
 // NextAuth Configuration
@@ -71,9 +71,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
         params: {
-          prompt: 'consent',
-          access_type: 'offline',
-          response_type: 'code',
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
         },
       },
       allowDangerousEmailAccountLinking: true, // Allow linking email to existing wallet account
@@ -84,7 +84,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       authorization: {
         params: {
-          scope: 'read:user user:email',
+          scope: "read:user user:email",
         },
       },
       allowDangerousEmailAccountLinking: true,
@@ -95,7 +95,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // Session Strategy
   // ---------------------------------------------------------------------------
   session: {
-    strategy: 'jwt', // Use JWT for serverless compatibility (Vercel)
+    strategy: "jwt", // Use JWT for serverless compatibility (Vercel)
     maxAge: 7 * 24 * 60 * 60, // 7 days
     updateAge: 24 * 60 * 60, // Update session every 24 hours
   },
@@ -110,7 +110,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
      */
     async signIn({ user, account, profile }) {
       // Log sign-in attempt
-      console.log('[AUTH] Sign in attempt:', {
+      console.log("[AUTH] Sign in attempt:", {
         provider: account?.provider,
         email: profile?.email,
         userId: user?.id,
@@ -128,19 +128,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // On first sign in (when user object exists)
       if (user) {
         token.userId = user.id;
-        token.authType = 'email'; // OAuth users are always 'email' type
+        token.authType = "email"; // OAuth users are always 'email' type
         token.walletAddress = user.walletAddress;
 
-        console.log('[AUTH] JWT created:', {
+        console.log("[AUTH] JWT created:", {
           userId: user.id,
-          authType: 'email',
+          authType: "email",
           email: user.email,
         });
       }
 
       // On token refresh
-      if (trigger === 'update') {
-        console.log('[AUTH] JWT updated:', {
+      if (trigger === "update") {
+        console.log("[AUTH] JWT updated:", {
           userId: token.userId,
         });
       }
@@ -155,7 +155,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.userId as string;
-        session.user.authType = (token.authType as AuthType) || 'email';
+        session.user.authType = (token.authType as AuthType) || "email";
         session.user.walletAddress = token.walletAddress as `0x${string}` | undefined;
       }
 
@@ -168,7 +168,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
      */
     async redirect({ url, baseUrl }) {
       // Allows relative callback URLs
-      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
 
       // Allows callback URLs on the same origin
       if (new URL(url).origin === baseUrl) return url;
@@ -183,7 +183,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // ---------------------------------------------------------------------------
   events: {
     async signIn({ user, account, isNewUser }) {
-      console.log('[AUTH EVENT] User signed in:', {
+      console.log("[AUTH EVENT] User signed in:", {
         userId: user.id,
         email: user.email,
         provider: account?.provider,
@@ -195,13 +195,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     async signOut({ token }) {
-      console.log('[AUTH EVENT] User signed out:', {
+      console.log("[AUTH EVENT] User signed out:", {
         userId: token?.userId,
       });
     },
 
     async createUser({ user }) {
-      console.log('[AUTH EVENT] New user created:', {
+      console.log("[AUTH EVENT] New user created:", {
         userId: user.id,
         email: user.email,
       });
@@ -210,7 +210,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     async linkAccount({ user, account }) {
-      console.log('[AUTH EVENT] Account linked:', {
+      console.log("[AUTH EVENT] Account linked:", {
         userId: user.id,
         provider: account.provider,
       });
@@ -221,8 +221,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // Pages (custom UI)
   // ---------------------------------------------------------------------------
   pages: {
-    signIn: '/login', // Custom login page
-    error: '/login', // Redirect errors to login page
+    signIn: "/login", // Custom login page
+    error: "/login", // Redirect errors to login page
     // signOut: '/login',
     // verifyRequest: '/auth/verify',
   },
@@ -233,14 +233,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   cookies: {
     sessionToken: {
       name:
-        process.env.NODE_ENV === 'production'
-          ? '__Secure-next-auth.session-token'
-          : 'next-auth.session-token',
+        process.env.NODE_ENV === "production"
+          ? "__Secure-next-auth.session-token"
+          : "next-auth.session-token",
       options: {
         httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
       },
     },
   },
@@ -248,7 +248,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // ---------------------------------------------------------------------------
   // Debug (only in development)
   // ---------------------------------------------------------------------------
-  debug: process.env.NODE_ENV === 'development',
+  debug: process.env.NODE_ENV === "development",
 });
 
 // =============================================================================
@@ -256,23 +256,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 // =============================================================================
 
 function createEmailProvider() {
-  // Feature flag to enable email auth explicitly
-  const enableEmailAuth = process.env.ENABLE_EMAIL_AUTH === 'true';
+  // Hard-disable Email provider in development to avoid Nodemailer server requirement
+  if (process.env.NODE_ENV !== "production") {
+    console.warn("[AUTH] Email provider disabled in development environment.");
+    return [];
+  }
+
+  // Feature flag to enable email auth explicitly in production
+  const enableEmailAuth = process.env.ENABLE_EMAIL_AUTH === "true";
   if (!enableEmailAuth) {
-    console.warn('[AUTH] Email provider disabled. Set ENABLE_EMAIL_AUTH=true to enable.');
+    console.warn("[AUTH] Email provider disabled. Set ENABLE_EMAIL_AUTH=true to enable.");
     return [];
   }
 
   const resendApiKey = process.env.RESEND_API_KEY;
-  const fromAddress = process.env.SENDER_EMAIL ?? 'noreply@resend.dev';
+  const fromAddress = process.env.SENDER_EMAIL ?? "noreply@resend.dev";
 
   if (!resendApiKey) {
-    console.warn('[AUTH] RESEND_API_KEY is not set. Email sign-in is disabled.');
+    console.warn("[AUTH] RESEND_API_KEY is not set. Email sign-in is disabled.");
     return [];
   }
 
   const resend = new Resend(resendApiKey);
-  const appName = process.env.NEXT_PUBLIC_APP_NAME ?? 'EuroCoin Wallet';
+  const appName = process.env.NEXT_PUBLIC_APP_NAME ?? "EuroCoin Wallet";
 
   return [
     Email({
@@ -293,9 +299,9 @@ function createEmailProvider() {
             throw result.error;
           }
 
-          console.log('[AUTH][EMAIL] Verification email sent', { identifier });
+          console.log("[AUTH][EMAIL] Verification email sent", { identifier });
         } catch (error) {
-          console.error('[AUTH][EMAIL] Failed to send verification email', error);
+          console.error("[AUTH][EMAIL] Failed to send verification email", error);
           throw error;
         }
       },
@@ -391,5 +397,5 @@ export async function hasAuthType(authType: AuthType) {
  */
 export async function canMakeTransactions() {
   const session = await auth();
-  return session?.user?.authType === 'wallet';
+  return session?.user?.authType === "wallet";
 }
