@@ -6,6 +6,7 @@ import {
   getExchangeRequestById,
   getInternalRequestById,
   updateExchangeRequestStatus,
+  updateExchangeRequestStage,
   updateInternalRequestStatus,
   updateInternalRequestStage,
 } from "@/lib/database/queries";
@@ -386,14 +387,28 @@ bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
 
     const dbStatus = stageMap[newStage] || "pending";
 
-    // Update database with both status and stage
-    await updateInternalRequestStatus(
-      requestId,
-      dbStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
-    );
+    // Determine request type by ID prefix and update accordingly
+    if (requestId.startsWith("EX-")) {
+      // Exchange request
+      await updateExchangeRequestStatus(
+        requestId,
+        dbStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
+      );
+      await updateExchangeRequestStage(requestId, newStage);
+    } else if (requestId.startsWith("IR-")) {
+      // Internal request
+      await updateInternalRequestStatus(
+        requestId,
+        dbStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
+      );
+      await updateInternalRequestStage(requestId, newStage);
+    } else {
+      ctx.answerCbQuery("❌ Неверный формат ID заявки");
+      return;
+    }
 
-    // Also update current_stage field
-    await updateInternalRequestStage(requestId, newStage);
+    // Update via webhook
+    await updateRequestStatus(requestId, dbStatus);
 
     // Confirm to user
     const stageLabels: Record<string, string> = {
@@ -405,37 +420,7 @@ bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
       completed: "✅ Завершено",
     };
 
-    ctx.answerCbQuery(`✅ Статус обновлен: ${stageLabels[newStage] || newStage}`);
-
-    // Update the button text to show it was clicked
-    const message = ctx.callbackQuery.message;
-    if (
-      message &&
-      "reply_markup" in message &&
-      message.reply_markup &&
-      "inline_keyboard" in message.reply_markup
-    ) {
-      const keyboard = message.reply_markup.inline_keyboard;
-      const newKeyboard = keyboard.map((row) =>
-        row.map((btn) => {
-          if ("data" in ctx.callbackQuery && btn.text) {
-            const currentData = ctx.callbackQuery.data;
-            return {
-              ...btn,
-              text:
-                currentData && btn.text.includes(stageLabels[newStage]?.split(" ")[1] || "")
-                  ? `✓ ${btn.text}`
-                  : btn.text,
-            };
-          }
-          return btn;
-        }),
-      );
-
-      ctx.editMessageReplyMarkup({
-        inline_keyboard: newKeyboard,
-      });
-    }
+    await ctx.answerCbQuery(`✅ Статус обновлен: ${stageLabels[newStage] || newStage}`);
   } catch (error) {
     console.error("[telegram-webhook] Error updating investigation status:", error);
     console.error("[telegram-webhook] Error details:", {
@@ -478,10 +463,6 @@ bot.action(/^action_(.+)_(.+)$/, async (ctx) => {
     const badge = getStatusBadge(newStatus);
     const statusName = getStatusName(newStatus);
     ctx.answerCbQuery(`✅ Статус обновлен: ${badge} ${statusName}`);
-    ctx.editMessageText(
-      `✅ *Статус обновлен*\n\n` + `ID: ${requestId}\n` + `Новый статус: ${badge} ${statusName}`,
-      { parse_mode: "Markdown" },
-    );
   } catch (error) {
     console.error("Error handling action:", error);
     ctx.answerCbQuery("❌ Ошибка при обновлении статуса");
