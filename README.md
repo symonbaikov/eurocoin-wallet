@@ -30,10 +30,12 @@ EuroCoin Web Wallet is a comprehensive dashboard for managing corporate ERC-20 t
 
 ### 💱 Exchange & Trading
 
-- **Exchange Calculator** - Real-time TOKEN ↔ RUB conversion with live rates
+- **Exchange Calculator** - Real-time TOKEN ↔ EUR conversion with live rates
 - **Dynamic Pricing** - Automatic exchange rate updates via CoinGecko
 - **Commission Management** - Configurable trading fees
 - **Request System** - Streamlined exchange request workflow
+- **File Attachments** - Support for PDF, Excel, Word, TXT, CSV files
+- **Telegram Delivery** - Automatic file delivery to managers via Telegram
 
 ### 🤖 Chatbot Support
 
@@ -157,6 +159,7 @@ web-wallet/
 ├── app/                          # Next.js App Router pages
 │   ├── api/                      # API routes
 │   │   ├── chatbot/             # Chatbot endpoints
+│   │   ├── files/                # File upload/download
 │   │   ├── investigation/        # Investigation tracking
 │   │   ├── submit-request/      # Request submission
 │   │   └── telegram-webhook/    # Telegram integration
@@ -168,9 +171,10 @@ web-wallet/
 │   ├── chatbot/                  # Chat widget & notifications
 │   ├── wallet/                    # Wallet components
 │   ├── exchange/                  # Exchange calculator
+│   ├── forms/                     # Request forms with file upload
 │   ├── dashboard/                 # Investigation progress
 │   ├── layout/                    # Header, footer, navigation
-│   └── ui/                        # Reusable UI components
+│   └── ui/                        # Reusable UI components (FileUploader, etc.)
 ├── hooks/
 │   ├── use-wallet-connection.ts  # Wallet connection logic
 │   ├── use-token-balance.ts      # Token balance tracking
@@ -178,8 +182,10 @@ web-wallet/
 │   ├── use-active-section.ts     # Navigation tracking
 │   └── use-exchange-rate.ts      # Exchange rate fetching
 ├── lib/
-│   ├── database/                 # PostgreSQL queries
+│   ├── database/                 # PostgreSQL queries & schemas
 │   ├── i18n/                      # Internationalization
+│   ├── telegram/                  # Telegram bot utilities
+│   ├── utils/                     # File conversion & validation
 │   └── wagmi.tsx                  # Web3 configuration
 ├── config/
 │   ├── chains.ts                  # Blockchain configuration
