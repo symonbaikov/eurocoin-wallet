@@ -9,7 +9,7 @@ export interface TransactionAnalysisResult {
   suspiciousReasons: string[];
   transactionDetails: {
     from: string;
-    to: string;
+    to: string | null;
     value: string;
     gasUsed: string;
     status: "success" | "failed";
@@ -24,8 +24,8 @@ interface UseTransactionAnalysisResult {
 }
 
 // Constants for suspicious patterns
-const SUSPICIOUS_GAS_PRICE_THRESHOLD = parseUnits("100", "gwei");
-const HIGH_VALUE_THRESHOLD = parseUnits("10", "ether");
+const SUSPICIOUS_GAS_PRICE_THRESHOLD = parseUnits("100", 9); // 100 gwei = 9 decimals
+const HIGH_VALUE_THRESHOLD = parseUnits("10", 18); // 10 ether = 18 decimals
 
 export function useTransactionAnalysis(): UseTransactionAnalysisResult {
   const [loading, setLoading] = useState(false);
@@ -77,12 +77,14 @@ export function useTransactionAnalysis(): UseTransactionAnalysisResult {
         }
 
         // Check 4: Transaction to contract
-        const code = await publicClient.getBytecode({ address: receipt.to });
-        if (code && code !== "0x") {
-          suspiciousReasons.push("Transaction to smart contract");
-          recommendations.push(
-            "Транзакция направлена в смарт-контракт. Убедитесь, что вы понимаете, что делает этот контракт.",
-          );
+        if (receipt.to) {
+          const code = await publicClient.getBytecode({ address: receipt.to });
+          if (code && code !== "0x") {
+            suspiciousReasons.push("Transaction to smart contract");
+            recommendations.push(
+              "Транзакция направлена в смарт-контракт. Убедитесь, что вы понимаете, что делает этот контракт.",
+            );
+          }
         }
 
         const result: TransactionAnalysisResult = {

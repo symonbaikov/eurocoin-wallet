@@ -86,6 +86,7 @@ export function AllInvestigations() {
   // Initialize with mock data
   useEffect(() => {
     const mockData = generateMockInvestigations();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInvestigations(mockData);
     // Initialize animated progress
     const initialProgress: Record<string, number> = {};

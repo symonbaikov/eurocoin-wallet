@@ -26,12 +26,14 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY next.config.ts ./next.config.ts
+COPY tsconfig.json ./tsconfig.json
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY docker/scripts ./docker/scripts
 # Copy lib and scripts for database migrations
 COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/scripts/tsconfig.json ./scripts/tsconfig.json
 RUN chmod +x ./docker/scripts/docker-entrypoint.sh
 
 EXPOSE 3000

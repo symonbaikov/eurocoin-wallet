@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface SupportMessage {
   id: string;
-  type: 'user' | 'admin' | 'system';
+  type: "user" | "admin" | "system";
   text: string;
   adminUsername?: string;
   createdAt: string;
@@ -29,7 +29,7 @@ interface UseSupportMessagesReturn {
 }
 
 export function useSupportMessages(
-  options: UseSupportMessagesOptions = {}
+  options: UseSupportMessagesOptions = {},
 ): UseSupportMessagesReturn {
   const { walletAddress, enabled = true, pollingInterval = 3000 } = options;
 
@@ -40,7 +40,7 @@ export function useSupportMessages(
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const pollingIntervalRef = useRef<NodeJS.Timeout>();
+  const pollingIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const previousMessageCountRef = useRef(0);
 
   // Load messages from API
@@ -51,16 +51,16 @@ export function useSupportMessages(
       setLoading(true);
       setError(null);
 
-      const url = new URL('/api/support/get-messages', window.location.origin);
-      url.searchParams.append('walletAddress', walletAddress);
+      const url = new URL("/api/support/get-messages", window.location.origin);
+      url.searchParams.append("walletAddress", walletAddress);
       if (sessionId) {
-        url.searchParams.append('sessionId', sessionId);
+        url.searchParams.append("sessionId", sessionId);
       }
 
       const response = await fetch(url.toString());
 
       if (!response.ok) {
-        throw new Error('Failed to fetch messages');
+        throw new Error("Failed to fetch messages");
       }
 
       const data = await response.json();
@@ -71,15 +71,15 @@ export function useSupportMessages(
 
       // Count unread admin messages
       const unread = fetchedMessages.filter(
-        (msg: SupportMessage) => msg.type === 'admin' && !msg.isRead
+        (msg: SupportMessage) => msg.type === "admin" && !msg.isRead,
       ).length;
       setUnreadCount(unread);
 
       // Track message count for new message detection
       previousMessageCountRef.current = fetchedMessages.length;
     } catch (err) {
-      console.error('Error loading support messages:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load messages');
+      console.error("Error loading support messages:", err);
+      setError(err instanceof Error ? err.message : "Failed to load messages");
     } finally {
       setLoading(false);
     }
@@ -96,10 +96,10 @@ export function useSupportMessages(
         setSending(true);
         setError(null);
 
-        const response = await fetch('/api/support/send-user-message', {
-          method: 'POST',
+        const response = await fetch("/api/support/send-user-message", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             walletAddress,
@@ -110,7 +110,7 @@ export function useSupportMessages(
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to send message');
+          throw new Error(errorData.error || "Failed to send message");
         }
 
         const data = await response.json();
@@ -123,14 +123,14 @@ export function useSupportMessages(
         // Reload messages to include the new one
         await loadMessages();
       } catch (err) {
-        console.error('Error sending message:', err);
-        setError(err instanceof Error ? err.message : 'Failed to send message');
+        console.error("Error sending message:", err);
+        setError(err instanceof Error ? err.message : "Failed to send message");
         throw err;
       } finally {
         setSending(false);
       }
     },
-    [walletAddress, sessionId, loadMessages]
+    [walletAddress, sessionId, loadMessages],
   );
 
   // Set up polling

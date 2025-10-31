@@ -11,7 +11,7 @@ import {
 import { sendFilesToTelegram } from "@/lib/telegram/send-files";
 
 const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 interface ExchangeRequest {
   tokenAmount: string;
@@ -75,9 +75,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare message for manager
-    const filesInfo = data.files && data.files.length > 0 
-      ? `\n📎 *Прикрепленные файлы:* ${data.files.length} шт.` 
-      : "";
+    const filesInfo =
+      data.files && data.files.length > 0
+        ? `\n📎 *Прикрепленные файлы:* ${data.files.length} шт.`
+        : "";
 
     const message = `
 🔔 *Новая заявка на обмен токенов*
@@ -132,9 +133,7 @@ ${filesInfo}
               fileName: f.file_name,
               fileType: f.file_type,
               fileSize: f.file_size,
-              fileData: f.file_data instanceof Buffer
-                ? f.file_data
-                : Buffer.from(f.file_data, "base64"),
+              fileData: f.file_data,
             })),
           );
           // Delete files from DB after successful Telegram delivery
@@ -157,7 +156,7 @@ ${filesInfo}
       tokenAmount: data.tokenAmount,
       fiatAmount: data.fiatAmount,
     }).catch((err) => {
-      console.error('Failed to send support notification:', err);
+      console.error("Failed to send support notification:", err);
       // Don't fail the request if notification fails
     });
 
@@ -241,12 +240,14 @@ ${filesInfo}
       </html>
     `;
 
-    await resend.emails.send({
-      from: process.env.SENDER_EMAIL!,
-      to: process.env.RECIPIENT_EMAIL!,
-      subject: `[EXCHANGE] Новая заявка ${requestId}`,
-      html: emailHtml,
-    });
+    if (resend) {
+      await resend.emails.send({
+        from: process.env.SENDER_EMAIL!,
+        to: process.env.RECIPIENT_EMAIL!,
+        subject: `[EXCHANGE] Новая заявка ${requestId}`,
+        html: emailHtml,
+      });
+    }
 
     return NextResponse.json({ success: true, requestId }, { status: 200 });
   } catch (error) {

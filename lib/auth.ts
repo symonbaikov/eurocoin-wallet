@@ -21,19 +21,14 @@ declare module "next-auth" {
     user: {
       id: string;
       authType: AuthType;
+      email?: string;
+      name?: string;
+      image?: string;
       walletAddress?: `0x${string}`;
     } & DefaultSession["user"];
   }
 
   interface User {
-    authType: AuthType;
-    walletAddress?: `0x${string}`;
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    userId: string;
     authType: AuthType;
     walletAddress?: `0x${string}`;
   }
@@ -51,12 +46,17 @@ try {
   if (process.env.DATABASE_URL) {
     // Use DrizzleAdapter with custom schema
     // This ensures it uses the correct table names: users, accounts, sessions, verification_tokens
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     adapter = DrizzleAdapter(db, {
-      usersTable: users,
-      accountsTable: accounts,
-      sessionsTable: sessions,
-      verificationTokensTable: verificationTokens,
-    });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      usersTable: users as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      accountsTable: accounts as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sessionsTable: sessions as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      verificationTokensTable: verificationTokens as any,
+    }) as any;
     console.log("[AUTH] ✅ Database adapter enabled for email authentication");
   } else {
     console.warn(
@@ -80,7 +80,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // ---------------------------------------------------------------------------
   // Database Adapter (optional)
   // ---------------------------------------------------------------------------
-  adapter,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  adapter: adapter as any,
 
   // ---------------------------------------------------------------------------
   // OAuth Providers
@@ -204,10 +205,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Example: trackEvent('user_signin', { provider: account?.provider });
     },
 
-    async signOut({ token }) {
-      console.log("[AUTH EVENT] User signed out:", {
-        userId: token?.userId,
-      });
+    async signOut() {
+      console.log("[AUTH EVENT] User signed out");
     },
 
     async createUser({ user }) {

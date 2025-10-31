@@ -12,3 +12,4 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_chatbot_sessions_wallet_unique ON chatbot_
 -- ============================================
 COMMENT ON INDEX idx_chatbot_sessions_wallet_unique IS 'Ensures one session per wallet address';
 
+

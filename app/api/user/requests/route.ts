@@ -38,8 +38,8 @@ export async function GET(request: NextRequest) {
 
     // Fetch requests based on type
     const result: {
-      exchangeRequests: any[];
-      internalRequests: any[];
+      exchangeRequests: unknown[];
+      internalRequests: unknown[];
     } = {
       exchangeRequests: [],
       internalRequests: [],

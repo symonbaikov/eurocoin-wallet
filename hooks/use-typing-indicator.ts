@@ -27,7 +27,7 @@ export function useTypingIndicator(
   const [isTyping, setIsTyping] = useState(false);
   const [adminUsername, setAdminUsername] = useState('Администратор');
 
-  const checkIntervalRef = useRef<NodeJS.Timeout>();
+  const checkIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Check typing status from API
   const checkTypingStatus = useCallback(async () => {

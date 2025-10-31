@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  getAllInternalRequests,
   getInternalRequestsByWallet,
   getInternalRequestsByEmail,
   getExchangeRequestsByWallet,
   getExchangeRequestsByEmail,
+  type InternalRequest,
+  type ExchangeRequest,
 } from "@/lib/database/queries";
 
 interface InvestigationStage {
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
     const walletAddress = request.nextUrl.searchParams.get("walletAddress");
     const userEmail = request.nextUrl.searchParams.get("userEmail");
 
-    let allRequests: any[] = [];
+    let allRequests: (InternalRequest | ExchangeRequest)[] = [];
 
     // Get ALL requests for this user (internal + exchange)
     if (walletAddress) {
@@ -129,12 +130,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Sort all requests by created_at DESC to get the latest
-    allRequests.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    allRequests.sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return dateB - dateA;
+    });
 
     // Use latest or specific request
-    const targetRequest = requestId
-      ? allRequests.find((r) => r.id === requestId)
-      : allRequests[0];
+    const targetRequest = requestId ? allRequests.find((r) => r.id === requestId) : allRequests[0];
 
     if (!targetRequest) {
       return NextResponse.json({ error: "Request not found" }, { status: 404 });

@@ -18,7 +18,7 @@ export interface RequestData {
   createdAt: string;
   updatedAt: string;
   details: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 

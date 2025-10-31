@@ -21,6 +21,7 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
 
   // Only render iframe after component mounts to avoid hydration mismatch
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 
@@ -30,6 +31,7 @@ export function DexscreenerChart({ tokenAddress }: DexscreenerChartProps) {
   // Force iframe reload when theme changes with loading state
   useEffect(() => {
     if (prevThemeRef.current && prevThemeRef.current !== dexTheme) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsReloading(true);
       setIframeKey((prev) => prev + 1);
 

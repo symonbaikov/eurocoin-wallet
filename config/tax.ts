@@ -1,4 +1,4 @@
-const TAX_FUNCTIONS = ["tax", "taxPercent", "getTax", "taxBps"] as const;
+const TAX_FUNCTIONS = ["tax", "taxPercent", "taxBps"] as const;
 
 type TaxFunctionName = (typeof TAX_FUNCTIONS)[number];
 
@@ -29,9 +29,7 @@ const parseInteger = (
 
 const envFunction = process.env.NEXT_PUBLIC_TOKEN_TAX_FUNCTION;
 
-const taxFunctionName: TaxFunctionName = TAX_FUNCTIONS.includes(
-  envFunction as TaxFunctionName,
-)
+const taxFunctionName: TaxFunctionName = TAX_FUNCTIONS.includes(envFunction as TaxFunctionName)
   ? (envFunction as TaxFunctionName)
   : "tax";
 
@@ -49,6 +47,6 @@ export const TAX_CONFIG = {
 } as const;
 
 export const formatTaxPercent = (bps: number, scale: number): number =>
-  Number.isFinite(bps) && scale > 0 ? bps / scale * 100 : 0;
+  Number.isFinite(bps) && scale > 0 ? (bps / scale) * 100 : 0;
 
 export type TaxSource = "contract" | "fallback";

@@ -581,7 +581,12 @@ bot.action(/^history_(.+)$/, async (ctx) => {
     }
 
     // Format messages for the helper function
-    const formattedMessages = messages.map((msg: any) => ({
+    const formattedMessages = (messages as Array<{
+      type: string;
+      text: string;
+      adminUsername?: string;
+      createdAt: string;
+    }>).map((msg) => ({
       type: msg.type,
       text: msg.text,
       admin_username: msg.adminUsername,

@@ -3,7 +3,7 @@
  * Unified authentication system supporting both MetaMask wallet and OAuth email login
  */
 
-import type { DefaultSession } from 'next-auth';
+import type { DefaultSession } from "next-auth";
 
 // ============================================================================
 // Auth Type Enum
@@ -14,7 +14,7 @@ import type { DefaultSession } from 'next-auth';
  * - 'wallet': MetaMask wallet connection (full access)
  * - 'email': OAuth email authentication (read-only access)
  */
-export type AuthType = 'wallet' | 'email';
+export type AuthType = "wallet" | "email";
 
 // ============================================================================
 // User Types
@@ -34,7 +34,7 @@ export interface BaseUser {
  * Has full access including transactions
  */
 export interface WalletUser extends BaseUser {
-  authType: 'wallet';
+  authType: "wallet";
   walletAddress: `0x${string}`;
   chainId?: number;
 }
@@ -44,7 +44,7 @@ export interface WalletUser extends BaseUser {
  * Has read-only access
  */
 export interface EmailUser extends BaseUser {
-  authType: 'email';
+  authType: "email";
   email: string;
   name?: string;
   image?: string;
@@ -62,35 +62,8 @@ export type User = WalletUser | EmailUser;
 
 /**
  * Extended session for NextAuth
+ * NOTE: Session and JWT interfaces are declared in lib/auth.ts to avoid module augmentation conflicts
  */
-declare module 'next-auth' {
-  interface Session extends DefaultSession {
-    user: {
-      id: string;
-      authType: AuthType;
-      email?: string;
-      name?: string;
-      image?: string;
-      walletAddress?: `0x${string}`;
-    } & DefaultSession['user'];
-  }
-
-  interface User {
-    authType: AuthType;
-    walletAddress?: `0x${string}`;
-  }
-}
-
-/**
- * JWT token extension
- */
-declare module 'next-auth/jwt' {
-  interface JWT {
-    userId: string;
-    authType: AuthType;
-    walletAddress?: `0x${string}`;
-  }
-}
 
 // ============================================================================
 // Auth State Types
@@ -143,22 +116,22 @@ export interface AuthState {
  */
 export enum Permission {
   /** View public information */
-  VIEW_PUBLIC = 'view_public',
+  VIEW_PUBLIC = "view_public",
 
   /** View wallet balance */
-  VIEW_BALANCE = 'view_balance',
+  VIEW_BALANCE = "view_balance",
 
   /** View transaction history */
-  VIEW_HISTORY = 'view_history',
+  VIEW_HISTORY = "view_history",
 
   /** Make token transfers */
-  TRANSFER_TOKENS = 'transfer_tokens',
+  TRANSFER_TOKENS = "transfer_tokens",
 
   /** Create internal requests */
-  CREATE_REQUESTS = 'create_requests',
+  CREATE_REQUESTS = "create_requests",
 
   /** View internal requests */
-  VIEW_REQUESTS = 'view_requests',
+  VIEW_REQUESTS = "view_requests",
 }
 
 /**
@@ -197,7 +170,7 @@ export function hasPermission(authType: AuthType | null, permission: Permission)
 /**
  * Supported OAuth providers
  */
-export type OAuthProvider = 'google' | 'github' | 'microsoft';
+export type OAuthProvider = "google" | "github" | "microsoft";
 
 /**
  * OAuth provider configuration

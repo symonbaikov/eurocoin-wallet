@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { Telegraf } from "telegraf";
+import { NextResponse } from "next/server";
 
 /**
  * GET /api/telegram/get-chat-id
  * Fetches recent updates to find admin chat ID
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const apiKey = process.env.TELEGRAM_API_KEY;
 
@@ -13,10 +12,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "TELEGRAM_API_KEY not set" }, { status: 500 });
     }
 
-    const bot = new Telegraf(apiKey);
+    // Fetch updates directly from Telegram Bot API
+    const response = await fetch(`https://api.telegram.org/bot${apiKey}/getUpdates`);
 
-    // Get recent updates
-    const updates = await bot.telegram.getUpdates({});
+    if (!response.ok) {
+      throw new Error(`Telegram API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const updates = data.result || [];
 
     if (updates.length === 0) {
       return NextResponse.json({
@@ -27,14 +31,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Extract chat IDs from updates
-    const chatIds = updates
-      .map((update) => {
-        if ("message" in update && update.message) {
+    const chatIds = (updates as unknown[])
+      .map((update: unknown) => {
+        const u = update as Record<string, unknown>;
+        if ("message" in u && u.message) {
+          const msg = u.message as Record<string, unknown>;
           return {
-            chat_id: update.message.chat.id,
-            username: update.message.from?.username,
-            first_name: update.message.from?.first_name,
-            message: update.message.text,
+            chat_id: (msg.chat as Record<string, unknown>)?.id,
+            username: (msg.from as Record<string, unknown>)?.username,
+            first_name: (msg.from as Record<string, unknown>)?.first_name,
+            message: msg.text,
           };
         }
         return null;

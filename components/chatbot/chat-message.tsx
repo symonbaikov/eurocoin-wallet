@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface ChatMessageProps {
   message: ChatMessageType;
-  currentLocale: "ru" | "en";
+  currentLocale: "ru" | "en" | "lt" | "lv";
   onTranslate: (translated: string) => void;
 }
 
@@ -73,7 +73,7 @@ export function ChatMessage({ message, onTranslate }: ChatMessageProps) {
 
         {/* Timestamp and translate button */}
         <div className={cn("flex items-center gap-2", isUser ? "flex-row-reverse" : "flex-row")}>
-          <span className="dark:text-dark-foregroundMuted text-xs text-foregroundMuted">
+          <span className="text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
             {format(message.timestamp, "HH:mm", { locale: ru })}
           </span>
           <TranslateButton message={message} onTranslate={onTranslate} />

@@ -118,6 +118,7 @@ export function ReviewsCarousel() {
   useEffect(() => {
     if (prevLocale.current !== locale) {
       prevLocale.current = locale;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentIndex(0);
     }
     // eslint-disable-next-line

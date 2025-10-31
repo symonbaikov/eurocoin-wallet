@@ -15,11 +15,7 @@ interface FileWithId extends File {
   id: string;
 }
 
-export function FileUploader({
-  onFilesChange,
-  maxFiles = 5,
-  disabled = false,
-}: FileUploaderProps) {
+export function FileUploader({ onFilesChange, maxFiles = 5, disabled = false }: FileUploaderProps) {
   const [files, setFiles] = useState<FileWithId[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -38,7 +34,7 @@ export function FileUploader({
       const validation = validateFile(file.name, file.type, file.size);
 
       if (!validation.valid) {
-        toast.error(validation.error);
+        toast.error(validation.error || "Invalid file");
         continue;
       }
 
@@ -82,9 +78,10 @@ export function FileUploader({
         className={`
           relative flex cursor-pointer flex-col items-center justify-center 
           rounded-lg border-2 border-dashed p-6 transition-colors
-          ${disabled || files.length >= maxFiles
-            ? "cursor-not-allowed border-gray-300 opacity-50"
-            : "border-outline hover:border-accent hover:bg-accent/5"
+          ${
+            disabled || files.length >= maxFiles
+              ? "cursor-not-allowed border-gray-300 opacity-50"
+              : "border-outline hover:border-accent hover:bg-accent/5"
           }
         `}
       >
@@ -101,9 +98,7 @@ export function FileUploader({
         <Upload className="mb-2 h-10 w-10 text-foregroundMuted" />
 
         <p className="text-sm font-medium">
-          {files.length >= maxFiles
-            ? "Maximum files reached"
-            : "Click to upload or drag and drop"}
+          {files.length >= maxFiles ? "Maximum files reached" : "Click to upload or drag and drop"}
         </p>
         <p className="text-xs text-foregroundMuted">
           PDF, Excel, Word, TXT, CSV (max 10MB per file)
@@ -118,10 +113,10 @@ export function FileUploader({
               key={file.id}
               className="flex items-center justify-between rounded-lg border border-outline bg-surface p-3"
             >
-              <div className="flex items-center space-x-2 flex-1 min-w-0">
+              <div className="flex min-w-0 flex-1 items-center space-x-2">
                 <File className="h-4 w-4 flex-shrink-0 text-accent" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{file.name}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{file.name}</p>
                   <p className="text-xs text-foregroundMuted">{formatFileSize(file.size)}</p>
                 </div>
               </div>
@@ -132,7 +127,7 @@ export function FileUploader({
                     e.stopPropagation();
                     handleRemoveFile(file.id);
                   }}
-                  className="ml-2 text-red-500 hover:text-red-700 transition-colors"
+                  className="ml-2 text-red-500 transition-colors hover:text-red-700"
                   type="button"
                 >
                   <X className="h-4 w-4" />
@@ -152,4 +147,3 @@ export function FileUploader({
     </div>
   );
 }
-

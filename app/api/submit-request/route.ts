@@ -10,7 +10,7 @@ import {
 } from "@/lib/database/file-queries";
 import { sendFilesToTelegram } from "@/lib/telegram/send-files";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
 
 interface RequestFormData {
@@ -167,25 +167,31 @@ export async function POST(request: NextRequest) {
     `;
 
     // Send email using Resend
-    const { data: emailData, error } = await resend.emails.send({
-      from: senderEmail,
-      to: recipientEmail,
-      subject: emailSubject,
-      html: emailHtml,
-    });
+    let emailData: { id: string } | undefined;
+    if (resend) {
+      const result = await resend.emails.send({
+        from: senderEmail,
+        to: recipientEmail,
+        subject: emailSubject,
+        html: emailHtml,
+      });
 
-    if (error) {
-      console.error("Resend error:", error);
-      return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+      if (result.error) {
+        console.error("Resend error:", result.error);
+        return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+      }
+
+      emailData = result.data;
     }
 
     // Send notification to Telegram
     try {
       const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
       if (managerChatId) {
-        const filesInfo = data.files && data.files.length > 0 
-          ? `\n📎 *Прикрепленные файлы:* ${data.files.length} шт.` 
-          : "";
+        const filesInfo =
+          data.files && data.files.length > 0
+            ? `\n📎 *Прикрепленные файлы:* ${data.files.length} шт.`
+            : "";
 
         const telegramMessage =
           `🔵 *Новая внутренняя заявка*\n\n` +
@@ -229,9 +235,7 @@ export async function POST(request: NextRequest) {
                 fileName: f.file_name,
                 fileType: f.file_type,
                 fileSize: f.file_size,
-                fileData: f.file_data instanceof Buffer
-                  ? f.file_data
-                  : Buffer.from(f.file_data, "base64"),
+                fileData: f.file_data,
               })),
             );
             // Delete files from DB after successful Telegram delivery
@@ -259,7 +263,7 @@ export async function POST(request: NextRequest) {
       requestType: requestTypeMap[data.requestType] || data.requestType,
       priority: data.priority.toUpperCase(),
     }).catch((err) => {
-      console.error('Failed to send support notification:', err);
+      console.error("Failed to send support notification:", err);
       // Don't fail the request if notification fails
     });
 

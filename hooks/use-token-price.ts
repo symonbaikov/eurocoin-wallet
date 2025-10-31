@@ -1,11 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  type TokenPriceResult,
-  getTokenPriceSync,
-  getTokenPriceUsd,
-} from "@/lib/pricing";
+import { type TokenPriceResult, getTokenPriceSync, getTokenPriceUsd } from "@/lib/pricing";
 
 const TOKEN_PRICE_QUERY_KEY = ["token-price"] as const;
 
@@ -21,9 +17,7 @@ interface UseTokenPriceResult extends TokenPriceResult {
   isFetching: boolean;
 }
 
-export function useTokenPrice(
-  options?: UseTokenPriceOptions,
-): UseTokenPriceResult {
+export function useTokenPrice(options?: UseTokenPriceOptions): UseTokenPriceResult {
   const revalidateMs = options?.refetchInterval ?? 60_000;
 
   const query = useQuery({
@@ -37,9 +31,10 @@ export function useTokenPrice(
   });
 
   return {
-    priceUsd: query.data.priceUsd,
-    source: query.data.source,
-    fetchedAt: query.data.fetchedAt,
+    priceUsd: query.data?.priceUsd ?? null,
+    source: query.data?.source ?? "fixed",
+    // eslint-disable-next-line react-hooks/purity
+    fetchedAt: query.data?.fetchedAt ?? Date.now(),
     isLoading: query.isLoading,
     isError: query.isError,
     error: (query.error as Error | undefined) ?? null,

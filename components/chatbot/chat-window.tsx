@@ -118,10 +118,15 @@ export function ChatWindow({ userAddress }: ChatWindowProps) {
 
       if (result) {
         // Add analysis results
+        const toDisplay = result.transactionDetails.to
+          ? `${result.transactionDetails.to.slice(0, 10)}...`
+          : locale === "ru"
+            ? "Contract creation"
+            : "Contract creation";
         const analysisText =
           locale === "ru"
-            ? `Анализ завершен. Статус: ${result.isSuspicious ? "⚠️ Подозрительная" : "✅ Нормальная"}\n\nДетали:\n- От: ${result.transactionDetails.from.slice(0, 10)}...\n- К: ${result.transactionDetails.to.slice(0, 10)}...\n- Сумма: ${result.transactionDetails.value} ETH\n- Газ: ${result.transactionDetails.gasUsed}\n\n${result.recommendations.join("\n\n")}`
-            : `Analysis complete. Status: ${result.isSuspicious ? "⚠️ Suspicious" : "✅ Normal"}\n\nDetails:\n- From: ${result.transactionDetails.from.slice(0, 10)}...\n- To: ${result.transactionDetails.to.slice(0, 10)}...\n- Amount: ${result.transactionDetails.value} ETH\n- Gas: ${result.transactionDetails.gasUsed}\n\n${result.recommendations.join("\n\n")}`;
+            ? `Анализ завершен. Статус: ${result.isSuspicious ? "⚠️ Подозрительная" : "✅ Нормальная"}\n\nДетали:\n- От: ${result.transactionDetails.from.slice(0, 10)}...\n- К: ${toDisplay}\n- Сумма: ${result.transactionDetails.value} ETH\n- Газ: ${result.transactionDetails.gasUsed}\n\n${result.recommendations.join("\n\n")}`
+            : `Analysis complete. Status: ${result.isSuspicious ? "⚠️ Suspicious" : "✅ Normal"}\n\nDetails:\n- From: ${result.transactionDetails.from.slice(0, 10)}...\n- To: ${toDisplay}\n- Amount: ${result.transactionDetails.value} ETH\n- Gas: ${result.transactionDetails.gasUsed}\n\n${result.recommendations.join("\n\n")}`;
 
         addMessage({
           type: "bot",

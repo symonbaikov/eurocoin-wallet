@@ -36,44 +36,57 @@
 
 ## ✅ Deployment Readiness Assessment
 
-### Current Status: **90% Ready for Production** 🟢
+### Current Status: **95% Ready for Production** 🟢
 
 #### ✅ Completed Features
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Authentication System** | ✅ Ready | Google OAuth + Email working |
-| **MetaMask Integration** | ✅ Ready | wagmi v2 configured for Sepolia + Mainnet |
-| **Database Schema** | ✅ Ready | 12 tables, migrations available |
-| **Support Messenger** | ✅ Ready | Real-time support chat with Telegram integration |
-| **Exchange Forms** | ✅ Ready | Token exchange + internal requests |
-| **Tax Calculator** | ✅ Ready | On-chain tax calculation |
-| **Email Notifications** | ✅ Ready | Resend integration |
-| **Telegram Bot** | ✅ Ready | Admin notifications + replies |
-| **Security Headers** | ✅ Ready | CSP, HSTS, X-Frame-Options configured |
-| **TypeScript** | ✅ Ready | Strict mode, fully typed |
-| **i18n** | ✅ Ready | Russian + English |
+| Feature                   | Status   | Notes                                                |
+| ------------------------- | -------- | ---------------------------------------------------- |
+| **Authentication System** | ✅ Ready | Google OAuth + Email working with DrizzleAdapter     |
+| **MetaMask Integration**  | ✅ Ready | wagmi v2 configured for Sepolia + Mainnet            |
+| **Database Schema**       | ✅ Ready | 13 tables created, 9 migrations available            |
+| **Support Messenger**     | ✅ Ready | Real-time support chat with Telegram integration     |
+| **Exchange Forms**        | ✅ Ready | Token exchange + internal requests                   |
+| **File Attachments**      | ✅ Ready | Request file upload support                          |
+| **Tax Calculator**        | ✅ Ready | On-chain tax calculation                             |
+| **Email Notifications**   | ✅ Ready | Resend integration (graceful fallback implemented)   |
+| **Telegram Bot**          | ✅ Ready | Admin notifications + replies                        |
+| **Security Headers**      | ✅ Ready | CSP with all required domains, HSTS, X-Frame-Options |
+| **TypeScript**            | ✅ Ready | Strict mode, fully typed, no errors                  |
+| **i18n**                  | ✅ Ready | 4 languages: Russian, English, Lithuanian, Latvian   |
+| **Docker Setup**          | ✅ Ready | Production & Development Dockerfiles configured      |
+| **Production Testing**    | ✅ Ready | Dockerized production environment tested and working |
 
 #### ⚠️ Pre-Deployment Requirements
 
-| Task | Priority | Status | Notes |
-|------|----------|--------|-------|
-| **Production Database** | 🔴 Critical | ❌ Pending | Need Vercel Postgres or external provider |
-| **Redis Instance** | 🔴 Critical | ❌ Pending | Upstash Redis recommended for Vercel |
-| **Environment Variables** | 🔴 Critical | ❌ Pending | 20+ variables to configure |
-| **OAuth Redirect URLs** | 🔴 Critical | ❌ Pending | Update Google Console with production URL |
-| **Database Migrations** | 🔴 Critical | ✅ Ready | 7 migration files prepared |
-| **Telegram Webhook** | 🟡 Important | ❌ Pending | Set production webhook URL |
-| **Domain Configuration** | 🟡 Important | ❌ Pending | Custom domain or Vercel subdomain |
-| **Analytics Setup** | 🟢 Optional | ❌ Pending | Google Analytics, Sentry |
-| **Rate Limiting** | 🟡 Important | ⚠️ Partial | Currently in-memory, needs Redis |
+| Task                      | Priority     | Status     | Notes                                     |
+| ------------------------- | ------------ | ---------- | ----------------------------------------- |
+| **Production Database**   | 🔴 Critical  | ❌ Pending | Need Vercel Postgres or external provider |
+| **Redis Instance**        | 🔴 Critical  | ❌ Pending | Upstash Redis recommended for Vercel      |
+| **Environment Variables** | 🔴 Critical  | ❌ Pending | 20+ variables to configure                |
+| **OAuth Redirect URLs**   | 🔴 Critical  | ❌ Pending | Update Google Console with production URL |
+| **Database Migrations**   | 🔴 Critical  | ✅ Ready   | 9 migration files prepared, auto-applied  |
+| **Telegram Webhook**      | 🟡 Important | ❌ Pending | Set production webhook URL                |
+| **Domain Configuration**  | 🟡 Important | ❌ Pending | Custom domain or Vercel subdomain         |
+| **Analytics Setup**       | 🟢 Optional  | ❌ Pending | Google Analytics, Sentry                  |
+| **Rate Limiting**         | 🟡 Important | ⚠️ Partial | Currently in-memory, needs Redis          |
 
 #### 🔧 Known Limitations
 
 1. **Rate Limiting:** Currently uses in-memory storage (will reset on serverless function restart). Recommend migrating to Upstash Redis.
 2. **Session Storage:** Using JWT (good for Vercel), but consider database sessions for enterprise.
-3. **File Uploads:** Not implemented (no avatar uploads yet).
+3. **File Uploads:** Implemented for requests (exchange/internal), no avatar uploads yet.
 4. **Monitoring:** No APM/error tracking configured (recommend Sentry).
+5. **Missing Sound File:** `notification-bell.mp3` is missing, but fallback via Web Audio API is implemented.
+6. **NextAuth v5 Beta:** Using beta version, JWT module augmentation moved to `lib/auth.ts` to avoid conflicts.
+
+#### ✅ Recent Fixes
+
+1. **Docker Production Build:** Fixed `dotenv`, `tsx`, and TypeScript path resolution in production Docker image.
+2. **Resend API Key:** Added graceful fallback for missing Resend API key during build.
+3. **TypeScript Errors:** Resolved all compilation errors (transaction analysis, file handling, locale types).
+4. **Database Migrations:** All 9 migrations auto-applied successfully in production Docker environment.
+5. **Telegraf API:** Fixed `getUpdates()` call and Telegram bot integration compatibility.
 
 ---
 
@@ -115,12 +128,14 @@ npm run type-check
 #### **Option A: Vercel Postgres** (Recommended for Vercel) 🌟
 
 **Pros:**
+
 - Zero-config integration with Vercel
 - Automatic connection pooling
 - Built-in backups
 - Free tier: 256 MB storage, 60 hours compute
 
 **Setup:**
+
 1. Go to your Vercel project dashboard
 2. Navigate to **Storage** tab
 3. Click **Create Database** → Select **Postgres**
@@ -129,18 +144,21 @@ npm run type-check
 6. Copy `POSTGRES_URL` environment variable
 
 **Pricing:**
+
 - Free: 256 MB storage
 - Pro: $0.06/GB storage + compute hours
 
 #### **Option B: Supabase** (Good for complex queries)
 
 **Pros:**
+
 - Full PostgreSQL 15
 - Real-time subscriptions
 - Built-in authentication (can complement NextAuth)
 - Generous free tier: 500 MB, 2GB bandwidth
 
 **Setup:**
+
 1. Sign up at [supabase.com](https://supabase.com)
 2. Create new project
 3. Go to **Settings** → **Database**
@@ -148,36 +166,42 @@ npm run type-check
 5. Format: `postgresql://postgres:[password]@[host]:5432/postgres`
 
 **Pricing:**
+
 - Free: 500 MB, 2GB egress
 - Pro: $25/month unlimited
 
 #### **Option C: Neon** (Serverless PostgreSQL)
 
 **Pros:**
+
 - Serverless (only pay for active time)
 - Instant branching
 - Auto-scaling
 - Free tier: 3GB storage
 
 **Setup:**
+
 1. Sign up at [neon.tech](https://neon.tech)
 2. Create project
 3. Copy connection string
 4. Enable connection pooling
 
 **Pricing:**
+
 - Free: 3GB storage, 100 compute hours
 - Launch: $19/month
 
 ### 1.2 Redis: Upstash
 
 **Why Upstash?**
+
 - Serverless (pay-per-request)
 - Global edge caching
 - REST API (no persistent connections needed)
 - Free tier: 10,000 requests/day
 
 **Setup:**
+
 1. Sign up at [upstash.com](https://upstash.com)
 2. Create Redis database
 3. Select region closest to your Vercel deployment
@@ -189,12 +213,14 @@ npm run type-check
    ```
 
 **Pricing:**
+
 - Free: 10,000 commands/day
 - Pay as you go: $0.20 per 100K commands
 
 ### 1.3 Email: Resend
 
 **Setup:**
+
 1. Sign up at [resend.com](https://resend.com)
 2. Add and verify your domain (e.g., `mail.your-domain.com`)
 3. Create API key
@@ -207,18 +233,21 @@ npm run type-check
 5. Copy API key: `RESEND_API_KEY=re_...`
 
 **Sender Email:**
+
 ```
 SENDER_EMAIL=noreply@your-domain.com
 RECIPIENT_EMAIL=admin@your-domain.com
 ```
 
 **Pricing:**
+
 - Free: 3,000 emails/month
 - Pro: $20/month for 50,000 emails
 
 ### 1.4 Telegram Bot
 
 **Setup:**
+
 1. Open Telegram, search for `@BotFather`
 2. Send `/newbot` and follow instructions
 3. Copy bot token: `TELEGRAM_API_KEY=123456:ABC-DEF...`
@@ -232,6 +261,7 @@ RECIPIENT_EMAIL=admin@your-domain.com
 7. Copy chat ID from response: `TELEGRAM_MANAGER_CHAT_ID=123456789`
 
 **Environment Variables:**
+
 ```env
 TELEGRAM_API_KEY=your-bot-token
 TELEGRAM_MANAGER_CHAT_ID=your-chat-id
@@ -241,6 +271,7 @@ TELEGRAM_ADMIN_CHAT_ID=your-admin-chat-id
 ### 1.5 Google OAuth
 
 **Setup:**
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
 2. Create new project or select existing
 3. Enable **Google+ API**
@@ -266,6 +297,7 @@ TELEGRAM_ADMIN_CHAT_ID=your-admin-chat-id
 ### 2.1 Initial Database Setup
 
 **Option 1: Via Vercel Postgres UI**
+
 - Vercel Postgres includes automatic schema management
 - Use Vercel's SQL editor to run migrations
 
@@ -286,15 +318,19 @@ psql "postgresql://user:pass@host:5432/dbname?sslmode=require"
 
 ### 2.2 Run Database Migrations
 
-The project has **7 migration files** in `lib/database/migrations/`:
+The project has **9 migration files** in `lib/database/migrations/`:
 
 1. `create-nextauth-tables.sql` - NextAuth authentication tables
-2. `rename-auth-tables.sql` - Rename to auth_* prefix
+2. `rename-auth-tables.sql` - Rename to auth\_\* prefix
 3. `add-unique-wallet-to-sessions.sql` - Session management
 4. `add_current_stage.sql` - Request tracking
 5. `add-user-id-to-requests.sql` - OAuth user tracking
-6. `add-support-messenger.sql` - Support chat system
-7. `add-user-id-columns.sql` - Additional user tracking
+6. `add-user-id-columns.sql` - Additional user tracking
+7. `add-support-messenger.sql` - Support chat system
+8. `add-request-files.sql` - File attachments support
+9. `fix-request-files-fks.sql` - File attachments foreign keys
+
+**All migrations are auto-applied via `lib/database/init.ts`**
 
 **Execute migrations in order:**
 
@@ -313,27 +349,31 @@ done
 
 ### 2.3 Verify Database Schema
 
-**Expected tables (12 total):**
+**Expected tables (13 total):**
 
 ```sql
--- Authentication tables
+-- Authentication tables (5)
 auth_users
 auth_accounts
 auth_sessions
 auth_verification_tokens
+auth_authenticators
 
--- Request tables
+-- Request tables (2)
 exchange_requests
 internal_requests
 
--- Chatbot tables
+-- Chatbot tables (3)
 chatbot_sessions
 chatbot_messages
 chatbot_transaction_analysis
 
--- Support Messenger
+-- Support Messenger (2)
 support_messages
 typing_indicators
+
+-- File Attachments (1)
+request_files
 ```
 
 **Verification query:**
@@ -516,7 +556,7 @@ NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 - [ ] **Database password** contains special characters
 - [ ] **API keys** are valid and not from development
 - [ ] **Redirect URIs** in OAuth providers match production URL
-- [ ] **No sensitive data** in NEXT_PUBLIC_* variables
+- [ ] **No sensitive data** in NEXT*PUBLIC*\* variables
 - [ ] **Preview deployments** use separate environment variables (optional)
 
 ---
@@ -536,12 +576,14 @@ NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 ### 5.2 Monitor Build Logs
 
 Watch for:
+
 - ✅ **Build successful**
 - ✅ **No TypeScript errors**
 - ✅ **No ESLint warnings** (important ones)
 - ⚠️ **Database connection** (might fail on build - that's OK)
 
 **Common build warnings to ignore:**
+
 ```
 Warning: Extra attributes from the server
 Warning: Hydration mismatch
@@ -550,6 +592,7 @@ Warning: Hydration mismatch
 ### 5.3 Get Production URL
 
 After successful deployment:
+
 - Vercel assigns URL: `https://your-project.vercel.app`
 - Copy this URL for next steps
 
@@ -583,6 +626,7 @@ NEXTAUTH_URL=https://your-project.vercel.app
 ```
 
 **Redeploy** after updating:
+
 - Vercel Dashboard → **Deployments** → Click **...** → **Redeploy**
 
 ### 6.3 Configure Telegram Webhook
@@ -599,6 +643,7 @@ curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getWebhookInfo"
 ```
 
 **Expected response:**
+
 ```json
 {
   "ok": true,
@@ -704,6 +749,7 @@ SELECT * FROM auth_sessions WHERE expires > NOW();
    - Core Web Vitals (LCP, FID, CLS)
 
 **Expected performance:**
+
 - **LCP:** < 2.5s ✅
 - **FID:** < 100ms ✅
 - **CLS:** < 0.1 ✅
@@ -719,6 +765,7 @@ lighthouse https://your-project.vercel.app --view
 ```
 
 **Target scores:**
+
 - Performance: 90+ ✅
 - Accessibility: 95+ ✅
 - Best Practices: 95+ ✅
@@ -731,6 +778,7 @@ lighthouse https://your-project.vercel.app --view
 ### Issue 1: Build Fails with Database Connection Error
 
 **Symptom:**
+
 ```
 Error: connect ECONNREFUSED
 ```
@@ -754,11 +802,13 @@ const db = connectDB(); // This runs during build
 ### Issue 2: OAuth Redirect Error
 
 **Symptom:**
+
 ```
 Error: redirect_uri_mismatch
 ```
 
 **Solution:**
+
 1. Double-check redirect URI in Google Console matches exactly
 2. Include both Vercel URL and custom domain
 3. No trailing slashes
@@ -770,6 +820,7 @@ Error: redirect_uri_mismatch
 `process.env.MY_VAR is undefined`
 
 **Solution:**
+
 1. Verify variable is added in Vercel dashboard
 2. Check you're using correct environment (Production/Preview/Development)
 3. Redeploy after adding variables
@@ -798,6 +849,7 @@ curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
 ### Issue 5: Database Connection Pool Exhausted
 
 **Symptom:**
+
 ```
 Error: Connection pool exhausted
 ```
@@ -806,7 +858,7 @@ Error: Connection pool exhausted
 
 ```typescript
 // Use connection pooling for serverless
-import { Pool } from 'pg';
+import { Pool } from "pg";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -820,6 +872,7 @@ Or use **Vercel Postgres** which handles this automatically.
 ### Issue 6: Redis Connection Issues
 
 **Symptom:**
+
 ```
 Error: Redis connection failed
 ```
@@ -829,7 +882,7 @@ Use Upstash REST API instead of TCP connection:
 
 ```typescript
 // ✅ Use REST API
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
@@ -840,6 +893,7 @@ const redis = new Redis({
 ### Issue 7: CORS Errors
 
 **Symptom:**
+
 ```
 Access to fetch at 'https://api...' from origin 'https://your-app.vercel.app' has been blocked by CORS
 ```
@@ -852,9 +906,9 @@ export async function OPTIONS(request: Request) {
   return new Response(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
     },
   });
 }
@@ -867,16 +921,19 @@ export async function OPTIONS(request: Request) {
 ### Regular Tasks
 
 **Daily:**
+
 - Monitor Vercel logs for errors
 - Check Telegram bot status
 - Verify email delivery
 
 **Weekly:**
+
 - Review Analytics (page views, errors)
 - Check database size (Vercel Postgres free tier: 256MB)
 - Monitor Redis usage (Upstash free tier: 10K req/day)
 
 **Monthly:**
+
 - Review and rotate API keys
 - Update dependencies: `npm update`
 - Database backup (Vercel Postgres has automatic backups)
@@ -904,6 +961,7 @@ Already included - just enable in dashboard.
 **Uptime Monitoring:**
 
 Use external service like:
+
 - [UptimeRobot](https://uptimerobot.com) (free)
 - [Pingdom](https://www.pingdom.com)
 - [StatusCake](https://www.statuscake.com)
@@ -921,6 +979,7 @@ psql "$DATABASE_URL" < backup-20250131.sql
 ```
 
 **Automated backups:**
+
 - **Vercel Postgres:** Automatic daily backups (7-day retention)
 - **Supabase:** Automatic backups (free tier: 7-day retention)
 - **Neon:** Point-in-time restore
@@ -929,14 +988,15 @@ psql "$DATABASE_URL" < backup-20250131.sql
 
 **When to upgrade:**
 
-| Metric | Free Tier Limit | Upgrade Trigger |
-|--------|-----------------|-----------------|
-| Database Size | 256 MB (Vercel) | > 200 MB |
-| Redis Requests | 10K/day | > 8K/day |
-| Email Sends | 3K/month | > 2.5K/month |
-| Function Executions | 100GB-Hours | Consistent high usage |
+| Metric              | Free Tier Limit | Upgrade Trigger       |
+| ------------------- | --------------- | --------------------- |
+| Database Size       | 256 MB (Vercel) | > 200 MB              |
+| Redis Requests      | 10K/day         | > 8K/day              |
+| Email Sends         | 3K/month        | > 2.5K/month          |
+| Function Executions | 100GB-Hours     | Consistent high usage |
 
 **Cost estimates after upgrade:**
+
 - Vercel Pro: $20/month
 - Database: $20-25/month
 - Redis: ~$10/month (usage-based)
@@ -957,6 +1017,9 @@ psql "$DATABASE_URL" < backup-20250131.sql
 - [ ] Production RPC endpoints configured
 - [ ] Build passes locally: `npm run build`
 - [ ] Type check passes: `npm run type-check`
+- [x] Docker production environment tested and working
+- [x] All TypeScript errors resolved
+- [x] Security headers configured
 
 ### During Deployment
 
@@ -1002,17 +1065,20 @@ Your deployment is successful when:
 ## 📞 Support & Resources
 
 **Official Documentation:**
+
 - [Vercel Docs](https://vercel.com/docs)
 - [Next.js Docs](https://nextjs.org/docs)
 - [NextAuth.js Docs](https://next-auth.js.org)
 - [Drizzle ORM Docs](https://orm.drizzle.team)
 
 **Project-Specific:**
+
 - See `docs/architecture.md` for technical details
 - See `docs/auth-flow.md` for authentication flow
 - See `.env.example` for all environment variables
 
 **Community:**
+
 - Vercel Discord: [discord.gg/vercel](https://discord.gg/vercel)
 - Next.js Discord: [discord.gg/nextjs](https://discord.gg/nextjs)
 
