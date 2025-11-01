@@ -9,9 +9,15 @@ import {
   updateExchangeRequestStage,
   updateInternalRequestStatus,
   updateInternalRequestStage,
+  createChatbotMessage,
+  getChatbotSessionById,
 } from "@/lib/database/queries";
+import {
+  createSupportMessage,
+  getLatestSessionByWallet,
+} from "@/lib/database/support-queries";
 import { query } from "@/lib/database/db";
-import { formatChatHistoryForTelegram, isValidWalletAddress } from "@/lib/telegram/notify-admin";
+import { formatChatHistoryForTelegram, isValidWalletAddress, sanitizeMessageText } from "@/lib/telegram/notify-admin";
 import { getBot } from "@/lib/telegram/bot";
 import { Telegraf } from "telegraf";
 
@@ -783,19 +789,15 @@ if (bot) {
 
           try {
             // Set typing indicator
-            const typingUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/support/set-typing`;
-            console.log("[telegram-webhook] Setting typing indicator:", typingUrl);
+            console.log("[telegram-webhook] Setting typing indicator for wallet:", pending.walletAddress);
 
-            await fetch(typingUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                walletAddress: pending.walletAddress,
-                adminId: ctx.from.id,
-                adminUsername,
-                isTyping: true,
-              }),
-            }).catch((err) => {
+            await query(
+              `INSERT INTO typing_indicators (user_wallet_address, admin_id, admin_username, is_typing, started_at, expires_at)
+               VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '30 seconds')
+               ON CONFLICT (user_wallet_address, admin_id)
+               DO UPDATE SET is_typing = $4, started_at = CURRENT_TIMESTAMP, expires_at = CURRENT_TIMESTAMP + INTERVAL '30 seconds', admin_username = $3`,
+              [pending.walletAddress, ctx.from.id, adminUsername, true]
+            ).catch((err) => {
               console.error("[telegram-webhook] Failed to set typing:", err);
               // Don't fail if typing indicator fails
             });
@@ -803,10 +805,7 @@ if (bot) {
             // Wait a bit to simulate typing
             await new Promise((resolve) => setTimeout(resolve, 1500));
 
-            // Send message via support API
-            const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/support/send-admin-message`;
-            console.log("[telegram-webhook] Calling support API:", apiUrl);
-            console.log("[telegram-webhook] Request body:", {
+            console.log("[telegram-webhook] Sending support message:", {
               walletAddress: pending.walletAddress,
               text: adminResponse.substring(0, 50) + "...",
               adminId: ctx.from.id,
@@ -814,45 +813,65 @@ if (bot) {
               sessionId: pending.sessionId,
             });
 
-            const response = await fetch(apiUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                walletAddress: pending.walletAddress,
-                text: adminResponse,
-                adminId: ctx.from.id,
-                adminUsername,
-                sessionId: pending.sessionId,
-              }),
-            });
+            // Sanitize message text
+            const sanitizedText = sanitizeMessageText(adminResponse, 2000);
+            if (sanitizedText.length === 0) {
+              await ctx.reply("❌ Сообщение пустое после фильтрации").catch(() => {});
+              return;
+            }
 
-            console.log("[telegram-webhook] Support API response status:", response.status);
-            console.log(
-              "[telegram-webhook] Support API response headers:",
-              Object.fromEntries(response.headers.entries()),
-            );
-
-            if (response.ok) {
-              const data = await response.json();
-              console.log("[telegram-webhook] Support message saved:", data);
-              try {
-                await ctx.reply("✅ Сообщение отправлено пользователю");
-              } catch (replyError) {
-                console.error("[telegram-webhook] Failed to send confirmation:", replyError);
+            // Get or verify session
+            let session;
+            if (pending.sessionId) {
+              const result = await query(
+                `SELECT id FROM chatbot_sessions WHERE id = $1 AND user_wallet_address = $2`,
+                [pending.sessionId, pending.walletAddress]
+              );
+              if (result.rows.length === 0) {
+                await ctx.reply("❌ Сессия не найдена").catch(() => {});
+                return;
               }
+              session = { id: pending.sessionId };
             } else {
-              const errorText = await response.text();
-              console.error("[telegram-webhook] Support API error:", {
-                status: response.status,
-                statusText: response.statusText,
-                body: errorText,
-              });
-              try {
-                await ctx.reply(`❌ Ошибка при отправке сообщения (${response.status})`);
-              } catch (replyError) {
-                console.error("[telegram-webhook] Failed to send error message:", replyError);
+              session = await getLatestSessionByWallet(pending.walletAddress);
+              if (!session) {
+                await ctx.reply("❌ Нет активной сессии для этого кошелька").catch(() => {});
+                return;
               }
             }
+
+            // Create admin message directly
+            const message = await createSupportMessage({
+              sessionId: session.id,
+              walletAddress: pending.walletAddress,
+              type: 'admin',
+              text: sanitizedText,
+              adminId: ctx.from.id,
+              adminUsername,
+            });
+
+            // Update session metadata
+            await query(
+              `UPDATE chatbot_sessions
+               SET last_admin_message_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+               WHERE id = $1`,
+              [session.id]
+            );
+
+            // Remove typing indicator
+            await query(
+              `DELETE FROM typing_indicators WHERE user_wallet_address = $1 AND admin_id = $2`,
+              [pending.walletAddress, ctx.from.id]
+            );
+
+            console.log("[telegram-webhook] Support message saved:", {
+              messageId: message.id,
+              sessionId: session.id,
+            });
+
+            await ctx.reply("✅ Сообщение отправлено пользователю").catch((err) => {
+              console.error("[telegram-webhook] Failed to send confirmation:", err);
+            });
           } catch (error) {
             console.error("[telegram-webhook] Error sending support message:", {
               error: error instanceof Error ? error.message : String(error),
@@ -884,52 +903,34 @@ if (bot) {
           pendingReplies.delete(chatId);
 
           try {
-            // Send response to user via API
-            const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/chatbot/admin-response`;
-            console.log("[telegram-webhook] Calling chatbot API:", apiUrl);
-            console.log("[telegram-webhook] Request body:", {
-              sessionId,
-              text: adminResponse.substring(0, 50) + "...",
-              adminId: ctx.from.id,
-            });
-
-            const response = await fetch(apiUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                sessionId,
-                text: adminResponse,
-                adminId: ctx.from.id,
-              }),
-            });
-
-            console.log("[telegram-webhook] Chatbot API response status:", response.status);
-            console.log(
-              "[telegram-webhook] Chatbot API response headers:",
-              Object.fromEntries(response.headers.entries()),
-            );
-
-            if (response.ok) {
-              const data = await response.json();
-              console.log("[telegram-webhook] Admin response saved:", data);
-              try {
-                await ctx.reply("✅ Ответ отправлен пользователю");
-              } catch (replyError) {
-                console.error("[telegram-webhook] Failed to send confirmation:", replyError);
-              }
-            } else {
-              const errorText = await response.text();
-              console.error("[telegram-webhook] Chatbot API error:", {
-                status: response.status,
-                statusText: response.statusText,
-                body: errorText,
-              });
-              try {
-                await ctx.reply(`❌ Ошибка при отправке ответа (${response.status})`);
-              } catch (replyError) {
-                console.error("[telegram-webhook] Failed to send error message:", replyError);
-              }
+            // Verify session exists
+            const session = await getChatbotSessionById(sessionId);
+            if (!session) {
+              console.log("[telegram-webhook] Session not found:", sessionId);
+              await ctx.reply("❌ Сессия не найдена").catch(() => {});
+              return;
             }
+
+            console.log("[telegram-webhook] Session found:", session);
+
+            // Save admin message directly to database
+            const adminMessage = await createChatbotMessage({
+              sessionId: sessionId,
+              type: "admin",
+              text: adminResponse,
+              isAdminResponse: true,
+            });
+
+            console.log("[telegram-webhook] Admin response saved:", {
+              sessionId: sessionId,
+              adminId: ctx.from.id,
+              messageId: adminMessage.id,
+              timestamp: new Date().toISOString(),
+            });
+
+            await ctx.reply("✅ Ответ отправлен пользователю").catch((err) => {
+              console.error("[telegram-webhook] Failed to send confirmation:", err);
+            });
           } catch (error) {
             console.error("[telegram-webhook] Error sending admin response:", {
               error: error instanceof Error ? error.message : String(error),
@@ -963,39 +964,34 @@ if (bot) {
         });
 
         try {
-          // Send response to user via API
-          const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/chatbot/admin-response`;
-          console.log("[telegram-webhook] Calling API (legacy):", apiUrl);
+          // Verify session exists
+          const session = await getChatbotSessionById(sessionId);
+          if (!session) {
+            console.log("[telegram-webhook] Session not found (legacy):", sessionId);
+            await ctx.reply("❌ Сессия не найдена").catch(() => {});
+            return;
+          }
 
-          const response = await fetch(apiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              sessionId,
-              text: adminResponse,
-              adminId: ctx.from.id,
-            }),
+          console.log("[telegram-webhook] Session found (legacy):", session);
+
+          // Save admin message directly to database
+          const adminMessage = await createChatbotMessage({
+            sessionId: sessionId,
+            type: "admin",
+            text: adminResponse,
+            isAdminResponse: true,
           });
 
-          console.log("[telegram-webhook] API response status (legacy):", response.status);
+          console.log("[telegram-webhook] Admin response saved (legacy):", {
+            sessionId: sessionId,
+            adminId: ctx.from.id,
+            messageId: adminMessage.id,
+            timestamp: new Date().toISOString(),
+          });
 
-          if (response.ok) {
-            const data = await response.json();
-            console.log("[telegram-webhook] Admin response saved (legacy):", data);
-            try {
-              await ctx.reply("✅ Ответ отправлен пользователю");
-            } catch (replyError) {
-              console.error("[telegram-webhook] Failed to send confirmation:", replyError);
-            }
-          } else {
-            const errorText = await response.text();
-            console.error("[telegram-webhook] API error (legacy):", errorText);
-            try {
-              await ctx.reply(`❌ Ошибка при отправке ответа (${response.status})`);
-            } catch (replyError) {
-              console.error("[telegram-webhook] Failed to send error message:", replyError);
-            }
-          }
+          await ctx.reply("✅ Ответ отправлен пользователю").catch((err) => {
+            console.error("[telegram-webhook] Failed to send confirmation:", err);
+          });
         } catch (error) {
           console.error("[telegram-webhook] Error sending admin response (legacy):", error);
           try {
