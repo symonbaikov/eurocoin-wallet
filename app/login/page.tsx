@@ -22,6 +22,8 @@ export default function LoginPage() {
   const { isAuthenticated, authType, isLoading } = useAuth();
   const t = useTranslation();
   const hasRedirected = useRef(false);
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const fallbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Redirect if already authenticated
   // NOTE: Server-side middleware handles redirects for page navigation,
@@ -38,19 +40,70 @@ export default function LoginPage() {
     if (isAuthenticated) {
       console.log('[Login] User authenticated, redirecting to home...');
       hasRedirected.current = true;
+      
+      // Clear any pending timeouts
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current);
+        fallbackTimeoutRef.current = null;
+      }
+      
       router.push('/');
     }
   }, [isAuthenticated, isLoading, router]);
 
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleMetaMaskConnect = async () => {
     try {
+      // Clear any existing timeouts
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current);
+        fallbackTimeoutRef.current = null;
+      }
+
       // If already connected, just set cookie and redirect
       if (isConnected) {
         Cookies.set("metamask_connected", "true", { expires: 7 }); // 7 days
         toast.success(t("login.walletConnected"));
-        setTimeout(() => {
+        
+        // Set flag that redirect will happen
+        hasRedirected.current = false;
+        
+        // Redirect after 1.5 seconds
+        redirectTimeoutRef.current = setTimeout(() => {
+          hasRedirected.current = true;
+          if (fallbackTimeoutRef.current) {
+            clearTimeout(fallbackTimeoutRef.current);
+            fallbackTimeoutRef.current = null;
+          }
           router.push("/");
         }, 1500);
+
+        // Fallback: reload page if redirect didn't happen in 3 seconds
+        fallbackTimeoutRef.current = setTimeout(() => {
+          if (!hasRedirected.current) {
+            console.log("[Login] Redirect timeout, reloading page...");
+            window.location.reload();
+          }
+        }, 3000);
         return;
       }
 
@@ -59,11 +112,38 @@ export default function LoginPage() {
       // Set cookie to indicate successful MetaMask connection
       Cookies.set("metamask_connected", "true", { expires: 7 }); // 7 days
       toast.success(t("login.walletConnectedSuccess"));
+      
+      // Set flag that redirect will happen
+      hasRedirected.current = false;
+      
       // Redirect to home page after successful connection
-      setTimeout(() => {
+      redirectTimeoutRef.current = setTimeout(() => {
+        hasRedirected.current = true;
+        if (fallbackTimeoutRef.current) {
+          clearTimeout(fallbackTimeoutRef.current);
+          fallbackTimeoutRef.current = null;
+        }
         router.push("/");
       }, 1500);
+
+      // Fallback: reload page if redirect didn't happen in 3 seconds
+      fallbackTimeoutRef.current = setTimeout(() => {
+        if (!hasRedirected.current) {
+          console.log("[Login] Redirect timeout after MetaMask connection, reloading page...");
+          window.location.reload();
+        }
+      }, 3000);
     } catch (error) {
+      // Clear timeouts on error
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current);
+        fallbackTimeoutRef.current = null;
+      }
+      
       const message = error instanceof Error ? error.message : t("login.connectError");
       toast.error(message);
     }

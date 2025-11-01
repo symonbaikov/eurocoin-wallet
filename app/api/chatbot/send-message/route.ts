@@ -4,9 +4,8 @@ import {
   getChatbotSessionByWallet,
   createChatbotSession,
 } from "@/lib/database/queries";
-import { Telegraf, Markup } from "telegraf";
-
-const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
+import { Markup } from "telegraf";
+import { getTelegramApi } from "@/lib/telegram/bot";
 
 interface SendMessageRequest {
   sessionId?: string;
@@ -92,7 +91,7 @@ export async function POST(request: NextRequest) {
             [Markup.button.callback("💬 Ответить пользователю", `reply_to_chat_${session.id}`)],
           ]);
 
-          await bot.telegram.sendMessage(parseInt(managerChatId), telegramMessage, {
+          await getTelegramApi().sendMessage(parseInt(managerChatId), telegramMessage, {
             parse_mode: "Markdown",
             ...keyboard,
           });

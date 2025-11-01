@@ -13,8 +13,19 @@ import {
 import { query } from "@/lib/database/db";
 import { formatChatHistoryForTelegram, isValidWalletAddress } from "@/lib/telegram/notify-admin";
 import { getBot } from "@/lib/telegram/bot";
+import { Telegraf } from "telegraf";
 
-const bot = getBot();
+// Bot instance - will be null during build if TELEGRAM_API_KEY is not set
+// This is OK - the bot is only needed at runtime when webhook is called
+let bot: Telegraf | null = null;
+try {
+  bot = getBot();
+} catch {
+  // During build time, TELEGRAM_API_KEY might not be set
+  // This is fine - bot will only be used at runtime
+  console.log("[telegram-webhook] Bot not initialized (probably during build)");
+  bot = null;
+}
 
 // Helper function to call webhook
 async function updateRequestStatus(requestId: string, status: string) {
@@ -60,44 +71,49 @@ function getStatusName(status: string): string {
   return names[status as keyof typeof names] || status;
 }
 
-// Start command
-bot.start((ctx) => {
-  const chatId = ctx.chat.id;
-  const username = ctx.from.first_name || "User";
+// =============================================================================
+// Bot Handlers Registration (only if bot is initialized)
+// =============================================================================
 
-  ctx.reply(
-    `Привет, ${username}! 👋\n\n` +
-      `Я бот для обработки заявок на обмен токенов.\n\n` +
-      `Ваш ID: ${chatId}\n\n` +
-      `Используйте команды:\n` +
-      `/list - показать все заявки\n` +
-      `/exchange - показать заявки на обмен\n` +
-      `/internal - показать внутренние заявки\n` +
-      `/details <ID> - детали заявки\n\n` +
-      `Пример: /details EX-1234567890\n\n` +
-      `Используйте /help для подробной справки.`,
-  );
-});
+if (bot) {
+  // Start command
+  bot.start((ctx) => {
+    const chatId = ctx.chat.id;
+    const username = ctx.from.first_name || "User";
 
-// My ID command - to get chat ID for TELEGRAM_ADMIN_CHAT_ID
-bot.command("myid", (ctx) => {
-  const chatId = ctx.chat.id;
-  const username = ctx.from?.username || 'Unknown';
-  const firstName = ctx.from?.first_name || 'Unknown';
+    ctx.reply(
+      `Привет, ${username}! 👋\n\n` +
+        `Я бот для обработки заявок на обмен токенов.\n\n` +
+        `Ваш ID: ${chatId}\n\n` +
+        `Используйте команды:\n` +
+        `/list - показать все заявки\n` +
+        `/exchange - показать заявки на обмен\n` +
+        `/internal - показать внутренние заявки\n` +
+        `/details <ID> - детали заявки\n\n` +
+        `Пример: /details EX-1234567890\n\n` +
+        `Используйте /help для подробной справки.`,
+    );
+  });
 
-  ctx.reply(
-    `🆔 *Ваш Chat ID:* \`${chatId}\`\n\n` +
-    `👤 Username: @${username}\n` +
-    `👤 Name: ${firstName}\n\n` +
-    `📝 Добавьте этот Chat ID в .env.local:\n` +
-    `\`TELEGRAM_ADMIN_CHAT_ID=${chatId}\``,
-    { parse_mode: "Markdown" }
-  );
-});
+  // My ID command - to get chat ID for TELEGRAM_ADMIN_CHAT_ID
+  bot.command("myid", (ctx) => {
+    const chatId = ctx.chat.id;
+    const username = ctx.from?.username || "Unknown";
+    const firstName = ctx.from?.first_name || "Unknown";
 
-// Help command
-bot.command("help", (ctx) => {
-  const helpMessage = `
+    ctx.reply(
+      `🆔 *Ваш Chat ID:* \`${chatId}\`\n\n` +
+        `👤 Username: @${username}\n` +
+        `👤 Name: ${firstName}\n\n` +
+        `📝 Добавьте этот Chat ID в .env.local:\n` +
+        `\`TELEGRAM_ADMIN_CHAT_ID=${chatId}\``,
+      { parse_mode: "Markdown" },
+    );
+  });
+
+  // Help command
+  bot.command("help", (ctx) => {
+    const helpMessage = `
 🤖 *Справка по командам бота*
 
 📋 *Основные команды:*
@@ -149,582 +165,528 @@ bot.command("help", (ctx) => {
 • Вы получите уведомление об изменении статуса
 `;
 
-  ctx.reply(helpMessage, { parse_mode: "Markdown" });
-});
+    ctx.reply(helpMessage, { parse_mode: "Markdown" });
+  });
 
-// List all requests
-bot.command("list", async (ctx) => {
-  try {
-    const [exchangeRequests, internalRequests] = await Promise.all([
-      getAllExchangeRequests(),
-      getAllInternalRequests(),
-    ]);
-
-    if (exchangeRequests.length === 0 && internalRequests.length === 0) {
-      ctx.reply("📭 Нет заявок");
-      return;
-    }
-
-    let message = "📋 *Все заявки:*\n\n";
-
-    if (exchangeRequests.length > 0) {
-      message += "💱 *Заявки на обмен:*\n";
-      exchangeRequests.slice(0, 5).forEach((req) => {
-        const badge = getStatusBadge(req.status);
-        const statusName = getStatusName(req.status);
-        message += `${badge} ${req.id} - ${statusName} (${req.token_amount} TOKEN)\n`;
-      });
-      if (exchangeRequests.length > 5) {
-        message += `...и еще ${exchangeRequests.length - 5} заявок\n`;
-      }
-      message += "\n";
-    }
-
-    if (internalRequests.length > 0) {
-      message += "📝 *Внутренние заявки:*\n";
-      internalRequests.slice(0, 5).forEach((req) => {
-        const badge = getStatusBadge(req.status);
-        const statusName = getStatusName(req.status);
-        message += `${badge} ${req.id} - ${statusName} (${req.department})\n`;
-      });
-      if (internalRequests.length > 5) {
-        message += `...и еще ${internalRequests.length - 5} заявок\n`;
-      }
-    }
-
-    ctx.reply(message, { parse_mode: "Markdown" });
-  } catch (error) {
-    console.error("Error in /list command:", error);
-    ctx.reply("❌ Ошибка при получении заявок");
-  }
-});
-
-// List exchange requests
-bot.command("exchange", async (ctx) => {
-  try {
-    const requests = await getAllExchangeRequests();
-
-    if (requests.length === 0) {
-      ctx.reply("💱 Нет заявок на обмен");
-      return;
-    }
-
-    let message = "💱 *Заявки на обмен:*\n\n";
-    requests.slice(0, 10).forEach((req) => {
-      const badge = getStatusBadge(req.status);
-      const statusName = getStatusName(req.status);
-      const wallet = req.wallet_address.slice(0, 10) + "...";
-      message += `${badge} *${req.id}*\n`;
-      message += `💰 ${req.token_amount} TOKEN → ${req.fiat_amount} EUR\n`;
-      message += `📊 ${req.rate}\n`;
-      message += `💼 ${wallet}\n`;
-      message += `📧 ${req.email}\n`;
-      message += `📊 Статус: ${statusName}\n`;
-
-      // Add action buttons
-      const keyboard = Markup.inlineKeyboard([
-        [
-          Markup.button.callback("🔄 Обработать", `action_${req.id}_processing`),
-          Markup.button.callback("✅ Завершить", `action_${req.id}_completed`),
-        ],
-        [
-          Markup.button.callback("❌ Отклонить", `action_${req.id}_rejected`),
-          Markup.button.callback("🚫 Отменить", `action_${req.id}_cancelled`),
-        ],
+  // List all requests
+  bot.command("list", async (ctx) => {
+    try {
+      const [exchangeRequests, internalRequests] = await Promise.all([
+        getAllExchangeRequests(),
+        getAllInternalRequests(),
       ]);
 
-      ctx.reply(message, { parse_mode: "Markdown", ...keyboard });
-    });
-  } catch (error) {
-    console.error("Error in /exchange command:", error);
-    ctx.reply("❌ Ошибка при получении заявок");
-  }
-});
-
-// List internal requests
-bot.command("internal", async (ctx) => {
-  try {
-    const requests = await getAllInternalRequests();
-
-    if (requests.length === 0) {
-      ctx.reply("📝 Нет внутренних заявок");
-      return;
-    }
-
-    requests.slice(0, 10).forEach((req) => {
-      const badge = getStatusBadge(req.status);
-      const statusName = getStatusName(req.status);
-      let message = `${badge} *${req.id}*\n`;
-      message += `👤 ${req.requester}\n`;
-      message += `🏢 ${req.department}\n`;
-      message += `📋 ${req.request_type}\n`;
-      message += `⭐ Приоритет: ${req.priority}\n`;
-      message += `📊 Статус: ${statusName}\n`;
-      message += `📝 ${req.description.slice(0, 100)}...\n`;
-
-      // Add action buttons
-      const keyboard = Markup.inlineKeyboard([
-        [
-          Markup.button.callback("🔄 Обработать", `action_${req.id}_processing`),
-          Markup.button.callback("✅ Завершить", `action_${req.id}_completed`),
-        ],
-        [Markup.button.callback("❌ Отклонить", `action_${req.id}_rejected`)],
-      ]);
-
-      ctx.reply(message, { parse_mode: "Markdown", ...keyboard });
-    });
-  } catch (error) {
-    console.error("Error in /internal command:", error);
-    ctx.reply("❌ Ошибка при получении заявок");
-  }
-});
-
-// Chats command - show active chatbot sessions
-bot.command("chats", async (ctx) => {
-  try {
-    // For now, return a simple response
-    // In full implementation, this would query the database
-    ctx.reply(
-      "💬 *Активные чат-сессии*\n\n" +
-        "Эта функция будет доступна после подключения базы данных.\n\n" +
-        "Для ответа пользователю используйте формат:\n" +
-        "`[reply-SESSION_ID] Ваш ответ`\n\n" +
-        "Пример:\n" +
-        "`[reply-abc-123] Здравствуйте! Можем помочь.`",
-      { parse_mode: "Markdown" },
-    );
-  } catch (error) {
-    console.error("Error in /chats command:", error);
-    ctx.reply("❌ Ошибка при получении чат-сессий");
-  }
-});
-
-// Details command
-bot.command("details", async (ctx) => {
-  try {
-    const args = ctx.message.text.split(" ");
-    if (args.length < 2) {
-      ctx.reply("❌ Использование: /details <ID>\nПример: /details EX-1234567890");
-      return;
-    }
-
-    const requestId = args[1];
-
-    let message = "";
-    let badge = "";
-    let statusName = "";
-
-    if (requestId.startsWith("EX-")) {
-      const request = await getExchangeRequestById(requestId);
-
-      if (!request) {
-        ctx.reply("❌ Заявка не найдена");
+      if (exchangeRequests.length === 0 && internalRequests.length === 0) {
+        ctx.reply("📭 Нет заявок");
         return;
       }
 
-      badge = getStatusBadge(request.status);
-      statusName = getStatusName(request.status);
-      message += `${badge} *${String(request.id)}*\n`;
-      message += `📊 Статус: ${statusName}\n`;
-      message += `📅 Создана: ${new Date(request.created_at).toLocaleString("ru-RU")}\n`;
-      message += `🕐 Обновлена: ${new Date(request.updated_at).toLocaleString("ru-RU")}\n\n`;
-      message += `💱 *Заявка на обмен*\n`;
-      message += `💰 Токены: ${request.token_amount} TOKEN\n`;
-      message += `💵 Фиат: ${request.fiat_amount} EUR\n`;
-      message += `📊 Курс: ${request.rate}\n`;
-      message += `💸 Комиссия: ${request.commission}\n`;
-      message += `💼 Адрес: ${request.wallet_address}\n`;
-      message += `📧 Email: ${request.email}\n`;
-      if (request.comment) {
-        message += `📝 Комментарий: ${request.comment}\n`;
-      }
-    } else if (requestId.startsWith("IR-")) {
-      const request = await getInternalRequestById(requestId);
+      let message = "📋 *Все заявки:*\n\n";
 
-      if (!request) {
-        ctx.reply("❌ Заявка не найдена");
+      if (exchangeRequests.length > 0) {
+        message += "💱 *Заявки на обмен:*\n";
+        exchangeRequests.slice(0, 5).forEach((req) => {
+          const badge = getStatusBadge(req.status);
+          const statusName = getStatusName(req.status);
+          message += `${badge} ${req.id} - ${statusName} (${req.token_amount} TOKEN)\n`;
+        });
+        if (exchangeRequests.length > 5) {
+          message += `...и еще ${exchangeRequests.length - 5} заявок\n`;
+        }
+        message += "\n";
+      }
+
+      if (internalRequests.length > 0) {
+        message += "📝 *Внутренние заявки:*\n";
+        internalRequests.slice(0, 5).forEach((req) => {
+          const badge = getStatusBadge(req.status);
+          const statusName = getStatusName(req.status);
+          message += `${badge} ${req.id} - ${statusName} (${req.department})\n`;
+        });
+        if (internalRequests.length > 5) {
+          message += `...и еще ${internalRequests.length - 5} заявок\n`;
+        }
+      }
+
+      ctx.reply(message, { parse_mode: "Markdown" });
+    } catch (error) {
+      console.error("Error in /list command:", error);
+      ctx.reply("❌ Ошибка при получении заявок");
+    }
+  });
+
+  // List exchange requests
+  bot.command("exchange", async (ctx) => {
+    try {
+      const requests = await getAllExchangeRequests();
+
+      if (requests.length === 0) {
+        ctx.reply("💱 Нет заявок на обмен");
         return;
       }
 
-      badge = getStatusBadge(request.status);
-      statusName = getStatusName(request.status);
-      message += `${badge} *${String(request.id)}*\n`;
-      message += `📊 Статус: ${statusName}\n`;
-      message += `📅 Создана: ${new Date(request.created_at).toLocaleString("ru-RU")}\n`;
-      message += `🕐 Обновлена: ${new Date(request.updated_at).toLocaleString("ru-RU")}\n\n`;
-      message += `📝 *Внутренняя заявка*\n`;
-      message += `👤 Запрашивающий: ${request.requester}\n`;
-      message += `🏢 Отдел: ${request.department}\n`;
-      message += `📋 Тип: ${request.request_type}\n`;
-      message += `⭐ Приоритет: ${request.priority}\n`;
-      message += `📝 Описание: ${request.description}\n`;
-      if (request.email) {
+      let message = "💱 *Заявки на обмен:*\n\n";
+      requests.slice(0, 10).forEach((req) => {
+        const badge = getStatusBadge(req.status);
+        const statusName = getStatusName(req.status);
+        const wallet = req.wallet_address.slice(0, 10) + "...";
+        message += `${badge} *${req.id}*\n`;
+        message += `💰 ${req.token_amount} TOKEN → ${req.fiat_amount} EUR\n`;
+        message += `📊 ${req.rate}\n`;
+        message += `💼 ${wallet}\n`;
+        message += `📧 ${req.email}\n`;
+        message += `📊 Статус: ${statusName}\n`;
+
+        // Add action buttons
+        const keyboard = Markup.inlineKeyboard([
+          [
+            Markup.button.callback("🔄 Обработать", `action_${req.id}_processing`),
+            Markup.button.callback("✅ Завершить", `action_${req.id}_completed`),
+          ],
+          [
+            Markup.button.callback("❌ Отклонить", `action_${req.id}_rejected`),
+            Markup.button.callback("🚫 Отменить", `action_${req.id}_cancelled`),
+          ],
+        ]);
+
+        ctx.reply(message, { parse_mode: "Markdown", ...keyboard });
+      });
+    } catch (error) {
+      console.error("Error in /exchange command:", error);
+      ctx.reply("❌ Ошибка при получении заявок");
+    }
+  });
+
+  // List internal requests
+  bot.command("internal", async (ctx) => {
+    try {
+      const requests = await getAllInternalRequests();
+
+      if (requests.length === 0) {
+        ctx.reply("📝 Нет внутренних заявок");
+        return;
+      }
+
+      requests.slice(0, 10).forEach((req) => {
+        const badge = getStatusBadge(req.status);
+        const statusName = getStatusName(req.status);
+        let message = `${badge} *${req.id}*\n`;
+        message += `👤 ${req.requester}\n`;
+        message += `🏢 ${req.department}\n`;
+        message += `📋 ${req.request_type}\n`;
+        message += `⭐ Приоритет: ${req.priority}\n`;
+        message += `📊 Статус: ${statusName}\n`;
+        message += `📝 ${req.description.slice(0, 100)}...\n`;
+
+        // Add action buttons
+        const keyboard = Markup.inlineKeyboard([
+          [
+            Markup.button.callback("🔄 Обработать", `action_${req.id}_processing`),
+            Markup.button.callback("✅ Завершить", `action_${req.id}_completed`),
+          ],
+          [Markup.button.callback("❌ Отклонить", `action_${req.id}_rejected`)],
+        ]);
+
+        ctx.reply(message, { parse_mode: "Markdown", ...keyboard });
+      });
+    } catch (error) {
+      console.error("Error in /internal command:", error);
+      ctx.reply("❌ Ошибка при получении заявок");
+    }
+  });
+
+  // Chats command - show active chatbot sessions
+  bot.command("chats", async (ctx) => {
+    try {
+      // For now, return a simple response
+      // In full implementation, this would query the database
+      ctx.reply(
+        "💬 *Активные чат-сессии*\n\n" +
+          "Эта функция будет доступна после подключения базы данных.\n\n" +
+          "Для ответа пользователю используйте формат:\n" +
+          "`[reply-SESSION_ID] Ваш ответ`\n\n" +
+          "Пример:\n" +
+          "`[reply-abc-123] Здравствуйте! Можем помочь.`",
+        { parse_mode: "Markdown" },
+      );
+    } catch (error) {
+      console.error("Error in /chats command:", error);
+      ctx.reply("❌ Ошибка при получении чат-сессий");
+    }
+  });
+
+  // Details command
+  bot.command("details", async (ctx) => {
+    try {
+      const args = ctx.message.text.split(" ");
+      if (args.length < 2) {
+        ctx.reply("❌ Использование: /details <ID>\nПример: /details EX-1234567890");
+        return;
+      }
+
+      const requestId = args[1];
+
+      let message = "";
+      let badge = "";
+      let statusName = "";
+
+      if (requestId.startsWith("EX-")) {
+        const request = await getExchangeRequestById(requestId);
+
+        if (!request) {
+          ctx.reply("❌ Заявка не найдена");
+          return;
+        }
+
+        badge = getStatusBadge(request.status);
+        statusName = getStatusName(request.status);
+        message += `${badge} *${String(request.id)}*\n`;
+        message += `📊 Статус: ${statusName}\n`;
+        message += `📅 Создана: ${new Date(request.created_at).toLocaleString("ru-RU")}\n`;
+        message += `🕐 Обновлена: ${new Date(request.updated_at).toLocaleString("ru-RU")}\n\n`;
+        message += `💱 *Заявка на обмен*\n`;
+        message += `💰 Токены: ${request.token_amount} TOKEN\n`;
+        message += `💵 Фиат: ${request.fiat_amount} EUR\n`;
+        message += `📊 Курс: ${request.rate}\n`;
+        message += `💸 Комиссия: ${request.commission}\n`;
+        message += `💼 Адрес: ${request.wallet_address}\n`;
         message += `📧 Email: ${request.email}\n`;
+        if (request.comment) {
+          message += `📝 Комментарий: ${request.comment}\n`;
+        }
+      } else if (requestId.startsWith("IR-")) {
+        const request = await getInternalRequestById(requestId);
+
+        if (!request) {
+          ctx.reply("❌ Заявка не найдена");
+          return;
+        }
+
+        badge = getStatusBadge(request.status);
+        statusName = getStatusName(request.status);
+        message += `${badge} *${String(request.id)}*\n`;
+        message += `📊 Статус: ${statusName}\n`;
+        message += `📅 Создана: ${new Date(request.created_at).toLocaleString("ru-RU")}\n`;
+        message += `🕐 Обновлена: ${new Date(request.updated_at).toLocaleString("ru-RU")}\n\n`;
+        message += `📝 *Внутренняя заявка*\n`;
+        message += `👤 Запрашивающий: ${request.requester}\n`;
+        message += `🏢 Отдел: ${request.department}\n`;
+        message += `📋 Тип: ${request.request_type}\n`;
+        message += `⭐ Приоритет: ${request.priority}\n`;
+        message += `📝 Описание: ${request.description}\n`;
+        if (request.email) {
+          message += `📧 Email: ${request.email}\n`;
+        }
+      } else {
+        ctx.reply("❌ Неверный формат ID");
+        return;
       }
-    } else {
-      ctx.reply("❌ Неверный формат ID");
-      return;
+
+      // Add action buttons
+      const keyboard = Markup.inlineKeyboard([
+        [
+          Markup.button.callback("🔄 Обработать", `action_${requestId}_processing`),
+          Markup.button.callback("✅ Завершить", `action_${requestId}_completed`),
+        ],
+        [
+          Markup.button.callback("❌ Отклонить", `action_${requestId}_rejected`),
+          Markup.button.callback("🚫 Отменить", `action_${requestId}_cancelled`),
+        ],
+      ]);
+
+      ctx.reply(message, { parse_mode: "Markdown", ...keyboard });
+    } catch (error) {
+      console.error("Error in /details command:", error);
+      ctx.reply("❌ Ошибка при получении деталей заявки");
     }
+  });
 
-    // Add action buttons
-    const keyboard = Markup.inlineKeyboard([
-      [
-        Markup.button.callback("🔄 Обработать", `action_${requestId}_processing`),
-        Markup.button.callback("✅ Завершить", `action_${requestId}_completed`),
-      ],
-      [
-        Markup.button.callback("❌ Отклонить", `action_${requestId}_rejected`),
-        Markup.button.callback("🚫 Отменить", `action_${requestId}_cancelled`),
-      ],
-    ]);
+  // Handle investigation status buttons
+  bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
+    const match = ctx.match;
+    const requestId = match[1];
+    const newStage = match[2];
 
-    ctx.reply(message, { parse_mode: "Markdown", ...keyboard });
-  } catch (error) {
-    console.error("Error in /details command:", error);
-    ctx.reply("❌ Ошибка при получении деталей заявки");
-  }
-});
+    // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
+    await ctx.answerCbQuery("⏳ Обновление статуса...").catch(() => {});
 
-// Handle investigation status buttons
-bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
-  const match = ctx.match;
-  const requestId = match[1];
-  const newStage = match[2];
+    try {
+      console.log("[telegram-webhook] Investigation status update:", { requestId, newStage });
 
-  // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
-  await ctx.answerCbQuery("⏳ Обновление статуса...").catch(() => {});
+      // Update investigation status in database
+      const stageMap: Record<string, string> = {
+        submitted: "pending",
+        checking: "processing",
+        analyzing: "processing",
+        investigating: "processing",
+        recovering: "processing",
+        completed: "completed",
+      };
 
-  try {
-    console.log("[telegram-webhook] Investigation status update:", { requestId, newStage });
+      const dbStatus = stageMap[newStage] || "pending";
 
-    // Update investigation status in database
-    const stageMap: Record<string, string> = {
-      submitted: "pending",
-      checking: "processing",
-      analyzing: "processing",
-      investigating: "processing",
-      recovering: "processing",
-      completed: "completed",
-    };
+      // Determine request type by ID prefix and update accordingly
+      if (requestId.startsWith("EX-")) {
+        // Exchange request
+        await updateExchangeRequestStatus(
+          requestId,
+          dbStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
+        );
+        await updateExchangeRequestStage(requestId, newStage);
+      } else if (requestId.startsWith("IR-")) {
+        // Internal request
+        await updateInternalRequestStatus(
+          requestId,
+          dbStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
+        );
+        await updateInternalRequestStage(requestId, newStage);
+      } else {
+        await ctx.reply("❌ Неверный формат ID заявки");
+        return;
+      }
 
-    const dbStatus = stageMap[newStage] || "pending";
+      // Update via webhook
+      await updateRequestStatus(requestId, dbStatus);
 
-    // Determine request type by ID prefix and update accordingly
-    if (requestId.startsWith("EX-")) {
-      // Exchange request
-      await updateExchangeRequestStatus(
+      // Confirm to user via message
+      const stageLabels: Record<string, string> = {
+        submitted: "✅ Заявка подана",
+        checking: "📄 Проверка документов",
+        analyzing: "🔍 Анализ транзакций",
+        investigating: "🕵️ Расследование",
+        recovering: "💰 Восстановление средств",
+        completed: "✅ Завершено",
+      };
+
+      await ctx.reply(`✅ Статус обновлен: ${stageLabels[newStage] || newStage}`);
+    } catch (error) {
+      console.error("[telegram-webhook] Error updating investigation status:", error);
+      console.error("[telegram-webhook] Error details:", {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
         requestId,
-        dbStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
-      );
-      await updateExchangeRequestStage(requestId, newStage);
-    } else if (requestId.startsWith("IR-")) {
-      // Internal request
-      await updateInternalRequestStatus(
-        requestId,
-        dbStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
-      );
-      await updateInternalRequestStage(requestId, newStage);
-    } else {
-      await ctx.reply("❌ Неверный формат ID заявки");
-      return;
+        newStage,
+      });
+      await ctx.reply("❌ Ошибка при обновлении статуса").catch(() => {});
     }
+  });
 
-    // Update via webhook
-    await updateRequestStatus(requestId, dbStatus);
+  // Handle action buttons
+  bot.action(/^action_(.+)_(.+)$/, async (ctx) => {
+    const match = ctx.match;
+    const requestId = match[1];
+    const newStatus = match[2];
 
-    // Confirm to user via message
-    const stageLabels: Record<string, string> = {
-      submitted: "✅ Заявка подана",
-      checking: "📄 Проверка документов",
-      analyzing: "🔍 Анализ транзакций",
-      investigating: "🕵️ Расследование",
-      recovering: "💰 Восстановление средств",
-      completed: "✅ Завершено",
-    };
+    // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
+    await ctx.answerCbQuery("⏳ Обновление...").catch(() => {});
 
-    await ctx.reply(`✅ Статус обновлен: ${stageLabels[newStage] || newStage}`);
-  } catch (error) {
-    console.error("[telegram-webhook] Error updating investigation status:", error);
-    console.error("[telegram-webhook] Error details:", {
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      requestId,
-      newStage,
-    });
-    await ctx.reply("❌ Ошибка при обновлении статуса").catch(() => {});
+    try {
+      // Update database
+      if (requestId.startsWith("EX-")) {
+        await updateExchangeRequestStatus(
+          requestId,
+          newStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
+        );
+      } else if (requestId.startsWith("IR-")) {
+        await updateInternalRequestStatus(
+          requestId,
+          newStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
+        );
+      } else {
+        await ctx.reply("❌ Неверный ID заявки");
+        return;
+      }
+
+      // Update via webhook
+      await updateRequestStatus(requestId, newStatus);
+
+      // Respond to user via message
+      const badge = getStatusBadge(newStatus);
+      const statusName = getStatusName(newStatus);
+      await ctx.reply(`✅ Статус обновлен: ${badge} ${statusName}`);
+    } catch (error) {
+      console.error("Error handling action:", error);
+      await ctx.reply("❌ Ошибка при обновлении статуса").catch(() => {});
+    }
+  });
+
+  // Simple storage for pending replies (in-memory, will be reset on restart)
+  // Maps: chatId -> { walletAddress, sessionId, type }
+  interface PendingReply {
+    walletAddress: string;
+    sessionId?: string;
+    type: "support" | "chatbot";
   }
-});
+  const pendingReplies = new Map<number, PendingReply>();
+  const typingTimeouts = new Map<string, NodeJS.Timeout>();
+  // Track if manager is waiting to send newsletter
+  const pendingNewsletter = new Set<number>();
 
-// Handle action buttons
-bot.action(/^action_(.+)_(.+)$/, async (ctx) => {
-  const match = ctx.match;
-  const requestId = match[1];
-  const newStatus = match[2];
+  // ============================================
+  // Support Messenger Callback Handlers
+  // ============================================
 
-  // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
-  await ctx.answerCbQuery("⏳ Обновление...").catch(() => {});
+  // Handle "Send Message" button (msg_WALLET_ADDRESS)
+  bot.action(/^msg_(.+)$/, async (ctx) => {
+    const walletAddress = ctx.match[1];
+    const chatId = ctx.from.id;
 
-  try {
-    // Update database
-    if (requestId.startsWith("EX-")) {
-      await updateExchangeRequestStatus(
-        requestId,
-        newStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
-      );
-    } else if (requestId.startsWith("IR-")) {
-      await updateInternalRequestStatus(
-        requestId,
-        newStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
-      );
-    } else {
-      await ctx.reply("❌ Неверный ID заявки");
-      return;
-    }
+    // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
+    await ctx.answerCbQuery().catch(() => {});
 
-    // Update via webhook
-    await updateRequestStatus(requestId, newStatus);
+    try {
+      console.log("[telegram-webhook] Support msg button clicked:", { walletAddress, chatId });
 
-    // Respond to user via message
-    const badge = getStatusBadge(newStatus);
-    const statusName = getStatusName(newStatus);
-    await ctx.reply(`✅ Статус обновлен: ${badge} ${statusName}`);
-  } catch (error) {
-    console.error("Error handling action:", error);
-    await ctx.reply("❌ Ошибка при обновлении статуса").catch(() => {});
-  }
-});
+      // Validate wallet address format
+      if (!isValidWalletAddress(walletAddress)) {
+        console.warn("[telegram-webhook] Invalid wallet address format:", walletAddress);
+        await ctx.reply(
+          `⚠️ Support Messenger доступен только для пользователей с Ethereum кошельками.\n\n` +
+            `Адрес \`${walletAddress}\` не является валидным Ethereum адресом.`,
+          { parse_mode: "Markdown" },
+        );
+        return;
+      }
 
-// Simple storage for pending replies (in-memory, will be reset on restart)
-// Maps: chatId -> { walletAddress, sessionId, type }
-interface PendingReply {
-  walletAddress: string;
-  sessionId?: string;
-  type: 'support' | 'chatbot';
-}
-const pendingReplies = new Map<number, PendingReply>();
-const typingTimeouts = new Map<string, NodeJS.Timeout>();
-
-// ============================================
-// Support Messenger Callback Handlers
-// ============================================
-
-// Handle "Send Message" button (msg_WALLET_ADDRESS)
-bot.action(/^msg_(.+)$/, async (ctx) => {
-  const walletAddress = ctx.match[1];
-  const chatId = ctx.from.id;
-
-  // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
-  await ctx.answerCbQuery().catch(() => {});
-
-  try {
-    console.log('[telegram-webhook] Support msg button clicked:', { walletAddress, chatId });
-
-    // Validate wallet address format
-    if (!isValidWalletAddress(walletAddress)) {
-      console.warn('[telegram-webhook] Invalid wallet address format:', walletAddress);
-      await ctx.reply(
-        `⚠️ Support Messenger доступен только для пользователей с Ethereum кошельками.\n\n` +
-        `Адрес \`${walletAddress}\` не является валидным Ethereum адресом.`,
-        { parse_mode: 'Markdown' }
-      );
-      return;
-    }
-
-    // Store pending reply
-    pendingReplies.set(chatId, {
-      walletAddress,
-      type: 'support',
-    });
-
-    await ctx.reply(
-      `💬 *Отправка сообщения пользователю*\n\n` +
-      `Кошелек: \`${walletAddress}\`\n\n` +
-      `Напишите сообщение, которое хотите отправить пользователю.\n` +
-      `Для отмены используйте /cancel`,
-      { parse_mode: 'Markdown' }
-    );
-  } catch (error) {
-    console.error('[telegram-webhook] Error in msg handler:', error);
-    await ctx.reply('❌ Ошибка').catch(() => {});
-  }
-});
-
-// Handle "Chat History" button (history_WALLET_ADDRESS)
-bot.action(/^history_(.+)$/, async (ctx) => {
-  const walletAddress = ctx.match[1];
-
-  // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
-  await ctx.answerCbQuery().catch(() => {});
-
-  try {
-    console.log('[telegram-webhook] Support history button clicked:', { walletAddress });
-
-    // Validate wallet address format
-    if (!isValidWalletAddress(walletAddress)) {
-      console.warn('[telegram-webhook] Invalid wallet address format:', walletAddress);
-      await ctx.reply(
-        `⚠️ Support Messenger доступен только для пользователей с Ethereum кошельками.\n\n` +
-        `Адрес \`${walletAddress}\` не является валидным Ethereum адресом.`,
-        { parse_mode: 'Markdown' }
-      );
-      return;
-    }
-
-    // Fetch chat history from API
-    const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/support/get-chat-history?walletAddress=${walletAddress}&limit=10`;
-
-    const response = await fetch(apiUrl);
-
-    if (!response.ok) {
-      await ctx.reply('❌ Ошибка при получении истории чата');
-      return;
-    }
-
-    const data = await response.json();
-    const messages = data.messages || [];
-
-    if (messages.length === 0) {
-      await ctx.reply('📭 История чата пуста');
-      return;
-    }
-
-    // Format messages for the helper function
-    const formattedMessages = (messages as Array<{
-      type: string;
-      text: string;
-      adminUsername?: string;
-      createdAt: string;
-    }>).map((msg) => ({
-      type: msg.type,
-      text: msg.text,
-      admin_username: msg.adminUsername,
-      created_at: msg.createdAt,
-    }));
-
-    // Use helper function to format history
-    const historyText = formatChatHistoryForTelegram(formattedMessages);
-
-    // Add reply button
-    const keyboard = Markup.inlineKeyboard([
-      [Markup.button.callback('💬 Ответить', `reply_${walletAddress}`)],
-    ]);
-
-    await ctx.reply(historyText, { parse_mode: 'MarkdownV2', ...keyboard });
-  } catch (error) {
-    console.error('[telegram-webhook] Error in history handler:', error);
-    await ctx.reply('❌ Ошибка при получении истории чата').catch(() => {});
-  }
-});
-
-// Handle "Reply" button (reply_WALLET_ADDRESS) - but NOT reply_to_chat_
-// Use negative lookahead to exclude reply_to_chat_ pattern
-bot.action(/^reply_(?!to_chat_)(.+)$/, async (ctx) => {
-  const walletAddress = ctx.match[1];
-  const chatId = ctx.from.id;
-
-  // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
-  await ctx.answerCbQuery().catch(() => {});
-
-  try {
-    console.log('[telegram-webhook] Support reply button clicked:', { walletAddress, chatId });
-
-    // Store pending reply
-    pendingReplies.set(chatId, {
-      walletAddress,
-      type: 'support',
-    });
-
-    await ctx.reply(
-      `💬 *Ответить пользователю*\n\n` +
-      `Кошелек: \`${walletAddress}\`\n\n` +
-      `Напишите ваш ответ. Для отмены используйте /cancel`,
-      { parse_mode: 'Markdown' }
-    );
-  } catch (error) {
-    console.error('[telegram-webhook] Error in reply handler:', error);
-    await ctx.reply('❌ Ошибка').catch(() => {});
-  }
-});
-
-// ============================================
-// Cancel Command
-// ============================================
-
-bot.command('cancel', (ctx) => {
-  const chatId = ctx.from.id;
-  const pending = pendingReplies.get(chatId);
-
-  if (pending) {
-    pendingReplies.delete(chatId);
-
-    // Clear typing timeout if exists
-    const timeoutKey = `${chatId}_${pending.walletAddress}`;
-    if (typingTimeouts.has(timeoutKey)) {
-      clearTimeout(typingTimeouts.get(timeoutKey)!);
-      typingTimeouts.delete(timeoutKey);
-    }
-
-    ctx.reply('❌ Отправка сообщения отменена');
-  } else {
-    ctx.reply('Нет активной отправки сообщения');
-  }
-});
-
-// Chatbot callback handler - handle reply button click
-bot.action(/^reply_to_chat_(.+)$/, async (ctx) => {
-  const sessionId = ctx.match[1];
-  const chatId = ctx.chat?.id || ctx.from?.id;
-
-  // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
-  await ctx.answerCbQuery().catch(() => {});
-
-  try {
-    console.log("[telegram-webhook] Reply button clicked for session:", sessionId);
-
-    if (chatId) {
-      // Store session ID for this chat (chatbot type)
+      // Store pending reply
       pendingReplies.set(chatId, {
-        walletAddress: '', // Not needed for chatbot
-        sessionId,
-        type: 'chatbot',
+        walletAddress,
+        type: "support",
       });
+
+      await ctx.reply(
+        `💬 *Отправка сообщения пользователю*\n\n` +
+          `Кошелек: \`${walletAddress}\`\n\n` +
+          `Напишите сообщение, которое хотите отправить пользователю.\n` +
+          `Для отмены используйте /cancel`,
+        { parse_mode: "Markdown" },
+      );
+    } catch (error) {
+      console.error("[telegram-webhook] Error in msg handler:", error);
+      await ctx.reply("❌ Ошибка").catch(() => {});
     }
+  });
 
-    // Send a message asking for the reply text
-    await ctx.reply(
-      `📝 Введите ваш ответ для пользователя:\n\n` +
-        `Просто напишите сообщение, и оно будет автоматически отправлено пользователю.`,
-    );
-  } catch (error) {
-    console.error("[telegram-webhook] Error handling reply button:", error);
-    await ctx.reply("❌ Ошибка").catch(() => {});
-  }
-});
+  // Handle "Chat History" button (history_WALLET_ADDRESS)
+  bot.action(/^history_(.+)$/, async (ctx) => {
+    const walletAddress = ctx.match[1];
 
-// Chatbot handler - listen for admin replies
-bot.on("text", async (ctx) => {
-  // Skip if it's a command
-  if (ctx.message.text.startsWith("/")) {
-    return;
-  }
+    // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
+    await ctx.answerCbQuery().catch(() => {});
 
-  // Check if we're awaiting a reply from the button click
-  const chatId = ctx.from.id;
-  const pending = pendingReplies.get(chatId);
+    try {
+      console.log("[telegram-webhook] Support history button clicked:", { walletAddress });
 
-  if (pending) {
-    const adminResponse = ctx.message.text;
-    const adminUsername = ctx.from.first_name || ctx.from.username || 'Admin';
+      // Validate wallet address format
+      if (!isValidWalletAddress(walletAddress)) {
+        console.warn("[telegram-webhook] Invalid wallet address format:", walletAddress);
+        await ctx.reply(
+          `⚠️ Support Messenger доступен только для пользователей с Ethereum кошельками.\n\n` +
+            `Адрес \`${walletAddress}\` не является валидным Ethereum адресом.`,
+          { parse_mode: "Markdown" },
+        );
+        return;
+      }
 
-    // Handle support messenger reply
-    if (pending.type === 'support') {
-      console.log("[telegram-webhook] Support message detected:", {
-        walletAddress: pending.walletAddress,
-        text: adminResponse,
-        adminId: ctx.from.id,
+      // Fetch chat history from API
+      const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/support/get-chat-history?walletAddress=${walletAddress}&limit=10`;
+
+      const response = await fetch(apiUrl);
+
+      if (!response.ok) {
+        await ctx.reply("❌ Ошибка при получении истории чата");
+        return;
+      }
+
+      const data = await response.json();
+      const messages = data.messages || [];
+
+      if (messages.length === 0) {
+        await ctx.reply("📭 История чата пуста");
+        return;
+      }
+
+      // Format messages for the helper function
+      const formattedMessages = (
+        messages as Array<{
+          type: string;
+          text: string;
+          adminUsername?: string;
+          createdAt: string;
+        }>
+      ).map((msg) => ({
+        type: msg.type,
+        text: msg.text,
+        admin_username: msg.adminUsername,
+        created_at: msg.createdAt,
+      }));
+
+      // Use helper function to format history
+      const historyText = formatChatHistoryForTelegram(formattedMessages);
+
+      // Add reply button
+      const keyboard = Markup.inlineKeyboard([
+        [Markup.button.callback("💬 Ответить", `reply_${walletAddress}`)],
+      ]);
+
+      // Try with MarkdownV2 first, fallback to Markdown if it fails
+      try {
+        await ctx.reply(historyText, { parse_mode: "MarkdownV2", ...keyboard });
+      } catch (markdownError) {
+        console.warn("[telegram-webhook] MarkdownV2 failed, trying Markdown:", markdownError);
+        // Fallback to regular Markdown (less strict)
+        await ctx.reply(historyText, { parse_mode: "Markdown", ...keyboard });
+      }
+    } catch (error) {
+      console.error("[telegram-webhook] Error in history handler:", error);
+      try {
+        await ctx.reply("❌ Ошибка при получении истории чата");
+      } catch (replyError) {
+        console.error("[telegram-webhook] Failed to send error message:", replyError);
+      }
+    }
+  });
+
+  // Handle "Reply" button (reply_WALLET_ADDRESS) - but NOT reply_to_chat_
+  // Use negative lookahead to exclude reply_to_chat_ pattern
+  bot.action(/^reply_(?!to_chat_)(.+)$/, async (ctx) => {
+    const walletAddress = ctx.match[1];
+    const chatId = ctx.from.id;
+
+    // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
+    await ctx.answerCbQuery().catch(() => {});
+
+    try {
+      console.log("[telegram-webhook] Support reply button clicked:", { walletAddress, chatId });
+
+      // Store pending reply
+      pendingReplies.set(chatId, {
+        walletAddress,
+        type: "support",
       });
 
-      // Clear the pending flag
+      await ctx.reply(
+        `💬 *Ответить пользователю*\n\n` +
+          `Кошелек: \`${walletAddress}\`\n\n` +
+          `Напишите ваш ответ. Для отмены используйте /cancel`,
+        { parse_mode: "Markdown" },
+      );
+    } catch (error) {
+      console.error("[telegram-webhook] Error in reply handler:", error);
+      await ctx.reply("❌ Ошибка").catch(() => {});
+    }
+  });
+
+  // ============================================
+  // Cancel Command
+  // ============================================
+
+  bot.command("cancel", (ctx) => {
+    const chatId = ctx.from.id;
+    const pending = pendingReplies.get(chatId);
+    const isNewsletterPending = pendingNewsletter.has(chatId);
+
+    if (pending) {
       pendingReplies.delete(chatId);
 
       // Clear typing timeout if exists
@@ -734,314 +696,515 @@ bot.on("text", async (ctx) => {
         typingTimeouts.delete(timeoutKey);
       }
 
-      try {
-        // Set typing indicator
-        await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/support/set-typing`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            walletAddress: pending.walletAddress,
-            adminId: ctx.from.id,
-            adminUsername,
-            isTyping: true,
-          }),
-        }).catch(err => console.error('Failed to set typing:', err));
-
-        // Wait a bit to simulate typing
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        // Send message via support API
-        const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/support/send-admin-message`;
-        console.log("[telegram-webhook] Calling support API:", apiUrl);
-
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            walletAddress: pending.walletAddress,
-            text: adminResponse,
-            adminId: ctx.from.id,
-            adminUsername,
-            sessionId: pending.sessionId,
-          }),
-        });
-
-        console.log("[telegram-webhook] Support API response status:", response.status);
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("[telegram-webhook] Support message saved:", data);
-          ctx.reply("✅ Сообщение отправлено пользователю");
-        } else {
-          const errorText = await response.text();
-          console.error("[telegram-webhook] Support API error:", errorText);
-          ctx.reply("❌ Ошибка при отправке сообщения");
-        }
-      } catch (error) {
-        console.error("[telegram-webhook] Error sending support message:", error);
-        ctx.reply("❌ Ошибка при отправке сообщения");
-      }
-      return;
-    }
-
-    // Handle chatbot reply
-    if (pending.type === 'chatbot' && pending.sessionId) {
-      const sessionId = pending.sessionId;
-
-      console.log("[telegram-webhook] Chatbot reply detected via button:", {
-        sessionId,
-        text: adminResponse,
-        adminId: ctx.from.id,
-      });
-
-      // Clear the pending flag
-      pendingReplies.delete(chatId);
-
-      try {
-        // Send response to user via API
-        const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/chatbot/admin-response`;
-        console.log("[telegram-webhook] Calling API:", apiUrl);
-
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessionId,
-            text: adminResponse,
-            adminId: ctx.from.id,
-          }),
-        });
-
-        console.log("[telegram-webhook] API response status:", response.status);
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("[telegram-webhook] Admin response saved:", data);
-          ctx.reply("✅ Ответ отправлен пользователю");
-        } else {
-          const errorText = await response.text();
-          console.error("[telegram-webhook] API error:", errorText);
-          ctx.reply("❌ Ошибка при отправке ответа");
-        }
-      } catch (error) {
-        console.error("[telegram-webhook] Error sending admin response:", error);
-        ctx.reply("❌ Ошибка при отправке ответа");
-      }
-      return;
-    }
-  }
-
-  // Check if this is an admin reply to chatbot (legacy format)
-  // Format: [reply-SESSION_ID] message text
-  const match = ctx.message.text.match(/^\[reply-([^\]]+)\]\s*(.+)/);
-
-  if (match && ctx.chat.type === "private") {
-    const sessionId = match[1];
-    const adminResponse = match[2];
-
-    console.log("[telegram-webhook] Admin reply detected:", {
-      sessionId,
-      text: adminResponse,
-      adminId: ctx.from.id,
-    });
-
-    try {
-      // Send response to user via API
-      const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/chatbot/admin-response`;
-      console.log("[telegram-webhook] Calling API:", apiUrl);
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId,
-          text: adminResponse,
-          adminId: ctx.from.id,
-        }),
-      });
-
-      console.log("[telegram-webhook] API response status:", response.status);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("[telegram-webhook] Admin response saved:", data);
-        ctx.reply("✅ Ответ отправлен пользователю");
-      } else {
-        const errorText = await response.text();
-        console.error("[telegram-webhook] API error:", errorText);
-        ctx.reply("❌ Ошибка при отправке ответа");
-      }
-    } catch (error) {
-      console.error("[telegram-webhook] Error sending admin response:", error);
-      ctx.reply("❌ Ошибка при отправке ответа");
-    }
-    return;
-  }
-
-  // Default text handler
-  ctx.reply(
-    "Используйте команды:\n" +
-      "/list - показать все заявки\n" +
-      "/exchange - показать заявки на обмен\n" +
-      "/internal - показать внутренние заявки\n" +
-      "/details <ID> - детали заявки\n" +
-      "/chats - активные чат-сессии\n\n" +
-      "Для получения подробной справки используйте /help",
-  );
-});
-
-// Newsletter subscription commands
-bot.command("subscribe", async (ctx) => {
-  try {
-    const chatId = ctx.chat.id.toString();
-    const username = ctx.from.first_name || "User";
-
-    // Check if already subscribed
-    const existing = await query("SELECT * FROM newsletter_subscribers WHERE chat_id = $1", [
-      chatId,
-    ]);
-
-    if (existing.rows.length > 0) {
-      // Update to active
-      await query("UPDATE newsletter_subscribers SET is_active = true WHERE chat_id = $1", [
-        chatId,
-      ]);
-      ctx.reply(
-        "✅ Вы уже подписаны на рассылку!\n\n" +
-          "Вы будете получать новости и обновления о EuroCoin.",
-      );
+      ctx.reply("❌ Отправка сообщения отменена");
+    } else if (isNewsletterPending) {
+      pendingNewsletter.delete(chatId);
+      ctx.reply("❌ Отправка рассылки отменена");
     } else {
-      // Add new subscriber
-      await query("INSERT INTO newsletter_subscribers (chat_id, language) VALUES ($1, 'ru')", [
+      ctx.reply("Нет активной отправки сообщения или рассылки");
+    }
+  });
+
+  // Chatbot callback handler - handle reply button click
+  bot.action(/^reply_to_chat_(.+)$/, async (ctx) => {
+    const sessionId = ctx.match[1];
+    const chatId = ctx.chat?.id || ctx.from?.id;
+
+    // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
+    await ctx.answerCbQuery().catch(() => {});
+
+    try {
+      console.log("[telegram-webhook] Reply button clicked for session:", sessionId);
+
+      if (chatId) {
+        // Store session ID for this chat (chatbot type)
+        pendingReplies.set(chatId, {
+          walletAddress: "", // Not needed for chatbot
+          sessionId,
+          type: "chatbot",
+        });
+      }
+
+      // Send a message asking for the reply text
+      await ctx.reply(
+        `📝 Введите ваш ответ для пользователя:\n\n` +
+          `Просто напишите сообщение, и оно будет автоматически отправлено пользователю.`,
+      );
+    } catch (error) {
+      console.error("[telegram-webhook] Error handling reply button:", error);
+      await ctx.reply("❌ Ошибка").catch(() => {});
+    }
+  });
+
+  // Unified text handler - listen for admin replies and newsletter
+  bot.on("text", async (ctx) => {
+    try {
+      // Validate message structure
+      if (!ctx.message || !ctx.message.text) {
+        console.warn("[telegram-webhook] Invalid message structure:", ctx.message);
+        return;
+      }
+
+      const messageText = ctx.message.text;
+
+      // Skip if it's a command (commands are handled separately)
+      if (messageText.startsWith("/")) {
+        return;
+      }
+
+      const chatId = ctx.from.id;
+      const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
+      const isManager = managerChatId && chatId.toString() === managerChatId;
+
+      // Check if we're awaiting a reply from the button click
+      const pending = pendingReplies.get(chatId);
+
+      if (pending) {
+        const adminResponse = messageText;
+        const adminUsername = ctx.from.first_name || ctx.from.username || "Admin";
+
+        // Handle support messenger reply
+        if (pending.type === "support") {
+          console.log("[telegram-webhook] Support message detected:", {
+            walletAddress: pending.walletAddress,
+            text: adminResponse,
+            adminId: ctx.from.id,
+          });
+
+          // Clear the pending flag immediately
+          pendingReplies.delete(chatId);
+
+          // Clear typing timeout if exists
+          const timeoutKey = `${chatId}_${pending.walletAddress}`;
+          if (typingTimeouts.has(timeoutKey)) {
+            clearTimeout(typingTimeouts.get(timeoutKey)!);
+            typingTimeouts.delete(timeoutKey);
+          }
+
+          try {
+            // Set typing indicator
+            const typingUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/support/set-typing`;
+            console.log("[telegram-webhook] Setting typing indicator:", typingUrl);
+
+            await fetch(typingUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                walletAddress: pending.walletAddress,
+                adminId: ctx.from.id,
+                adminUsername,
+                isTyping: true,
+              }),
+            }).catch((err) => {
+              console.error("[telegram-webhook] Failed to set typing:", err);
+              // Don't fail if typing indicator fails
+            });
+
+            // Wait a bit to simulate typing
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+
+            // Send message via support API
+            const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/support/send-admin-message`;
+            console.log("[telegram-webhook] Calling support API:", apiUrl);
+            console.log("[telegram-webhook] Request body:", {
+              walletAddress: pending.walletAddress,
+              text: adminResponse.substring(0, 50) + "...",
+              adminId: ctx.from.id,
+              adminUsername,
+              sessionId: pending.sessionId,
+            });
+
+            const response = await fetch(apiUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                walletAddress: pending.walletAddress,
+                text: adminResponse,
+                adminId: ctx.from.id,
+                adminUsername,
+                sessionId: pending.sessionId,
+              }),
+            });
+
+            console.log("[telegram-webhook] Support API response status:", response.status);
+            console.log(
+              "[telegram-webhook] Support API response headers:",
+              Object.fromEntries(response.headers.entries()),
+            );
+
+            if (response.ok) {
+              const data = await response.json();
+              console.log("[telegram-webhook] Support message saved:", data);
+              try {
+                await ctx.reply("✅ Сообщение отправлено пользователю");
+              } catch (replyError) {
+                console.error("[telegram-webhook] Failed to send confirmation:", replyError);
+              }
+            } else {
+              const errorText = await response.text();
+              console.error("[telegram-webhook] Support API error:", {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorText,
+              });
+              try {
+                await ctx.reply(`❌ Ошибка при отправке сообщения (${response.status})`);
+              } catch (replyError) {
+                console.error("[telegram-webhook] Failed to send error message:", replyError);
+              }
+            }
+          } catch (error) {
+            console.error("[telegram-webhook] Error sending support message:", {
+              error: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : undefined,
+            });
+            try {
+              await ctx.reply(
+                "❌ Ошибка при отправке сообщения: " +
+                  (error instanceof Error ? error.message : String(error)),
+              );
+            } catch (replyError) {
+              console.error("[telegram-webhook] Failed to send error message:", replyError);
+            }
+          }
+          return;
+        }
+
+        // Handle chatbot reply
+        if (pending.type === "chatbot" && pending.sessionId) {
+          const sessionId = pending.sessionId;
+
+          console.log("[telegram-webhook] Chatbot reply detected via button:", {
+            sessionId,
+            text: adminResponse.substring(0, 50) + "...",
+            adminId: ctx.from.id,
+          });
+
+          // Clear the pending flag immediately
+          pendingReplies.delete(chatId);
+
+          try {
+            // Send response to user via API
+            const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/chatbot/admin-response`;
+            console.log("[telegram-webhook] Calling chatbot API:", apiUrl);
+            console.log("[telegram-webhook] Request body:", {
+              sessionId,
+              text: adminResponse.substring(0, 50) + "...",
+              adminId: ctx.from.id,
+            });
+
+            const response = await fetch(apiUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                sessionId,
+                text: adminResponse,
+                adminId: ctx.from.id,
+              }),
+            });
+
+            console.log("[telegram-webhook] Chatbot API response status:", response.status);
+            console.log(
+              "[telegram-webhook] Chatbot API response headers:",
+              Object.fromEntries(response.headers.entries()),
+            );
+
+            if (response.ok) {
+              const data = await response.json();
+              console.log("[telegram-webhook] Admin response saved:", data);
+              try {
+                await ctx.reply("✅ Ответ отправлен пользователю");
+              } catch (replyError) {
+                console.error("[telegram-webhook] Failed to send confirmation:", replyError);
+              }
+            } else {
+              const errorText = await response.text();
+              console.error("[telegram-webhook] Chatbot API error:", {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorText,
+              });
+              try {
+                await ctx.reply(`❌ Ошибка при отправке ответа (${response.status})`);
+              } catch (replyError) {
+                console.error("[telegram-webhook] Failed to send error message:", replyError);
+              }
+            }
+          } catch (error) {
+            console.error("[telegram-webhook] Error sending admin response:", {
+              error: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : undefined,
+            });
+            try {
+              await ctx.reply(
+                "❌ Ошибка при отправке ответа: " +
+                  (error instanceof Error ? error.message : String(error)),
+              );
+            } catch (replyError) {
+              console.error("[telegram-webhook] Failed to send error message:", replyError);
+            }
+          }
+          return;
+        }
+      }
+
+      // Check if this is an admin reply to chatbot (legacy format)
+      // Format: [reply-SESSION_ID] message text
+      const match = messageText.match(/^\[reply-([^\]]+)\]\s*(.+)/);
+
+      if (match && ctx.chat.type === "private") {
+        const sessionId = match[1];
+        const adminResponse = match[2];
+
+        console.log("[telegram-webhook] Admin reply detected (legacy format):", {
+          sessionId,
+          text: adminResponse.substring(0, 50) + "...",
+          adminId: ctx.from.id,
+        });
+
+        try {
+          // Send response to user via API
+          const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/chatbot/admin-response`;
+          console.log("[telegram-webhook] Calling API (legacy):", apiUrl);
+
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId,
+              text: adminResponse,
+              adminId: ctx.from.id,
+            }),
+          });
+
+          console.log("[telegram-webhook] API response status (legacy):", response.status);
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log("[telegram-webhook] Admin response saved (legacy):", data);
+            try {
+              await ctx.reply("✅ Ответ отправлен пользователю");
+            } catch (replyError) {
+              console.error("[telegram-webhook] Failed to send confirmation:", replyError);
+            }
+          } else {
+            const errorText = await response.text();
+            console.error("[telegram-webhook] API error (legacy):", errorText);
+            try {
+              await ctx.reply(`❌ Ошибка при отправке ответа (${response.status})`);
+            } catch (replyError) {
+              console.error("[telegram-webhook] Failed to send error message:", replyError);
+            }
+          }
+        } catch (error) {
+          console.error("[telegram-webhook] Error sending admin response (legacy):", error);
+          try {
+            await ctx.reply(
+              "❌ Ошибка при отправке ответа: " +
+                (error instanceof Error ? error.message : String(error)),
+            );
+          } catch (replyError) {
+            console.error("[telegram-webhook] Failed to send error message:", replyError);
+          }
+        }
+        return;
+      }
+
+      // Newsletter handler - only for manager and only if waiting for newsletter
+      if (isManager && pendingNewsletter.has(chatId)) {
+        // Clear the flag
+        pendingNewsletter.delete(chatId);
+
+        try {
+          // Get all verified email subscribers
+          const subscribers = await query(
+            "SELECT email FROM newsletter_subscribers WHERE verified = true AND is_active = true AND email IS NOT NULL",
+          );
+
+          if (subscribers.rows.length === 0) {
+            await ctx.reply("❌ Нет активных подписчиков");
+            return;
+          }
+
+          await ctx.reply(`📤 Отправка рассылки ${subscribers.rows.length} подписчикам...`);
+
+          // Call API to send newsletters
+          try {
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_APP_URL}/api/newsletter/send-email`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  message: messageText,
+                  authToken: process.env.NEWSLETTER_AUTH_TOKEN,
+                }),
+              },
+            );
+
+            const data = await response.json();
+
+            if (response.ok) {
+              await ctx.reply(
+                `✅ Рассылка отправлена!\n\n` +
+                  `Отправлено: ${data.sent}\n` +
+                  `Ошибок: ${data.failed}`,
+              );
+            } else {
+              await ctx.reply(`❌ Ошибка при отправке: ${data.error}`);
+            }
+          } catch (error) {
+            console.error("Error calling newsletter API:", error);
+            await ctx.reply("❌ Ошибка при отправке рассылки");
+          }
+          return;
+        } catch (error) {
+          console.error("Error in newsletter text handler:", error);
+          // Fall through to default handler
+        }
+      }
+
+      // Default text handler
+      await ctx.reply(
+        "Используйте команды:\n" +
+          "/list - показать все заявки\n" +
+          "/exchange - показать заявки на обмен\n" +
+          "/internal - показать внутренние заявки\n" +
+          "/details <ID> - детали заявки\n" +
+          "/chats - активные чат-сессии\n\n" +
+          "Для получения подробной справки используйте /help",
+      );
+    } catch (error) {
+      console.error("[telegram-webhook] Unexpected error in text handler:", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      try {
+        await ctx.reply("❌ Произошла ошибка при обработке сообщения");
+      } catch (replyError) {
+        console.error("[telegram-webhook] Failed to send error message:", replyError);
+      }
+    }
+  });
+
+  // Newsletter subscription commands
+  bot.command("subscribe", async (ctx) => {
+    try {
+      const chatId = ctx.chat.id.toString();
+      const username = ctx.from.first_name || "User";
+
+      // Check if already subscribed
+      const existing = await query("SELECT * FROM newsletter_subscribers WHERE chat_id = $1", [
         chatId,
       ]);
-      ctx.reply(
-        `🎉 Спасибо за подписку, ${username}!\n\n` +
-          `Вы теперь будете получать рассылку новостей и обновлений о EuroCoin.\n\n` +
-          `Для отписки используйте /unsubscribe`,
-      );
-    }
-  } catch (error) {
-    console.error("Error in subscribe command:", error);
-    ctx.reply("❌ Ошибка при подписке. Попробуйте позже.");
-  }
-});
 
-bot.command("unsubscribe", async (ctx) => {
-  try {
-    const chatId = ctx.chat.id.toString();
-
-    await query("UPDATE newsletter_subscribers SET is_active = false WHERE chat_id = $1", [chatId]);
-
-    ctx.reply(
-      "👋 Вы отписались от рассылки.\n\n" +
-        "Мы будем скучать! Подпишитесь снова командой /subscribe",
-    );
-  } catch (error) {
-    console.error("Error in unsubscribe command:", error);
-    ctx.reply("❌ Ошибка при отписке. Попробуйте позже.");
-  }
-});
-
-// Newsletter command for admins - send newsletter to all email subscribers
-bot.command("newsletter", async (ctx) => {
-  try {
-    const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
-    const chatId = ctx.chat.id.toString();
-
-    // Check if user is admin
-    if (chatId !== managerChatId) {
-      ctx.reply("❌ У вас нет доступа к этой команде");
-      return;
-    }
-
-    // Get count of verified subscribers
-    const subscribers = await query(
-      "SELECT COUNT(*) as count FROM newsletter_subscribers WHERE verified = true AND is_active = true",
-    );
-
-    const count = subscribers.rows[0]?.count || 0;
-
-    ctx.reply(
-      `📧 *Рассылка для подписчиков*\n\n` +
-        `Активных подписчиков: ${count}\n\n` +
-        `Отправьте текст рассылки следующим сообщением:\n` +
-        `Пример:\n` +
-        `\`Отправьте рассылку:\n\nДобро пожаловать в EuroCoin! Новые возможности для вашего бизнеса.\``,
-      { parse_mode: "Markdown" },
-    );
-  } catch (error) {
-    console.error("Error in newsletter command:", error);
-    ctx.reply("❌ Ошибка при получении информации о рассылке");
-  }
-});
-
-// Handler for newsletter text (expects text after /newsletter command)
-bot.on("text", async (ctx) => {
-  try {
-    const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
-    const chatId = ctx.chat.id.toString();
-
-    // Check if user is admin
-    if (chatId !== managerChatId) {
-      return; // Not admin, skip
-    }
-
-    // Check if message looks like newsletter text (has multiple lines or special format)
-    const text = ctx.message.text;
-    if (text.startsWith("/")) {
-      return; // It's a command, skip
-    }
-
-    // Get all verified email subscribers
-    const subscribers = await query(
-      "SELECT email FROM newsletter_subscribers WHERE verified = true AND is_active = true AND email IS NOT NULL",
-    );
-
-    if (subscribers.rows.length === 0) {
-      ctx.reply("❌ Нет активных подписчиков");
-      return;
-    }
-
-    ctx.reply(`📤 Отправка рассылки ${subscribers.rows.length} подписчикам...`);
-
-    // Call API to send newsletters
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/newsletter/send-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: text,
-          authToken: process.env.NEWSLETTER_AUTH_TOKEN,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
+      if (existing.rows.length > 0) {
+        // Update to active
+        await query("UPDATE newsletter_subscribers SET is_active = true WHERE chat_id = $1", [
+          chatId,
+        ]);
         ctx.reply(
-          `✅ Рассылка отправлена!\n\n` + `Отправлено: ${data.sent}\n` + `Ошибок: ${data.failed}`,
+          "✅ Вы уже подписаны на рассылку!\n\n" +
+            "Вы будете получать новости и обновления о EuroCoin.",
         );
       } else {
-        ctx.reply(`❌ Ошибка при отправке: ${data.error}`);
+        // Add new subscriber
+        await query("INSERT INTO newsletter_subscribers (chat_id, language) VALUES ($1, 'ru')", [
+          chatId,
+        ]);
+        ctx.reply(
+          `🎉 Спасибо за подписку, ${username}!\n\n` +
+            `Вы теперь будете получать рассылку новостей и обновлений о EuroCoin.\n\n` +
+            `Для отписки используйте /unsubscribe`,
+        );
       }
     } catch (error) {
-      console.error("Error calling newsletter API:", error);
-      ctx.reply("❌ Ошибка при отправке рассылки");
+      console.error("Error in subscribe command:", error);
+      ctx.reply("❌ Ошибка при подписке. Попробуйте позже.");
     }
-  } catch (error) {
-    console.error("Error in newsletter text handler:", error);
-  }
-});
+  });
+
+  bot.command("unsubscribe", async (ctx) => {
+    try {
+      const chatId = ctx.chat.id.toString();
+
+      await query("UPDATE newsletter_subscribers SET is_active = false WHERE chat_id = $1", [
+        chatId,
+      ]);
+
+      ctx.reply(
+        "👋 Вы отписались от рассылки.\n\n" +
+          "Мы будем скучать! Подпишитесь снова командой /subscribe",
+      );
+    } catch (error) {
+      console.error("Error in unsubscribe command:", error);
+      ctx.reply("❌ Ошибка при отписке. Попробуйте позже.");
+    }
+  });
+
+  // Newsletter command for admins - send newsletter to all email subscribers
+  bot.command("newsletter", async (ctx) => {
+    try {
+      const managerChatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
+      const chatId = ctx.chat.id.toString();
+
+      // Check if user is admin
+      if (chatId !== managerChatId) {
+        ctx.reply("❌ У вас нет доступа к этой команде");
+        return;
+      }
+
+      // Get count of verified subscribers
+      const subscribers = await query(
+        "SELECT COUNT(*) as count FROM newsletter_subscribers WHERE verified = true AND is_active = true",
+      );
+
+      const count = subscribers.rows[0]?.count || 0;
+
+      // Mark that this chat is waiting for newsletter text
+      pendingNewsletter.add(ctx.from.id);
+
+      ctx.reply(
+        `📧 *Рассылка для подписчиков*\n\n` +
+          `Активных подписчиков: ${count}\n\n` +
+          `Отправьте текст рассылки следующим сообщением:\n` +
+          `Пример:\n` +
+          `\`Отправьте рассылку:\n\nДобро пожаловать в EuroCoin! Новые возможности для вашего бизнеса.\``,
+        { parse_mode: "Markdown" },
+      );
+    } catch (error) {
+      console.error("Error in newsletter command:", error);
+      ctx.reply("❌ Ошибка при получении информации о рассылке");
+    }
+  });
+} // End of if (bot) block
 
 export async function POST(request: NextRequest) {
   try {
+    if (!bot) {
+      return NextResponse.json(
+        { error: "Telegram bot is not configured. Please set TELEGRAM_API_KEY." },
+        { status: 503 },
+      );
+    }
+
     const update = await request.json();
-    await bot.handleUpdate(update);
+
+    // Process update with timeout protection
+    // Telegram expects webhook response within 60 seconds, but we should respond faster
+    const updatePromise = bot.handleUpdate(update);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Update processing timeout")), 55000),
+    );
+
+    await Promise.race([updatePromise, timeoutPromise]);
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Error processing Telegram update:", error);
-    return NextResponse.json({ error: "Failed to process update" }, { status: 500 });
+    // Still return success to prevent Telegram from retrying
+    // The error is logged for debugging
+    return NextResponse.json({ ok: true });
   }
 }
 
