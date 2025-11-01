@@ -1,18 +1,5 @@
-import { Telegraf, Markup } from 'telegraf';
-
-// Initialize Telegram bot
-let bot: Telegraf | null = null;
-
-function getBot(): Telegraf {
-  if (!bot) {
-    const apiKey = process.env.TELEGRAM_API_KEY;
-    if (!apiKey) {
-      throw new Error('TELEGRAM_API_KEY is not set in environment variables');
-    }
-    bot = new Telegraf(apiKey);
-  }
-  return bot;
-}
+import { Markup } from 'telegraf';
+import { getBot } from './bot';
 
 function getAdminChatId(): string | null {
   const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;

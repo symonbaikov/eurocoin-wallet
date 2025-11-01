@@ -1,12 +1,4 @@
-import { Telegraf } from "telegraf";
-
-function getBot(): Telegraf {
-  const apiKey = process.env.TELEGRAM_API_KEY;
-  if (!apiKey) {
-    throw new Error("TELEGRAM_API_KEY is not set in environment variables");
-  }
-  return new Telegraf(apiKey);
-}
+import { getTelegramApi } from "./bot";
 
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 Bytes";
@@ -26,13 +18,13 @@ export async function sendFilesToTelegram(
     fileData: Buffer;
   }>,
 ): Promise<void> {
-  const bot = getBot();
+  const telegram = getTelegramApi();
 
   try {
     // Send text message with file count
     const filesInfo = files.length > 0 ? `\n📎 *Прикрепленные файлы:* ${files.length} шт.` : "";
 
-    await bot.telegram.sendMessage(chatId, filesInfo, { parse_mode: "Markdown" });
+    await telegram.sendMessage(chatId, filesInfo, { parse_mode: "Markdown" });
 
     // Send each file
     for (const file of files) {
@@ -42,7 +34,7 @@ export async function sendFilesToTelegram(
       // Determine file type and send accordingly
       if (file.fileType === "application/pdf") {
         // Send PDF as document
-        await bot.telegram.sendDocument(
+        await telegram.sendDocument(
           chatId,
           {
             source: file.fileData,
@@ -59,7 +51,7 @@ export async function sendFilesToTelegram(
         file.fileName.endsWith(".xlsx")
       ) {
         // Send Excel as document
-        await bot.telegram.sendDocument(
+        await telegram.sendDocument(
           chatId,
           {
             source: file.fileData,
@@ -76,7 +68,7 @@ export async function sendFilesToTelegram(
         file.fileName.endsWith(".docx")
       ) {
         // Send Word as document
-        await bot.telegram.sendDocument(
+        await telegram.sendDocument(
           chatId,
           {
             source: file.fileData,
@@ -88,7 +80,7 @@ export async function sendFilesToTelegram(
         );
       } else {
         // Send as document (generic)
-        await bot.telegram.sendDocument(
+        await telegram.sendDocument(
           chatId,
           {
             source: file.fileData,

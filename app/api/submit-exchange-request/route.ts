@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Telegraf, Markup } from "telegraf";
+import { Markup } from "telegraf";
 import { Resend } from "resend";
 import { createExchangeRequest } from "@/lib/database/queries";
 import { notifyNewExchangeRequest } from "@/lib/telegram/notify-admin";
@@ -9,8 +9,8 @@ import {
   deleteRequestFile,
 } from "@/lib/database/file-queries";
 import { sendFilesToTelegram } from "@/lib/telegram/send-files";
+import { getTelegramApi } from "@/lib/telegram/bot";
 
-const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 interface ExchangeRequest {
@@ -117,7 +117,7 @@ ${filesInfo}
         ],
       ]);
 
-      await bot.telegram.sendMessage(managerChatId, message, {
+      await getTelegramApi().sendMessage(managerChatId, message, {
         parse_mode: "Markdown",
         ...keyboard,
       });

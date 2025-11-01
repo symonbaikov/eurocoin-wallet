@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { Telegraf, Markup } from "telegraf";
+import { Markup } from "telegraf";
 import { createInternalRequest } from "@/lib/database/queries";
 import { notifyNewInternalRequest } from "@/lib/telegram/notify-admin";
 import {
@@ -9,9 +9,9 @@ import {
   deleteRequestFile,
 } from "@/lib/database/file-queries";
 import { sendFilesToTelegram } from "@/lib/telegram/send-files";
+import { getTelegramApi } from "@/lib/telegram/bot";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
 
 interface RequestFormData {
   requester: string;
@@ -219,7 +219,7 @@ export async function POST(request: NextRequest) {
           ],
         ]);
 
-        await bot.telegram.sendMessage(parseInt(managerChatId), telegramMessage, {
+        await getTelegramApi().sendMessage(parseInt(managerChatId), telegramMessage, {
           parse_mode: "Markdown",
           ...keyboard,
         });

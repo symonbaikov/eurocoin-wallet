@@ -45,12 +45,15 @@ export async function upsertWalletUser(
       updatedAt: now,
     };
 
-    if (input.email && input.email !== existingByWallet.email) {
-      updateFields.email = input.email;
+    const cleanEmail = input.email && input.email.trim() !== '' ? input.email : null;
+    const cleanName = input.name && input.name.trim() !== '' ? input.name : null;
+
+    if (cleanEmail && cleanEmail !== existingByWallet.email) {
+      updateFields.email = cleanEmail;
     }
 
-    if (input.name && input.name !== existingByWallet.name) {
-      updateFields.name = input.name;
+    if (cleanName && cleanName !== existingByWallet.name) {
+      updateFields.name = cleanName;
     }
 
     if (Object.keys(updateFields).length > 0) {
@@ -81,8 +84,9 @@ export async function upsertWalletUser(
         updatedAt: now,
       };
 
-      if (input.name) {
-        updateFields.name = input.name;
+      const cleanName = input.name && input.name.trim() !== '' ? input.name : null;
+      if (cleanName) {
+        updateFields.name = cleanName;
       }
 
       await db.update(users).set(updateFields).where(eq(users.id, existingByEmail.id));
@@ -97,8 +101,8 @@ export async function upsertWalletUser(
 
   const insertValues: UserInsert = {
     walletAddress,
-    email: input.email ?? null,
-    name: input.name ?? null,
+    email: input.email && input.email.trim() !== '' ? input.email : null,
+    name: input.name && input.name.trim() !== '' ? input.name : null,
     authType: "wallet",
     createdAt: now,
     updatedAt: now,

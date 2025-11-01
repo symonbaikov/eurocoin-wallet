@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Telegraf, Markup } from "telegraf";
+import { Markup } from "telegraf";
 import {
   getAllExchangeRequests,
   getAllInternalRequests,
@@ -12,8 +12,9 @@ import {
 } from "@/lib/database/queries";
 import { query } from "@/lib/database/db";
 import { formatChatHistoryForTelegram, isValidWalletAddress } from "@/lib/telegram/notify-admin";
+import { getBot } from "@/lib/telegram/bot";
 
-const bot = new Telegraf(process.env.TELEGRAM_API_KEY!);
+const bot = getBot();
 
 // Helper function to call webhook
 async function updateRequestStatus(requestId: string, status: string) {
@@ -390,6 +391,9 @@ bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
   const requestId = match[1];
   const newStage = match[2];
 
+  // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
+  await ctx.answerCbQuery("⏳ Обновление статуса...").catch(() => {});
+
   try {
     console.log("[telegram-webhook] Investigation status update:", { requestId, newStage });
 
@@ -421,14 +425,14 @@ bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
       );
       await updateInternalRequestStage(requestId, newStage);
     } else {
-      ctx.answerCbQuery("❌ Неверный формат ID заявки");
+      await ctx.reply("❌ Неверный формат ID заявки");
       return;
     }
 
     // Update via webhook
     await updateRequestStatus(requestId, dbStatus);
 
-    // Confirm to user
+    // Confirm to user via message
     const stageLabels: Record<string, string> = {
       submitted: "✅ Заявка подана",
       checking: "📄 Проверка документов",
@@ -438,7 +442,7 @@ bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
       completed: "✅ Завершено",
     };
 
-    await ctx.answerCbQuery(`✅ Статус обновлен: ${stageLabels[newStage] || newStage}`);
+    await ctx.reply(`✅ Статус обновлен: ${stageLabels[newStage] || newStage}`);
   } catch (error) {
     console.error("[telegram-webhook] Error updating investigation status:", error);
     console.error("[telegram-webhook] Error details:", {
@@ -447,17 +451,20 @@ bot.action(/^status_(.+)_(.+)$/, async (ctx) => {
       requestId,
       newStage,
     });
-    ctx.answerCbQuery("❌ Ошибка при обновлении статуса");
+    await ctx.reply("❌ Ошибка при обновлении статуса").catch(() => {});
   }
 });
 
 // Handle action buttons
 bot.action(/^action_(.+)_(.+)$/, async (ctx) => {
-  try {
-    const match = ctx.match;
-    const requestId = match[1];
-    const newStatus = match[2];
+  const match = ctx.match;
+  const requestId = match[1];
+  const newStatus = match[2];
 
+  // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
+  await ctx.answerCbQuery("⏳ Обновление...").catch(() => {});
+
+  try {
     // Update database
     if (requestId.startsWith("EX-")) {
       await updateExchangeRequestStatus(
@@ -470,20 +477,20 @@ bot.action(/^action_(.+)_(.+)$/, async (ctx) => {
         newStatus as "pending" | "processing" | "completed" | "rejected" | "cancelled",
       );
     } else {
-      ctx.answerCbQuery("❌ Неверный ID заявки");
+      await ctx.reply("❌ Неверный ID заявки");
       return;
     }
 
     // Update via webhook
     await updateRequestStatus(requestId, newStatus);
 
-    // Respond to user
+    // Respond to user via message
     const badge = getStatusBadge(newStatus);
     const statusName = getStatusName(newStatus);
-    ctx.answerCbQuery(`✅ Статус обновлен: ${badge} ${statusName}`);
+    await ctx.reply(`✅ Статус обновлен: ${badge} ${statusName}`);
   } catch (error) {
     console.error("Error handling action:", error);
-    ctx.answerCbQuery("❌ Ошибка при обновлении статуса");
+    await ctx.reply("❌ Ошибка при обновлении статуса").catch(() => {});
   }
 });
 
@@ -503,16 +510,18 @@ const typingTimeouts = new Map<string, NodeJS.Timeout>();
 
 // Handle "Send Message" button (msg_WALLET_ADDRESS)
 bot.action(/^msg_(.+)$/, async (ctx) => {
-  try {
-    const walletAddress = ctx.match[1];
-    const chatId = ctx.from.id;
+  const walletAddress = ctx.match[1];
+  const chatId = ctx.from.id;
 
+  // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
+  await ctx.answerCbQuery().catch(() => {});
+
+  try {
     console.log('[telegram-webhook] Support msg button clicked:', { walletAddress, chatId });
 
     // Validate wallet address format
     if (!isValidWalletAddress(walletAddress)) {
       console.warn('[telegram-webhook] Invalid wallet address format:', walletAddress);
-      ctx.answerCbQuery('❌ Неверный формат адреса кошелька');
       await ctx.reply(
         `⚠️ Support Messenger доступен только для пользователей с Ethereum кошельками.\n\n` +
         `Адрес \`${walletAddress}\` не является валидным Ethereum адресом.`,
@@ -527,7 +536,6 @@ bot.action(/^msg_(.+)$/, async (ctx) => {
       type: 'support',
     });
 
-    ctx.answerCbQuery();
     await ctx.reply(
       `💬 *Отправка сообщения пользователю*\n\n` +
       `Кошелек: \`${walletAddress}\`\n\n` +
@@ -537,21 +545,23 @@ bot.action(/^msg_(.+)$/, async (ctx) => {
     );
   } catch (error) {
     console.error('[telegram-webhook] Error in msg handler:', error);
-    ctx.answerCbQuery('❌ Ошибка');
+    await ctx.reply('❌ Ошибка').catch(() => {});
   }
 });
 
 // Handle "Chat History" button (history_WALLET_ADDRESS)
 bot.action(/^history_(.+)$/, async (ctx) => {
-  try {
-    const walletAddress = ctx.match[1];
+  const walletAddress = ctx.match[1];
 
+  // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
+  await ctx.answerCbQuery().catch(() => {});
+
+  try {
     console.log('[telegram-webhook] Support history button clicked:', { walletAddress });
 
     // Validate wallet address format
     if (!isValidWalletAddress(walletAddress)) {
       console.warn('[telegram-webhook] Invalid wallet address format:', walletAddress);
-      ctx.answerCbQuery('❌ Неверный формат адреса кошелька');
       await ctx.reply(
         `⚠️ Support Messenger доступен только для пользователей с Ethereum кошельками.\n\n` +
         `Адрес \`${walletAddress}\` не является валидным Ethereum адресом.`,
@@ -559,8 +569,6 @@ bot.action(/^history_(.+)$/, async (ctx) => {
       );
       return;
     }
-
-    ctx.answerCbQuery();
 
     // Fetch chat history from API
     const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/support/get-chat-history?walletAddress=${walletAddress}&limit=10`;
@@ -604,18 +612,20 @@ bot.action(/^history_(.+)$/, async (ctx) => {
     await ctx.reply(historyText, { parse_mode: 'MarkdownV2', ...keyboard });
   } catch (error) {
     console.error('[telegram-webhook] Error in history handler:', error);
-    ctx.answerCbQuery('❌ Ошибка');
-    await ctx.reply('❌ Ошибка при получении истории чата');
+    await ctx.reply('❌ Ошибка при получении истории чата').catch(() => {});
   }
 });
 
 // Handle "Reply" button (reply_WALLET_ADDRESS) - but NOT reply_to_chat_
 // Use negative lookahead to exclude reply_to_chat_ pattern
 bot.action(/^reply_(?!to_chat_)(.+)$/, async (ctx) => {
-  try {
-    const walletAddress = ctx.match[1];
-    const chatId = ctx.from.id;
+  const walletAddress = ctx.match[1];
+  const chatId = ctx.from.id;
 
+  // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
+  await ctx.answerCbQuery().catch(() => {});
+
+  try {
     console.log('[telegram-webhook] Support reply button clicked:', { walletAddress, chatId });
 
     // Store pending reply
@@ -624,7 +634,6 @@ bot.action(/^reply_(?!to_chat_)(.+)$/, async (ctx) => {
       type: 'support',
     });
 
-    ctx.answerCbQuery();
     await ctx.reply(
       `💬 *Ответить пользователю*\n\n` +
       `Кошелек: \`${walletAddress}\`\n\n` +
@@ -633,7 +642,7 @@ bot.action(/^reply_(?!to_chat_)(.+)$/, async (ctx) => {
     );
   } catch (error) {
     console.error('[telegram-webhook] Error in reply handler:', error);
-    ctx.answerCbQuery('❌ Ошибка');
+    await ctx.reply('❌ Ошибка').catch(() => {});
   }
 });
 
@@ -663,10 +672,13 @@ bot.command('cancel', (ctx) => {
 
 // Chatbot callback handler - handle reply button click
 bot.action(/^reply_to_chat_(.+)$/, async (ctx) => {
-  try {
-    const sessionId = ctx.match[1];
-    const chatId = ctx.chat?.id || ctx.from?.id;
+  const sessionId = ctx.match[1];
+  const chatId = ctx.chat?.id || ctx.from?.id;
 
+  // CRITICAL: Answer callback query IMMEDIATELY to remove loading indicator
+  await ctx.answerCbQuery().catch(() => {});
+
+  try {
     console.log("[telegram-webhook] Reply button clicked for session:", sessionId);
 
     if (chatId) {
@@ -678,18 +690,14 @@ bot.action(/^reply_to_chat_(.+)$/, async (ctx) => {
       });
     }
 
-    ctx.answerCbQuery();
-
     // Send a message asking for the reply text
     await ctx.reply(
       `📝 Введите ваш ответ для пользователя:\n\n` +
         `Просто напишите сообщение, и оно будет автоматически отправлено пользователю.`,
     );
-
-    return;
   } catch (error) {
     console.error("[telegram-webhook] Error handling reply button:", error);
-    ctx.answerCbQuery("❌ Ошибка");
+    await ctx.reply("❌ Ошибка").catch(() => {});
   }
 });
 
