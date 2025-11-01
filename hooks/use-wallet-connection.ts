@@ -184,13 +184,21 @@ export function useWalletConnection(): UseWalletConnectionResult {
           try {
             errorDetails = await response.json();
           } catch {
-            errorDetails = await response.text();
+            try {
+              errorDetails = await response.text();
+            } catch {
+              errorDetails = "Could not parse error response";
+            }
           }
 
           console.error("[wallet] Failed to register wallet user", {
             status: response.status,
             details: errorDetails,
+            walletAddress: address,
           });
+
+          // Don't block the user experience - wallet is still connected
+          // Registration will be retried on next connection or page reload
           return;
         }
 

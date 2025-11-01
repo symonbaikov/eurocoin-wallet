@@ -62,10 +62,28 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Check if DATABASE_URL is configured
+    if (!process.env.DATABASE_URL && !process.env.DATABASE_POSTGRES_URL) {
+      console.error("[api:user:register-wallet] Database not configured");
+      return NextResponse.json(
+        {
+          error: "Database not configured",
+          details: "DATABASE_URL or DATABASE_POSTGRES_URL environment variable is missing",
+        },
+        { status: 503 }, // Service Unavailable
+      );
+    }
+
     const result = await upsertWalletUser({
       walletAddress,
       email,
       name,
+    });
+
+    console.log("[api:user:register-wallet] Successfully registered wallet user:", {
+      userId: result.id,
+      isNewUser: result.isNewUser,
+      linkedExistingAccount: result.linkedExistingAccount,
     });
 
     return NextResponse.json({
@@ -79,14 +97,26 @@ export async function POST(request: NextRequest) {
     console.error("[api:user:register-wallet] Error details:", {
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
+      walletAddress,
+      hasEmail: Boolean(email),
+      hasName: Boolean(name),
     });
+
+    // Check for specific database errors
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const isDatabaseError = errorMessage.includes("database") ||
+                           errorMessage.includes("connection") ||
+                           errorMessage.includes("ECONNREFUSED") ||
+                           errorMessage.includes("relation") ||
+                           errorMessage.includes("column");
+
     return NextResponse.json(
       {
         error: "Failed to register user",
         details: error instanceof Error ? error.message : String(error),
+        type: isDatabaseError ? "database_error" : "unknown_error",
       },
       { status: 500 },
     );
   }
 }
-

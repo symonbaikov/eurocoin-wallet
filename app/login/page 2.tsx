@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { PageTitle } from "@/components/layout/page-title";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
 import { OAuthButtons, AuthDivider, EmailSignInForm } from "@/components/auth";
@@ -21,23 +21,25 @@ export default function LoginPage() {
   const { connect, isConnecting, isConnected } = useWalletConnection();
   const { isAuthenticated, authType, isLoading } = useAuth();
   const t = useTranslation();
-  const hasRedirected = useRef(false);
 
   // Redirect if already authenticated
-  // NOTE: Server-side middleware handles redirects for page navigation,
-  // but we need client-side redirect for real-time authentication state changes
   useEffect(() => {
-    console.log('[Login] useEffect triggered', { isAuthenticated, isLoading, hasRedirected: hasRedirected.current });
+    // Check for OAuth callback parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasOAuthCallback = urlParams.has('code') || urlParams.has('state');
 
-    // Don't redirect if still loading or already redirected
-    if (isLoading || hasRedirected.current) {
+    if (hasOAuthCallback) {
+      console.log('[Login] OAuth callback detected, waiting for session...');
+      // Give NextAuth time to process the callback and create session
+      setTimeout(() => {
+        console.log('[Login] Redirecting after OAuth callback');
+        router.push('/');
+      }, 500);
       return;
     }
 
-    // If authenticated, redirect to home page
-    if (isAuthenticated) {
-      console.log('[Login] User authenticated, redirecting to home...');
-      hasRedirected.current = true;
+    if (isAuthenticated && !isLoading) {
+      console.log('[Login] User already authenticated, redirecting to home');
       router.push('/');
     }
   }, [isAuthenticated, isLoading, router]);
