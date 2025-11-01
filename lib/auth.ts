@@ -43,7 +43,7 @@ declare module "next-auth" {
 let adapter: ReturnType<typeof DrizzleAdapter> | undefined;
 
 try {
-  if (process.env.DATABASE_URL) {
+  if (process.env.DATABASE_URL || process.env.DATABASE_POSTGRES_URL) {
     // Use DrizzleAdapter with custom schema
     // This ensures it uses the correct table names: users, accounts, sessions, verification_tokens
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -3,10 +3,10 @@
  * Matches the standard NextAuth table names: users, accounts, sessions, verification_tokens
  */
 
-import { pgTable, text, timestamp, uuid, boolean, index, bigint } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, index, bigint } from "drizzle-orm/pg-core";
 
-// Users table (matches auth_users in database)
-export const users = pgTable("auth_users", {
+// Users table (standard NextAuth name)
+export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name"),
   email: text("email").unique(),
@@ -20,9 +20,9 @@ export const users = pgTable("auth_users", {
   updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
 });
 
-// Accounts table (matches auth_accounts in database)
+// Accounts table (standard NextAuth name)
 export const accounts = pgTable(
-  "auth_accounts",
+  "accounts",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id")
@@ -44,8 +44,8 @@ export const accounts = pgTable(
   }),
 );
 
-// Sessions table (matches auth_sessions in database)
-export const sessions = pgTable("auth_sessions", {
+// Sessions table (standard NextAuth name)
+export const sessions = pgTable("sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
   sessionToken: text("session_token").notNull().unique(),
   userId: uuid("user_id")
@@ -54,9 +54,9 @@ export const sessions = pgTable("auth_sessions", {
   expires: timestamp("expires", { mode: "date", withTimezone: true }).notNull(),
 });
 
-// Verification tokens table (matches auth_verification_tokens in database)
+// Verification tokens table (standard NextAuth name)
 export const verificationTokens = pgTable(
-  "auth_verification_tokens",
+  "verification_tokens",
   {
     identifier: text("identifier").notNull(),
     token: text("token").notNull().unique(),
