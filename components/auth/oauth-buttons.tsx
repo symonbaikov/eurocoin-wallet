@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
 /**
  * OAuth Buttons Component
  * Displays OAuth provider buttons (Google)
  */
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { useTranslation } from '@/hooks/use-translation';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/hooks/use-translation";
+import toast from "react-hot-toast";
 
 // Lucide icons
-import { Chrome } from 'lucide-react';
+import { Chrome } from "lucide-react";
 
 interface OAuthButtonsProps {
   /** Callback URL after successful sign in */
@@ -20,7 +20,7 @@ interface OAuthButtonsProps {
   disabled?: boolean;
 }
 
-export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButtonsProps) {
+export function OAuthButtons({ callbackUrl = "/", disabled = false }: OAuthButtonsProps) {
   const t = useTranslation();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isGoogleAvailable, setIsGoogleAvailable] = useState(true);
@@ -33,20 +33,20 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
   // Check if Google OAuth provider is available
   async function checkGoogleAvailability() {
     try {
-      console.log('[OAuth] Checking Google provider availability...');
-      const response = await fetch('/api/auth/providers');
-      
+      console.log("[OAuth] Checking Google provider availability...");
+      const response = await fetch("/api/auth/providers");
+
       // Log response details
-      console.log('[OAuth] Providers endpoint response:', {
+      console.log("[OAuth] Providers endpoint response:", {
         status: response.status,
         statusText: response.statusText,
         ok: response.ok,
-        contentType: response.headers.get('content-type'),
+        contentType: response.headers.get("content-type"),
       });
 
       if (!response.ok) {
         const text = await response.text();
-        console.error('[OAuth] Providers endpoint returned error:', {
+        console.error("[OAuth] Providers endpoint returned error:", {
           status: response.status,
           statusText: response.statusText,
           body: text.substring(0, 500),
@@ -56,10 +56,10 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
       }
 
       // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType?.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (!contentType?.includes("application/json")) {
         const text = await response.text();
-        console.error('[OAuth] Providers endpoint returned non-JSON:', {
+        console.error("[OAuth] Providers endpoint returned non-JSON:", {
           contentType,
           body: text.substring(0, 500),
         });
@@ -68,12 +68,12 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
       }
 
       const providers = await response.json();
-      console.log('[OAuth] Available providers:', Object.keys(providers || {}));
-      console.log('[OAuth] Google provider available:', !!providers?.google);
-      
+      console.log("[OAuth] Available providers:", Object.keys(providers || {}));
+      console.log("[OAuth] Google provider available:", !!providers?.google);
+
       setIsGoogleAvailable(!!providers?.google);
     } catch (error) {
-      console.error('[OAuth] Failed to check providers availability:', {
+      console.error("[OAuth] Failed to check providers availability:", {
         error: error instanceof Error ? error.message : String(error),
         errorStack: error instanceof Error ? error.stack : undefined,
       });
@@ -88,35 +88,45 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
       // Get CSRF token first
       const csrfToken = await getCsrfToken();
       if (!csrfToken) {
-        throw new Error('Failed to get CSRF token. Please try again later.');
+        throw new Error("Failed to get CSRF token. Please try again later.");
       }
 
       // Create form and submit to NextAuth Google OAuth endpoint
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = '/api/auth/signin/google';
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "/api/auth/signin/google";
 
       // Add callbackUrl as hidden input
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'callbackUrl';
-      input.value = callbackUrl;
+      // Use absolute URL for production to ensure proper redirect
+      const absoluteCallbackUrl =
+        typeof window !== "undefined" && window.location.origin
+          ? `${window.location.origin}${callbackUrl}`
+          : callbackUrl;
+
+      console.log("[OAuth] Starting Google sign-in:", {
+        callbackUrl: absoluteCallbackUrl,
+        action: form.action,
+      });
+
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "callbackUrl";
+      input.value = absoluteCallbackUrl;
       form.appendChild(input);
 
       // Add CSRF token
-      const csrfInput = document.createElement('input');
-      csrfInput.type = 'hidden';
-      csrfInput.name = 'csrfToken';
+      const csrfInput = document.createElement("input");
+      csrfInput.type = "hidden";
+      csrfInput.name = "csrfToken";
       csrfInput.value = csrfToken;
       form.appendChild(csrfInput);
 
       document.body.appendChild(form);
       form.submit();
     } catch (error) {
-      console.error('[OAuth] Google sign-in error:', error);
+      console.error("[OAuth] Google sign-in error:", error);
 
-      const message =
-        error instanceof Error ? error.message : t('login.oauth.googleError');
+      const message = error instanceof Error ? error.message : t("login.oauth.googleError");
 
       toast.error(message);
       setIsGoogleLoading(false);
@@ -127,12 +137,12 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
   // Helper function to get CSRF token with better error handling
   async function getCsrfToken(): Promise<string> {
     try {
-      const response = await fetch('/api/auth/csrf');
-      
+      const response = await fetch("/api/auth/csrf");
+
       if (!response.ok) {
         // If server returns error, try to get text to see what's wrong
         const text = await response.text();
-        console.error('[OAuth] CSRF endpoint returned error:', {
+        console.error("[OAuth] CSRF endpoint returned error:", {
           status: response.status,
           statusText: response.statusText,
           body: text.substring(0, 200),
@@ -141,17 +151,17 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
       }
 
       // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType?.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (!contentType?.includes("application/json")) {
         const text = await response.text();
-        console.error('[OAuth] CSRF endpoint returned non-JSON:', text.substring(0, 200));
-        throw new Error('Invalid response format from server');
+        console.error("[OAuth] CSRF endpoint returned non-JSON:", text.substring(0, 200));
+        throw new Error("Invalid response format from server");
       }
 
       const data = await response.json();
-      return data.csrfToken || '';
+      return data.csrfToken || "";
     } catch (error) {
-      console.error('[OAuth] Failed to get CSRF token:', error);
+      console.error("[OAuth] Failed to get CSRF token:", error);
       throw error; // Re-throw to let handleGoogleSignIn handle it
     }
   }
@@ -178,7 +188,7 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
         ) : (
           <Chrome className="h-5 w-5" />
         )}
-        {isGoogleLoading ? t('login.oauth.googleLoading') : t('login.oauth.google')}
+        {isGoogleLoading ? t("login.oauth.googleLoading") : t("login.oauth.google")}
       </Button>
     </div>
   );

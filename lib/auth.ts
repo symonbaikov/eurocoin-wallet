@@ -171,8 +171,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Log sign-in attempt
       console.log("[AUTH] Sign in attempt:", {
         provider: account?.provider,
-        email: profile?.email,
+        email: profile?.email || user?.email,
         userId: user?.id,
+        accountId: account?.providerAccountId,
       });
 
       // Always allow sign in (validation happens in other callbacks)
@@ -183,7 +184,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
      * Called whenever a JWT is created or updated
      * Add custom fields to JWT token
      */
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user, trigger, account }) {
       // On first sign in (when user object exists)
       if (user) {
         token.userId = user.id;
@@ -194,6 +195,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           userId: user.id,
           authType: "email",
           email: user.email,
+          provider: account?.provider,
+          accountId: account?.providerAccountId,
         });
       }
 
@@ -201,6 +204,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (trigger === "update") {
         console.log("[AUTH] JWT updated:", {
           userId: token.userId,
+          email: token.email,
         });
       }
 
@@ -212,10 +216,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
      * Add custom fields to session object
      */
     async session({ session, token }) {
+      console.log("[AUTH] Session callback called:", {
+        hasSession: !!session,
+        hasUser: !!session?.user,
+        hasToken: !!token,
+        tokenUserId: token?.userId,
+        tokenAuthType: token?.authType,
+      });
+
       if (session.user) {
         session.user.id = token.userId as string;
         session.user.authType = (token.authType as AuthType) || "email";
         session.user.walletAddress = token.walletAddress as `0x${string}` | undefined;
+
+        console.log("[AUTH] Session updated:", {
+          userId: session.user.id,
+          email: session.user.email,
+          authType: session.user.authType,
+        });
       }
 
       return session;
@@ -226,13 +244,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
      * Control where users are redirected
      */
     async redirect({ url, baseUrl }) {
+      console.log("[AUTH] Redirect callback called:", {
+        url,
+        baseUrl,
+        envNextAuthUrl: process.env.NEXTAUTH_URL,
+      });
+
       // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (url.startsWith("/")) {
+        const redirectUrl = `${baseUrl}${url}`;
+        console.log("[AUTH] Redirect to relative URL:", redirectUrl);
+        return redirectUrl;
+      }
 
       // Allows callback URLs on the same origin
-      if (new URL(url).origin === baseUrl) return url;
+      try {
+        const urlObj = new URL(url);
+        if (urlObj.origin === baseUrl) {
+          console.log("[AUTH] Redirect to same origin:", url);
+          return url;
+        }
+      } catch (error) {
+        console.warn("[AUTH] Invalid URL in redirect:", url, error);
+      }
 
       // Default redirect to home page
+      console.log("[AUTH] Default redirect to baseUrl:", baseUrl);
       return baseUrl;
     },
   },

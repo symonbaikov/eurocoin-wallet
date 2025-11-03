@@ -15,15 +15,50 @@ import { useTranslation } from "@/hooks/use-translation";
 import { useAuth } from "@/hooks/use-auth";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { connect, isConnecting, isConnected } = useWalletConnection();
   const { isAuthenticated, authType, isLoading } = useAuth();
   const t = useTranslation();
   const hasRedirected = useRef(false);
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fallbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasShownError = useRef(false);
+
+  // Handle authentication errors from URL params
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error && !hasShownError.current) {
+      hasShownError.current = true;
+      
+      let errorMessage = "";
+      switch (error) {
+        case "Configuration":
+          errorMessage = "Authentication configuration error. Please check server settings.";
+          console.error("[Login] Configuration error detected. Check NextAuth setup.");
+          break;
+        case "AccessDenied":
+          errorMessage = "Access denied. Please try again.";
+          break;
+        case "Verification":
+          errorMessage = "Verification failed. Please try again.";
+          break;
+        default:
+          errorMessage = `Authentication error: ${error}`;
+      }
+      
+      toast.error(errorMessage);
+      console.error("[Login] Auth error from URL:", error);
+      
+      // Remove error from URL after showing
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete("error");
+      router.replace(newUrl.pathname + newUrl.search);
+    }
+  }, [searchParams, router]);
 
   // Redirect if already authenticated
   // NOTE: Server-side middleware handles redirects for page navigation,
