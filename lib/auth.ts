@@ -95,7 +95,16 @@ console.log("[AUTH] Configuration check:", {
   senderEmail: process.env.SENDER_EMAIL || "not set",
   hasDatabaseUrl: !!process.env.DATABASE_URL,
   nodeEnv: process.env.NODE_ENV,
+  hasAdapter: !!adapter,
 });
+
+// Critical check: adapter is required for email auth
+if (!adapter && process.env.RESEND_API_KEY) {
+  console.error(
+    "[AUTH] ⚠️  WARNING: Email provider requires adapter but adapter is not initialized!",
+  );
+  console.error("[AUTH] ⚠️  Set DATABASE_URL and run 'npm run auth:migrate' to enable email login");
+}
 
 // Validate NEXTAUTH_URL format
 const nextAuthUrl = process.env.NEXTAUTH_URL;
@@ -301,6 +310,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         provider: account?.provider,
         isNewUser,
         accountId: account?.providerAccountId,
+        hasAdapter: !!adapter,
       });
 
       // Here you can send analytics events, notifications, etc.
@@ -315,6 +325,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       console.log("[AUTH EVENT] New user created:", {
         userId: user.id,
         email: user.email,
+        hasAdapter: !!adapter,
       });
 
       // Send welcome email, create initial data, etc.
@@ -324,6 +335,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       console.log("[AUTH EVENT] Account linked:", {
         userId: user.id,
         provider: account.provider,
+        accountId: account.providerAccountId,
+        hasAdapter: !!adapter,
       });
     },
   },
@@ -333,7 +346,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // ---------------------------------------------------------------------------
   pages: {
     signIn: "/login", // Custom login page
-    error: "/login", // Redirect errors to login page
+    error: "/login?error=Configuration", // Redirect errors to login page with error param
     // signOut: '/login',
     // verifyRequest: '/auth/verify',
   },
