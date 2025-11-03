@@ -33,15 +33,50 @@ export function OAuthButtons({ callbackUrl = '/', disabled = false }: OAuthButto
   // Check if Google OAuth provider is available
   async function checkGoogleAvailability() {
     try {
+      console.log('[OAuth] Checking Google provider availability...');
       const response = await fetch('/api/auth/providers');
+      
+      // Log response details
+      console.log('[OAuth] Providers endpoint response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        contentType: response.headers.get('content-type'),
+      });
+
       if (!response.ok) {
+        const text = await response.text();
+        console.error('[OAuth] Providers endpoint returned error:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: text.substring(0, 500),
+        });
         setIsGoogleAvailable(false);
         return;
       }
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType?.includes('application/json')) {
+        const text = await response.text();
+        console.error('[OAuth] Providers endpoint returned non-JSON:', {
+          contentType,
+          body: text.substring(0, 500),
+        });
+        setIsGoogleAvailable(false);
+        return;
+      }
+
       const providers = await response.json();
+      console.log('[OAuth] Available providers:', Object.keys(providers || {}));
+      console.log('[OAuth] Google provider available:', !!providers?.google);
+      
       setIsGoogleAvailable(!!providers?.google);
     } catch (error) {
-      console.warn('[OAuth] Failed to check providers availability:', error);
+      console.error('[OAuth] Failed to check providers availability:', {
+        error: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+      });
       setIsGoogleAvailable(false);
     }
   }
