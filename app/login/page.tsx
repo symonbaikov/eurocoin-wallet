@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { PageTitle } from "@/components/layout/page-title";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
 import { OAuthButtons, AuthDivider, EmailSignInForm } from "@/components/auth";
@@ -17,7 +17,8 @@ import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import { useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+// Component that uses useSearchParams - must be wrapped in Suspense
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { connect, isConnecting, isConnected } = useWalletConnection();
@@ -293,5 +294,18 @@ export default function LoginPage() {
         </div>
       </main>
     </>
+  );
+}
+
+// Export default with Suspense boundary for useSearchParams
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-current border-t-transparent" />
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
   );
 }
