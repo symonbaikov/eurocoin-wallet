@@ -63,6 +63,12 @@ try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any;
     console.log("[AUTH] ✅ Database adapter enabled for email authentication");
+    console.log("[AUTH] Adapter details:", {
+      hasUsersTable: !!users,
+      hasAccountsTable: !!accounts,
+      hasSessionsTable: !!sessions,
+      hasVerificationTokensTable: !!verificationTokens,
+    });
   } else {
     console.warn(
       "[AUTH] ⚠️  DATABASE_URL not set - email authentication requires database adapter",
@@ -72,7 +78,12 @@ try {
     );
   }
 } catch (error) {
-  console.error("[AUTH] ❌ Failed to initialize database adapter:", error);
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorStack = error instanceof Error ? error.stack : undefined;
+  console.error("[AUTH] ❌ Failed to initialize database adapter:", errorMessage);
+  if (errorStack) {
+    console.error("[AUTH] ❌ Adapter error stack:", errorStack);
+  }
   console.warn("[AUTH] ⚠️  Email authentication will not work without adapter");
   adapter = undefined;
 }
