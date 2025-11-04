@@ -4,6 +4,7 @@
  */
 
 import NextAuth, { type DefaultSession } from "next-auth";
+import type { LoggerInstance } from "@auth/core/types";
 import Email from "next-auth/providers/email";
 import Google from "next-auth/providers/google";
 import React from "react";
@@ -59,6 +60,7 @@ try {
       sessionsTable: sessions as any,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       verificationTokensTable: verificationTokens as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any;
     console.log("[AUTH] ✅ Database adapter enabled for email authentication");
   } else {
@@ -173,6 +175,23 @@ if (nextAuthUrl) {
     "[AUTH] ❌ NEXTAUTH_URL is set but could not be normalized. OAuth callbacks may fail.",
   );
 }
+
+const customLogger: Partial<LoggerInstance> = {
+  error(error) {
+    console.error("[AUTH LOGGER][ERROR]", {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      cause: (error as { cause?: unknown }).cause,
+    });
+  },
+  warn(code) {
+    console.warn("[AUTH LOGGER][WARN]", code);
+  },
+  debug(message, metadata) {
+    console.debug("[AUTH LOGGER][DEBUG]", message, metadata);
+  },
+};
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // ---------------------------------------------------------------------------
@@ -355,17 +374,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // Events (for logging/analytics)
   // ---------------------------------------------------------------------------
   events: {
-    async error(error) {
-      console.error("[AUTH EVENT] Error encountered:", {
-        name: error?.name,
-        message: error?.message,
-        cause: error?.cause,
-        stack: error?.stack,
-        url: error?.url,
-        type: error?.type,
-      });
-    },
-
     async signIn({ user, account, isNewUser }) {
       console.log("[AUTH EVENT] User signed in:", {
         userId: user.id,
@@ -437,14 +445,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // ---------------------------------------------------------------------------
   debug: process.env.NODE_ENV === "development",
 
-  logger: {
-    error(code, metadata) {
-      console.error("[AUTH LOGGER][ERROR]", code, metadata);
-    },
-    warn(code, metadata) {
-      console.warn("[AUTH LOGGER][WARN]", code, metadata);
-    },
-  },
+  logger: customLogger,
 });
 
 // =============================================================================
