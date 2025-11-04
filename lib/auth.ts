@@ -183,6 +183,12 @@ const customLogger: Partial<LoggerInstance> = {
       message: error.message,
       stack: error.stack,
       cause: (error as { cause?: unknown }).cause,
+      // Additional context for debugging
+      hasAdapter: !!adapter,
+      hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,
+      nextAuthUrl: nextAuthUrl || process.env.NEXTAUTH_URL,
+      hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
+      hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
     });
   },
   warn(code) {
@@ -222,25 +228,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // ---------------------------------------------------------------------------
   providers: [
     ...createEmailProvider(),
-    // Only add Google provider if credentials are available
+    // Google OAuth Provider - simplified configuration according to NextAuth.js v5 docs
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
-      ? [
-          Google({
+      ? (() => {
+          const googleProvider = Google({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            authorization: {
-              params: {
-                prompt: "consent",
-                access_type: "offline",
-                response_type: "code",
-              },
-            },
-            allowDangerousEmailAccountLinking: true, // Allow linking email to existing wallet account
-          }),
-        ]
+          });
+
+          console.log("[AUTH] ✅ Google OAuth provider initialized:", {
+            hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+            hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+            clientIdPrefix: process.env.GOOGLE_CLIENT_ID?.substring(0, 20) + "...",
+            providerId: googleProvider.id,
+            providerName: googleProvider.name,
+          });
+
+          return [googleProvider];
+        })()
       : (() => {
           console.warn(
-            "[AUTH] Google OAuth provider disabled: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set",
+            "[AUTH] ⚠️  Google OAuth provider disabled: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set",
           );
           return [];
         })()),
