@@ -33,11 +33,56 @@ try {
   bot = null;
 }
 
+// Store the app URL from the last request (for use in bot handlers)
+let cachedAppUrl: string | null = null;
+
+// Helper function to get app URL
+// Determines production URL from request headers or environment variable
+function getAppUrl(request?: NextRequest): string {
+  // Try to get URL from environment variable first
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    cachedAppUrl = process.env.NEXT_PUBLIC_APP_URL;
+    console.log('[telegram-webhook] Using URL from NEXT_PUBLIC_APP_URL:', cachedAppUrl);
+    return cachedAppUrl;
+  }
+  
+  // In production, try to get from request headers
+  if (request) {
+    const host = request.headers.get('host');
+    const protocol = request.headers.get('x-forwarded-proto') || 'https';
+    if (host) {
+      const url = `${protocol}://${host}`;
+      cachedAppUrl = url;
+      console.log('[telegram-webhook] Using URL from request headers:', url);
+      return url;
+    }
+  }
+  
+  // Use cached URL if available
+  if (cachedAppUrl) {
+    console.log('[telegram-webhook] Using cached URL:', cachedAppUrl);
+    return cachedAppUrl;
+  }
+  
+  // Fallback for production
+  if (process.env.NODE_ENV === 'production') {
+    const url = 'https://www.euro-coin.eu';
+    console.log('[telegram-webhook] Using production fallback URL:', url);
+    return url;
+  }
+  
+  // Fallback for development
+  const url = 'http://localhost:3000';
+  console.log('[telegram-webhook] Using development fallback URL:', url);
+  return url;
+}
+
 // Helper function to call webhook
-async function updateRequestStatus(requestId: string, status: string) {
+async function updateRequestStatus(requestId: string, status: string, request?: NextRequest) {
   try {
+    const appUrl = getAppUrl(request);
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/webhook/update-request`,
+      `${appUrl}/api/webhook/update-request`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -451,7 +496,7 @@ if (bot) {
         return;
       }
 
-      // Update via webhook
+      // Update via webhook (request not available in bot handler)
       await updateRequestStatus(requestId, dbStatus);
 
       // Confirm to user via message
@@ -503,7 +548,7 @@ if (bot) {
         return;
       }
 
-      // Update via webhook
+      // Update via webhook (request not available in bot handler)
       await updateRequestStatus(requestId, newStatus);
 
       // Respond to user via message
@@ -595,7 +640,7 @@ if (bot) {
       }
 
       // Fetch chat history from API
-      const apiUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/support/get-chat-history?walletAddress=${walletAddress}&limit=10`;
+      const apiUrl = `${getAppUrl()}/api/support/get-chat-history?walletAddress=${walletAddress}&limit=10`;
 
       const response = await fetch(apiUrl);
 
@@ -1027,7 +1072,7 @@ if (bot) {
           // Call API to send newsletters
           try {
             const response = await fetch(
-              `${process.env.NEXT_PUBLIC_APP_URL}/api/newsletter/send-email`,
+              `${getAppUrl()}/api/newsletter/send-email`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -1183,6 +1228,9 @@ export async function POST(request: NextRequest) {
         { status: 503 },
       );
     }
+
+    // Cache the app URL from request headers for use in bot handlers
+    getAppUrl(request);
 
     const update = await request.json();
 
