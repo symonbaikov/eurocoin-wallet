@@ -62,12 +62,18 @@ const TOKEN_DECIMALS = Number.isFinite(TOKEN_CONFIG.decimals)
   : 18;
 
 const START_BLOCK = BigInt(Math.max(0, TOKEN_CONFIG.historyStartBlock));
-const FALLBACK_LOOKBACK = 5_000_000n; // ~2 years of Ethereum blocks
-const MAX_LOG_CHUNK = 50_000n;
-const MIN_LOG_CHUNK = 1_250n;
+const FALLBACK_LOOKBACK = BigInt(5_000_000); // ~2 years of Ethereum blocks
+const MAX_LOG_CHUNK = BigInt(50_000);
+const MIN_LOG_CHUNK = BigInt(1_250);
 const HISTORY_LIMIT = 8;
 
-const ZERO_TOTALS = { spent: 0n, received: 0n };
+const ZERO_BIGINT = BigInt(0);
+const ONE_BIGINT = BigInt(1);
+const TWO_BIGINT = BigInt(2);
+
+const ZERO_TOTALS = { spent: ZERO_BIGINT, received: ZERO_BIGINT };
+const toBigInt = (value: bigint | number): bigint =>
+  typeof value === "bigint" ? value : BigInt(value);
 
 const explorerUrlForChain = (chainId?: number): string | null => {
   if (CUSTOM_ETHERSCAN_BASE_URL) {
@@ -142,8 +148,8 @@ async function fetchTotalsViaExplorer(
 
   const data = await response.json();
   if (data.status === "1" && Array.isArray(data.result)) {
-    let spent = 0n;
-    let received = 0n;
+    let spent = ZERO_BIGINT;
+    let received = ZERO_BIGINT;
     const normalized = normalizeAddress(walletAddress);
     const history: WalletHistoryEntry[] = [];
 
@@ -201,14 +207,14 @@ async function fetchTotalsViaLogs(
 ): Promise<TokenStatistics> {
   const latestBlock = await client.getBlockNumber();
   const fromBlock =
-    START_BLOCK > 0n
+    START_BLOCK > ZERO_BIGINT
       ? START_BLOCK
       : latestBlock > FALLBACK_LOOKBACK
         ? latestBlock - FALLBACK_LOOKBACK
-        : 0n;
+        : ZERO_BIGINT;
 
-  let spent = 0n;
-  let received = 0n;
+  let spent = ZERO_BIGINT;
+  let received = ZERO_BIGINT;
    const latestIncoming: Array<{
     blockNumber: bigint;
     logIndex: bigint;
@@ -238,7 +244,7 @@ async function fetchTotalsViaLogs(
     let chunkSize = MAX_LOG_CHUNK;
 
     while (cursor <= latestBlock) {
-      let rangeEnd = cursor + chunkSize - 1n;
+      let rangeEnd = cursor + chunkSize - ONE_BIGINT;
       if (rangeEnd > latestBlock) {
         rangeEnd = latestBlock;
       }
@@ -277,7 +283,7 @@ async function fetchTotalsViaLogs(
 
           appendHistoryLog(target, {
             blockNumber: log.blockNumber,
-            logIndex: log.logIndex,
+            logIndex: toBigInt(log.logIndex),
             transactionHash: log.transactionHash,
             direction: direction === "from" ? "outgoing" : "incoming",
             counterparty,
@@ -285,13 +291,16 @@ async function fetchTotalsViaLogs(
           });
         }
 
-        cursor = rangeEnd + 1n;
+        cursor = rangeEnd + ONE_BIGINT;
         if (chunkSize < MAX_LOG_CHUNK) {
-          chunkSize = Math.min(chunkSize * 2n, MAX_LOG_CHUNK);
+          chunkSize = chunkSize * TWO_BIGINT;
+          if (chunkSize > MAX_LOG_CHUNK) {
+            chunkSize = MAX_LOG_CHUNK;
+          }
         }
       } catch (error) {
         if (isChunkTooLargeError(error) && chunkSize > MIN_LOG_CHUNK) {
-          chunkSize = chunkSize / 2n;
+          chunkSize = chunkSize / TWO_BIGINT;
           continue;
         }
 
