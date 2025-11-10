@@ -111,6 +111,16 @@ export default function Home() {
             </div>
           </header>
 
+          {/* Token Analytics Section */}
+          <section id="token-balance" className="flex flex-col gap-6">
+            <BalanceCard />
+            <div className="grid gap-6 md:grid-cols-2">
+              <PriceTicker />
+              <TaxCard />
+            </div>
+            <DexscreenerChart />
+          </section>
+
           {/* Exchange Section */}
           <section id="exchange">
             <ExchangeSection />
@@ -121,21 +131,10 @@ export default function Home() {
             <InternalRequestForm />
           </section>
 
-          {/* Investigation Progress Section */}
-          <section id="investigation">
+          {/* Investigation & Reports Section */}
+          <section id="investigation" className="space-y-8">
             <InvestigationProgress walletAddress={address} userEmail={email} />
-          </section>
-
-          {/* All Investigations Section */}
-          <AllInvestigations />
-
-          <section id="token-balance" className="flex flex-col gap-6">
-            <BalanceCard />
-            <div className="grid gap-6 md:grid-cols-2">
-              <PriceTicker />
-              <TaxCard />
-            </div>
-            <DexscreenerChart />
+            <AllInvestigations />
           </section>
         </div>
 

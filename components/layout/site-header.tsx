@@ -13,10 +13,10 @@ import { availableLocales, type Locale } from "@/lib/i18n/translations";
 
 const navItems = [
   { href: "/#wallet", key: "common.nav.wallet" },
+  { href: "/#token-balance", key: "common.nav.token" },
   { href: "/#exchange", key: "common.nav.exchange" },
   { href: "/#contact", key: "common.nav.contact" },
   { href: "/#investigation", key: "common.nav.investigation" },
-  { href: "/#token-balance", key: "common.nav.token" },
   { href: "/#faq", key: "common.nav.faq" },
 ];
 
@@ -118,7 +118,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ["wallet", "exchange", "contact", "investigation", "token-balance", "faq"];
+      const sections = ["wallet", "token-balance", "exchange", "contact", "investigation", "faq"];
       const scrollPosition = window.scrollY + 100; // Header offset
 
       let activeSection = "";
