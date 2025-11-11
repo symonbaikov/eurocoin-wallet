@@ -3,6 +3,7 @@
 ## Проблема
 
 При билде в продакшене возникает ошибка:
+
 ```
 node: error while loading shared libraries: libatomic.so.1: cannot open shared object file: No such file or directory
 Error: Command "npm run build" exited with 127
@@ -42,12 +43,14 @@ Vercel обычно имеет все необходимые библиотек�
 ### Решение 3: Если деплой на Linux сервер напрямую
 
 #### Для Ubuntu/Debian:
+
 ```bash
 sudo apt-get update
 sudo apt-get install -y libatomic1
 ```
 
 #### Для CentOS/RHEL/Fedora:
+
 ```bash
 # CentOS/RHEL 7
 sudo yum install -y libatomic
@@ -57,6 +60,7 @@ sudo dnf install -y libatomic
 ```
 
 #### Для Alpine Linux:
+
 ```bash
 apk add --no-cache libatomic
 ```
@@ -68,7 +72,7 @@ apk add --no-cache libatomic
 ```toml
 [build]
   command = "npm run build"
-  
+
 [build.environment]
   NODE_VERSION = "20"
 ```
@@ -111,6 +115,7 @@ ldconfig -p | grep libatomic
 Если проблема сохраняется, возможно нужны дополнительные библиотеки. Добавьте их:
 
 ### Ubuntu/Debian:
+
 ```bash
 sudo apt-get install -y \
   libatomic1 \
@@ -119,6 +124,7 @@ sudo apt-get install -y \
 ```
 
 ### Alpine Linux (в Dockerfile):
+
 ```dockerfile
 RUN apk add --no-cache \
   python3 \
@@ -153,6 +159,7 @@ Vercel автоматически устанавливает необходим�
    - Должна быть `20.x`
 
 2. **Убедитесь, что в `package.json` указана правильная версия:**
+
    ```json
    {
      "engines": {
@@ -163,11 +170,13 @@ Vercel автоматически устанавливает необходим�
    ```
 
 3. **Проверьте `.nvmrc` файл:**
+
    ```
    20.17.0
    ```
 
 4. **Проверьте `vercel.json`:**
+
    ```json
    {
      "nodeVersion": "20.x"
@@ -232,13 +241,14 @@ RUN apt-get update && apt-get install -y \
 4. **Используйте `engines.node` вместо этого**
 
 Текущая конфигурация проекта уже исправлена:
+
 - ✅ `package.json` содержит `"engines": { "node": ">=20.0.0" }`
 - ✅ `.nvmrc` содержит `20.17.0`
 - ✅ `vercel.json` содержит `"nodeVersion": "20.x"`
 - ✅ Удален неправильный `"node": "^25.1.0"` из dependencies
 
 Если проблема все еще возникает на Vercel, возможно нужно:
+
 1. Очистить кеш билда в Vercel Dashboard
 2. Пересобрать проект заново
 3. Проверить, что используется правильный образ Node.js (не Alpine)
-
