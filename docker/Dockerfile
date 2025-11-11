@@ -3,7 +3,7 @@
 FROM node:20-alpine AS base
 ENV npm_config_legacy_peer_deps=true
 
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache python3 make g++ libatomic
 WORKDIR /app
 
 FROM base AS deps
