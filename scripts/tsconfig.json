@@ -1,20 +1,15 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "../",
+    "baseUrl": "..",
     "paths": {
-      "@/*": ["../*"]
+      "@/*": ["./*"]
     }
   },
-  "ts-node": {
-    "esm": true,
-    "compilerOptions": {
-      "module": "ESNext",
-      "moduleResolution": "node"
-    }
-  }
+  "include": ["**/*.ts"],
+  "exclude": ["../node_modules", "../.next"]
 }

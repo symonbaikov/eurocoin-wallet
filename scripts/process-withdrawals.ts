@@ -115,7 +115,7 @@ async function processQueue() {
         status: "rejected",
         reviewerId: WORKER_ID,
         notes: "auto rejection due to processor failure",
-      }).catch((rejectError) => {
+      }).catch((rejectError: unknown) => {
         console.error("[treasury] Failed to rollback request:", rejectError);
       });
 

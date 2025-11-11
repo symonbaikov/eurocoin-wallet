@@ -10,7 +10,7 @@ Error: Command "npm run build" exited with 127
 
 ## Причина
 
-Отсутствует системная библиотека `libatomic.so.1`, которая требуется для некоторых нативных модулей Node.js (например, для пакетов с нативными расширениями).
+Отсутствует системная библиотека `libatomic.so.1`, которая требуется для некоторых нативных модулей Node.js (например, для пакетов с нативными расширениями, таких как `ethers`, `pg`, `canvas`).
 
 ## Решения
 
@@ -23,7 +23,23 @@ docker-compose -f docker/docker-compose.prod.yml build --no-cache
 docker-compose -f docker/docker-compose.prod.yml up -d
 ```
 
-### Решение 2: Если деплой на Linux сервер напрямую
+### Решение 2: Если деплой на Vercel
+
+Vercel обычно имеет все необходимые библиотеки, но если проблема возникает:
+
+1. **Убедитесь, что используется правильная версия Node.js:**
+   - В `package.json` добавлено `"engines": { "node": ">=20.0.0" }`
+   - В `.nvmrc` указана версия `20.17.0`
+   - В `vercel.json` указано `"nodeVersion": "20.x"`
+
+2. **Проверьте настройки проекта в Vercel Dashboard:**
+   - Settings → General → Node.js Version → выберите `20.x`
+
+3. **Если проблема сохраняется**, возможно используется Alpine-based образ. В этом случае:
+   - Убедитесь, что не используется `node:alpine` в настройках
+   - Vercel должен использовать стандартный Debian-based образ Node.js
+
+### Решение 3: Если деплой на Linux сервер напрямую
 
 #### Для Ubuntu/Debian:
 ```bash
@@ -45,25 +61,9 @@ sudo dnf install -y libatomic
 apk add --no-cache libatomic
 ```
 
-### Решение 3: Если используете Vercel/Netlify
+### Решение 4: Если используете Netlify
 
-Эти платформы обычно имеют все необходимые библиотеки. Если проблема возникает:
-
-1. **Vercel:**
-   - Убедитесь, что используете Node.js 20.x
-   - Проверьте Build Settings → Node.js Version
-   - Если проблема сохраняется, создайте `vercel.json`:
-
-```json
-{
-  "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "framework": "nextjs"
-}
-```
-
-2. **Netlify:**
-   - Добавьте в `netlify.toml`:
+Добавьте в `netlify.toml`:
 
 ```toml
 [build]
@@ -73,7 +73,14 @@ apk add --no-cache libatomic
   NODE_VERSION = "20"
 ```
 
-### Решение 4: Если используете собственный сервер
+Или установите через build command:
+
+```toml
+[build]
+  command = "apt-get update && apt-get install -y libatomic1 && npm run build"
+```
+
+### Решение 5: Если используете собственный сервер
 
 Установите библиотеку и перезапустите Node.js:
 
@@ -141,18 +148,34 @@ nvm use 20
 
 Vercel автоматически устанавливает необходимые библиотеки. Если проблема возникает:
 
-1. Проверьте версию Node.js в настройках проекта
-2. Убедитесь, что используется `node:20` в `package.json`:
+1. **Проверьте версию Node.js в настройках проекта:**
+   - Vercel Dashboard → Settings → General → Node.js Version
+   - Должна быть `20.x`
 
-```json
-{
-  "engines": {
-    "node": ">=20.0.0"
-  }
-}
-```
+2. **Убедитесь, что в `package.json` указана правильная версия:**
+   ```json
+   {
+     "engines": {
+       "node": ">=20.0.0",
+       "npm": ">=10.0.0"
+     }
+   }
+   ```
 
-3. Пересоберите проект через Vercel Dashboard
+3. **Проверьте `.nvmrc` файл:**
+   ```
+   20.17.0
+   ```
+
+4. **Проверьте `vercel.json`:**
+   ```json
+   {
+     "nodeVersion": "20.x"
+   }
+   ```
+
+5. **Пересоберите проект через Vercel Dashboard:**
+   - Deployments → Click "..." → Redeploy
 
 ## Если проблема на собственном сервере с PM2
 
@@ -198,4 +221,24 @@ RUN apt-get update && apt-get install -y \
 ```
 
 Но текущий Dockerfile с `libatomic` в Alpine должен работать.
+
+## Важно для Vercel
+
+Если вы используете Vercel и проблема сохраняется:
+
+1. **Убедитесь, что не используется Alpine-based образ Node.js**
+2. **Проверьте, что в настройках проекта указана версия Node.js 20.x**
+3. **Удалите `node: "^25.1.0"` из dependencies в `package.json`** (это неправильный формат)
+4. **Используйте `engines.node` вместо этого**
+
+Текущая конфигурация проекта уже исправлена:
+- ✅ `package.json` содержит `"engines": { "node": ">=20.0.0" }`
+- ✅ `.nvmrc` содержит `20.17.0`
+- ✅ `vercel.json` содержит `"nodeVersion": "20.x"`
+- ✅ Удален неправильный `"node": "^25.1.0"` из dependencies
+
+Если проблема все еще возникает на Vercel, возможно нужно:
+1. Очистить кеш билда в Vercel Dashboard
+2. Пересобрать проект заново
+3. Проверить, что используется правильный образ Node.js (не Alpine)
 
