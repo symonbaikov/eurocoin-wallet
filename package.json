@@ -24,7 +24,9 @@
     "auth:create-tables": "tsx scripts/create-nextauth-tables.ts",
     "auth:fix-userid": "tsx scripts/fix-userid-columns.ts",
     "type-check": "tsc --noEmit",
-    "treasury:process": "tsx scripts/process-withdrawals.ts"
+    "treasury:process": "tsx scripts/process-withdrawals.ts",
+    "test:balance-credit": "tsx scripts/test-balance-credit.ts",
+    "test:balance-credit-full": "tsx scripts/test-balance-credit-full.ts"
   },
   "dependencies": {
     "24": "^0.0.0",

@@ -9,6 +9,7 @@ openssl rand -hex 32
 ```
 
 Скопируйте результат и добавьте в `.env.local`:
+
 ```env
 INTERNAL_BALANCE_SIGNING_SECRET=<результат_команды>
 ```
@@ -21,6 +22,7 @@ INTERNAL_BALANCE_SIGNING_SECRET=<результат_команды>
 2. Экспортируйте приватный ключ
 3. Пополните кошелек токенами
 4. Добавьте в `.env.local`:
+
 ```env
 TREASURY_PRIVATE_KEY=0x<ваш_приватный_ключ>
 TREASURY_RPC_URL=https://mainnet.infura.io/v3/YOUR_KEY
@@ -29,6 +31,7 @@ TREASURY_RPC_URL=https://mainnet.infura.io/v3/YOUR_KEY
 **Вариант B: Тестовый режим (dry-run)**
 
 Оставьте эти переменные пустыми или не указывайте их:
+
 ```env
 # TREASURY_PRIVATE_KEY=
 # TREASURY_RPC_URL=
@@ -42,6 +45,7 @@ TREASURY_RPC_URL=https://mainnet.infura.io/v3/YOUR_KEY
 2. Получите API ключ
 3. Узнайте свой Chat ID (отправьте `/myid` боту)
 4. Добавьте в `.env.local`:
+
 ```env
 TELEGRAM_API_KEY=<ваш_api_ключ>
 TELEGRAM_ADMIN_CHAT_ID=<ваш_chat_id>
@@ -117,4 +121,3 @@ grep -E "TREASURY_PRIVATE_KEY|TREASURY_RPC_URL" .env.local
 - Статус функционала: `docs/internal-balance-status-report.md`
 - Использование Telegram бота: `docs/telegram-balance-credit-guide.md`
 - API документация: `docs/admin-balance-guide.md`
-

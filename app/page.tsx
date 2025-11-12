@@ -57,7 +57,7 @@ export default function Home() {
   return (
     <>
       <PageTitle title="Dashboard" description="Token management dashboard" enableSectionTracking />
-      <main className="dark:from-dark-background dark:to-dark-backgroundAlt min-h-screen bg-gradient-to-br from-background to-backgroundAlt">
+      <main className="min-h-screen bg-gradient-to-br from-background to-backgroundAlt dark:from-dark-background dark:to-dark-backgroundAlt">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-12 md:px-10">
           {/* Internal Request Form Section */}
           <section id="contact">
@@ -83,43 +83,43 @@ export default function Home() {
           {/* Wallet Section */}
           <header
             id="wallet"
-            className="dark:border-dark-outline dark:bg-dark-surface rounded-3xl border border-outline bg-surface p-8 shadow-card"
+            className="rounded-3xl border border-outline bg-surface p-8 shadow-card dark:border-dark-outline dark:bg-dark-surface"
           >
             <div className="space-y-5">
               <h1 className="display-title text-4xl text-accent md:text-5xl">
                 {t("home.hero.title")}
               </h1>
-              <p className="dark:text-dark-foregroundMuted text-base text-foregroundMuted md:text-lg">
+              <p className="text-base text-foregroundMuted dark:text-dark-foregroundMuted md:text-lg">
                 {t("home.hero.description")}
               </p>
-              <div className="dark:text-dark-foregroundMuted flex flex-wrap gap-3 text-xs text-foregroundMuted">
-                <span className="dark:bg-dark-backgroundAlt rounded-full bg-backgroundAlt px-3 py-1">
+              <div className="flex flex-wrap gap-3 text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
+                <span className="rounded-full bg-backgroundAlt px-3 py-1 dark:bg-dark-backgroundAlt">
                   {t("home.hero.chip1")}
                 </span>
-                <span className="dark:bg-dark-backgroundAlt rounded-full bg-backgroundAlt px-3 py-1">
+                <span className="rounded-full bg-backgroundAlt px-3 py-1 dark:bg-dark-backgroundAlt">
                   {t("home.hero.chip2")}
                 </span>
-                <span className="dark:bg-dark-backgroundAlt rounded-full bg-backgroundAlt px-3 py-1">
+                <span className="rounded-full bg-backgroundAlt px-3 py-1 dark:bg-dark-backgroundAlt">
                   {t("home.hero.chip3")}
                 </span>
               </div>
             </div>
 
             {/* Divider */}
-            <div className="dark:border-dark-outline mt-10 border-t border-outline" />
+            <div className="mt-10 border-t border-outline dark:border-dark-outline" />
 
             {/* Wallet Statistics Section */}
-            <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt mt-10 rounded-3xl border border-outline bg-surfaceAlt p-8 shadow-card">
+            <div className="mt-10 rounded-3xl border border-outline bg-surfaceAlt p-8 shadow-card dark:border-dark-outline dark:bg-dark-surfaceAlt">
               <WalletStatistics />
             </div>
 
             {/* Wallet Connection Section */}
-            <div className="dark:border-dark-outline dark:bg-dark-surfaceAlt mt-10 rounded-3xl border border-outline bg-surfaceAlt p-8 shadow-card">
+            <div className="mt-10 rounded-3xl border border-outline bg-surfaceAlt p-8 shadow-card dark:border-dark-outline dark:bg-dark-surfaceAlt">
               <div className="space-y-4">
-                <h3 className="dark:text-dark-foreground text-xl font-bold text-foreground">
+                <h3 className="text-xl font-bold text-foreground dark:text-dark-foreground">
                   {t("tokenSection.walletConnection.title")}
                 </h3>
-                <p className="dark:text-dark-foregroundMuted text-sm text-foregroundMuted">
+                <p className="text-sm text-foregroundMuted dark:text-dark-foregroundMuted">
                   {t("tokenSection.walletConnection.description")}
                 </p>
                 <div className="space-y-3">
