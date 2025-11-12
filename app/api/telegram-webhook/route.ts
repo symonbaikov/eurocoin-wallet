@@ -1850,8 +1850,8 @@ if (bot) {
         },
         body: JSON.stringify({
           status: "approved",
-          reviewerId: ctx.from.id.toString(),
-          notes: `Одобрено через Telegram бота пользователем ${ctx.from.first_name || ctx.from.username || "admin"}`,
+          reviewerId: null, // reviewerId должен быть UUID пользователя из системы, а не Telegram ID
+          notes: `Одобрено через Telegram бота пользователем ${ctx.from.first_name || ctx.from.username || "admin"} (Telegram ID: ${ctx.from.id})`,
         }),
       });
 
@@ -1904,8 +1904,8 @@ if (bot) {
         },
         body: JSON.stringify({
           status: "rejected",
-          reviewerId: ctx.from.id.toString(),
-          notes: `Отклонено через Telegram бота пользователем ${ctx.from.first_name || ctx.from.username || "admin"}`,
+          reviewerId: null, // reviewerId должен быть UUID пользователя из системы, а не Telegram ID
+          notes: `Отклонено через Telegram бота пользователем ${ctx.from.first_name || ctx.from.username || "admin"} (Telegram ID: ${ctx.from.id})`,
         }),
       });
 
@@ -1984,7 +1984,12 @@ ${txLine}${notesLine}📅 *Создана:* ${new Date(request.createdAt).toLoca
       });
     } catch (error) {
       console.error("[telegram-webhook] Error getting withdraw details:", error);
-      await ctx.reply("❌ Ошибка при получении деталей заявки").catch(() => {});
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      await ctx
+        .reply(`❌ Ошибка при получении деталей заявки:\n\n\`${errorMessage}\``, {
+          parse_mode: "Markdown",
+        })
+        .catch(() => {});
     }
   });
 } // End of if (bot) block
