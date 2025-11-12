@@ -201,6 +201,23 @@ async function applyMigrations() {
     } else {
       console.log("✅ Migration already applied: internal balance tables exist");
     }
+
+    // Migration: Newsletter tables
+    const checkNewsletterSubscribers = await query(`
+      SELECT 1 FROM information_schema.tables
+      WHERE table_name = 'newsletter_subscribers'
+    `);
+
+    if (checkNewsletterSubscribers.rows.length === 0) {
+      console.log("Applying migration: newsletter tables");
+
+      const newsletterMigration = await readMigrationFile("add-newsletter-tables.sql");
+      await query(newsletterMigration);
+
+      console.log("✅ Migration completed: newsletter tables created");
+    } else {
+      console.log("✅ Migration already applied: newsletter tables exist");
+    }
   } catch (error) {
     console.error("Failed to apply migrations:", error);
     throw error;

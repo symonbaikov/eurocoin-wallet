@@ -18,6 +18,7 @@
     "db:migrate": "tsx scripts/migrate-database.ts",
     "db:migrate:legacy": "node scripts/check-and-apply-migration.js",
     "db:test-current-stage": "tsx scripts/test-current-stage.ts",
+    "db:newsletter": "tsx scripts/apply-newsletter-schema.ts",
     "test:email": "tsx scripts/test-email-send.ts",
     "auth:migrate": "tsx scripts/apply-auth-migration.ts",
     "auth:create-tables": "tsx scripts/create-nextauth-tables.ts",
