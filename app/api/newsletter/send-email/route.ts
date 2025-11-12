@@ -16,22 +16,56 @@ function createTransporter() {
       pass: process.env.EMAIL_PASSWORD,
     },
     tls: {
-      rejectUnauthorized: false
-    }
+      rejectUnauthorized: false,
+    },
   });
+}
+
+// Get photo URL from Telegram file_id
+async function getTelegramPhotoUrl(fileId: string): Promise<string | null> {
+  try {
+    const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_API_KEY;
+    if (!TELEGRAM_BOT_TOKEN) {
+      console.error("TELEGRAM_API_KEY not configured");
+      return null;
+    }
+
+    // Get file path from Telegram
+    const fileResponse = await fetch(
+      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getFile?file_id=${fileId}`,
+    );
+
+    if (!fileResponse.ok) {
+      console.error("Failed to get file info from Telegram");
+      return null;
+    }
+
+    const fileData = await fileResponse.json();
+    if (!fileData.ok || !fileData.result?.file_path) {
+      console.error("Invalid file data from Telegram");
+      return null;
+    }
+
+    // Return direct URL to file
+    return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
+  } catch (error) {
+    console.error("Error getting Telegram photo URL:", error);
+    return null;
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, authToken } = await request.json();
+    const { message, photoFileId, authToken } = await request.json();
 
     // Проверка токена
     if (authToken !== process.env.NEWSLETTER_AUTH_TOKEN) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!message) {
-      return NextResponse.json({ error: "Message is required" }, { status: 400 });
+    // Check if we have at least some content
+    if (!message && !photoFileId) {
+      return NextResponse.json({ error: "Message or photo is required" }, { status: 400 });
     }
 
     // Получаем всех верифицированных подписчиков
@@ -50,12 +84,25 @@ export async function POST(request: NextRequest) {
       errors: [] as string[],
     };
 
+    // Get photo URL if photoFileId is provided
+    let photoUrl: string | null = null;
+    if (photoFileId) {
+      photoUrl = await getTelegramPhotoUrl(photoFileId);
+      if (!photoUrl) {
+        console.warn("Failed to get photo URL, continuing without image");
+      }
+    }
+
     // Render email using React Email
     const unsubscribeUrl = process.env.NEXT_PUBLIC_APP_URL
       ? `${process.env.NEXT_PUBLIC_APP_URL}/newsletter/unsubscribe`
       : undefined;
     const emailHtml = await render(
-      React.createElement(NewsletterEmail, { message, unsubscribeUrl }),
+      React.createElement(NewsletterEmail, {
+        message: message || "",
+        photoUrl,
+        unsubscribeUrl,
+      }),
     );
 
     // Send emails
@@ -66,7 +113,16 @@ export async function POST(request: NextRequest) {
           to: subscriber.email,
           subject: "EuroCoin Newsletter",
           html: emailHtml,
-          text: message,
+          text: message || "EuroCoin Newsletter",
+          attachments: photoUrl
+            ? [
+                {
+                  filename: "newsletter-image.jpg",
+                  path: photoUrl,
+                  cid: "newsletter-image", // Content ID for embedding in HTML
+                },
+              ]
+            : undefined,
         });
         results.sent++;
       } catch (error) {

@@ -1472,15 +1472,13 @@ if (bot) {
       });
 
       ctx.reply(
-        `📧 *Рассылка для подписчиков*\n\n` +
-          `Активных подписчиков: ${count}\n\n` +
+        `📧 *Рассылка на email подписчикам*\n\n` +
+          `Активных подписчиков с подтвержденным email: ${count}\n\n` +
           `📝 Отправьте контент для рассылки:\n\n` +
           `• 📸 *Изображение с подписью* - отправьте фото с текстом\n` +
-          `• 📄 *Только текст* - отправьте текстовое сообщение\n` +
-          `• 🎥 *Видео с подписью* - отправьте видео с текстом\n` +
-          `• 📎 *Документ* - отправьте файл\n\n` +
+          `• 📄 *Только текст* - отправьте текстовое сообщение\n\n` +
           `Для отмены используйте /cancel\n\n` +
-          `_Совет: Вы можете использовать Markdown форматирование_`,
+          `_Совет: Вы можете использовать Markdown форматирование и ссылки [текст](https://example.com)_`,
         { parse_mode: "Markdown" },
       );
     } catch (error) {
@@ -1642,30 +1640,28 @@ if (bot) {
         return;
       }
 
-      // Get count of active Telegram subscribers
+      // Get count of active email subscribers
       const subscribers = await query(
-        "SELECT COUNT(*) as count FROM newsletter_subscribers WHERE is_active = true AND chat_id IS NOT NULL",
+        "SELECT COUNT(*) as count FROM newsletter_subscribers WHERE verified = true AND is_active = true AND email IS NOT NULL",
       );
 
       const count = subscribers.rows[0]?.count || 0;
 
       if (count === 0) {
-        await ctx.reply("❌ Нет активных подписчиков");
+        await ctx.reply("❌ Нет активных подписчиков с подтвержденным email");
         pendingNewsletter.delete(chatId);
         return;
       }
 
-      await ctx.reply(`📤 Отправка рассылки ${count} подписчикам...`);
+      await ctx.reply(`📤 Отправка рассылки на email ${count} подписчикам...`);
 
-      // Send newsletter via API
-      const response = await fetch(`${getAppUrl()}/api/newsletter/send`, {
+      // Send newsletter via email API
+      const response = await fetch(`${getAppUrl()}/api/newsletter/send-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: newsletterData.caption || newsletterData.messageText || "",
           photoFileId: newsletterData.photoFileId,
-          videoFileId: newsletterData.videoFileId,
-          documentFileId: newsletterData.documentFileId,
           authToken: process.env.NEWSLETTER_AUTH_TOKEN,
         }),
       });
