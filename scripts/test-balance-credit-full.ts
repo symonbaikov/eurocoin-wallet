@@ -21,15 +21,16 @@ const ADMIN_SECRET = process.env.INTERNAL_BALANCE_SIGNING_SECRET;
 async function ensureUserRegistered(walletAddress: string): Promise<void> {
   console.log("🔍 Проверка регистрации пользователя...");
 
-  let user = await getUserByWalletAddress(walletAddress.toLowerCase() as `0x${string}`);
+  const normalizedAddress = walletAddress.toLowerCase() as `0x${string}`;
+  const user = await getUserByWalletAddress(normalizedAddress);
 
   if (!user) {
     console.log("📝 Пользователь не найден, регистрируем...");
-    user = await upsertWalletUser({
-      walletAddress: walletAddress.toLowerCase() as `0x${string}`,
+    const result = await upsertWalletUser({
+      walletAddress: normalizedAddress,
       name: `Test User ${Date.now()}`,
     });
-    console.log(`✅ Пользователь зарегистрирован: ${user.id}`);
+    console.log(`✅ Пользователь зарегистрирован: ${result.id}`);
   } else {
     console.log(`✅ Пользователь уже зарегистрирован: ${user.id}`);
   }
@@ -123,9 +124,13 @@ async function testBalanceCredit(walletAddress: string, amount: string, referenc
 const args = process.argv.slice(2);
 
 if (args.length < 2) {
-  console.log("Использование: tsx scripts/test-balance-credit-full.ts <walletAddress> <amount> [reference]");
+  console.log(
+    "Использование: tsx scripts/test-balance-credit-full.ts <walletAddress> <amount> [reference]",
+  );
   console.log("\nПримеры:");
-  console.log("  tsx scripts/test-balance-credit-full.ts 0x1234567890123456789012345678901234567890 100");
+  console.log(
+    "  tsx scripts/test-balance-credit-full.ts 0x1234567890123456789012345678901234567890 100",
+  );
   console.log(
     '  tsx scripts/test-balance-credit-full.ts 0x1234567890123456789012345678901234567890 50 "Test credit"',
   );
@@ -134,4 +139,3 @@ if (args.length < 2) {
 
 const [walletAddress, amount, reference] = args;
 testBalanceCredit(walletAddress, amount, reference);
-
