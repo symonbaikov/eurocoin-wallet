@@ -218,6 +218,34 @@ async function applyMigrations() {
     } else {
       console.log("✅ Migration already applied: newsletter tables exist");
     }
+
+    // Migration: Fix provider_account_id column in accounts table
+    const checkProviderAccountId = await query(`
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_name = 'accounts' 
+      AND column_name = 'provider_account_id'
+    `);
+
+    if (checkProviderAccountId.rows.length === 0) {
+      console.log("Applying migration: fix provider_account_id column in accounts table");
+
+      try {
+        const fixProviderAccountIdMigration = await readMigrationFile(
+          "fix-provider-account-id-column.sql",
+        );
+        await query(fixProviderAccountIdMigration);
+
+        console.log("✅ Migration completed: provider_account_id column fixed in accounts table");
+      } catch (migrationError) {
+        console.error("❌ Failed to apply provider_account_id migration:", migrationError);
+        // Don't throw - allow app to continue, but log the error
+        console.warn("⚠️  OAuth authentication may not work until migration is applied manually");
+      }
+    } else {
+      console.log(
+        "✅ Migration already applied: provider_account_id column exists in accounts table",
+      );
+    }
   } catch (error) {
     console.error("Failed to apply migrations:", error);
     throw error;
