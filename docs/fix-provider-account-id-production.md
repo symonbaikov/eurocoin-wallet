@@ -33,6 +33,7 @@ code: '42703'
    - Вставьте в SQL Editor и выполните
 
 2. **Через psql:**
+
    ```bash
    psql "$DATABASE_URL" -f lib/database/migrations/fix-provider-account-id-column.sql
    ```
@@ -70,8 +71,8 @@ code: '42703'
 
 ```sql
 SELECT column_name, data_type, is_nullable
-FROM information_schema.columns 
-WHERE table_name = 'accounts' 
+FROM information_schema.columns
+WHERE table_name = 'accounts'
 AND column_name = 'provider_account_id';
 ```
 
@@ -83,12 +84,13 @@ AND column_name = 'provider_account_id';
 
 ```sql
 SELECT column_name, data_type, is_nullable
-FROM information_schema.columns 
+FROM information_schema.columns
 WHERE table_name = 'accounts'
 ORDER BY ordinal_position;
 ```
 
 Ожидаемые колонки (в snake_case):
+
 - `id`
 - `user_id`
 - `type`
@@ -115,4 +117,3 @@ ORDER BY ordinal_position;
 - Миграция безопасна: она проверяет существование колонок перед изменением
 - Миграция идемпотентна: её можно запускать несколько раз без побочных эффектов
 - Миграция не удаляет данные: она только добавляет или переименовывает колонки
-

@@ -2,13 +2,35 @@ import { Markup } from "telegraf";
 import { getBot } from "./bot";
 
 function getAdminChatId(): string | null {
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
-  if (!chatId) {
-    console.warn("⚠️  TELEGRAM_ADMIN_CHAT_ID is not set. Telegram notifications are disabled.");
-    console.warn("    Send /myid command to your bot to get your Chat ID and add it to .env.local");
+  const allowedUserId = process.env.TELEGRAM_ALLOWED_USER_ID;
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+
+  if (allowedUserId && adminChatId && allowedUserId !== adminChatId) {
+    console.warn(
+      "[telegram-notify-admin] TELEGRAM_ADMIN_CHAT_ID does not match TELEGRAM_ALLOWED_USER_ID. " +
+        "Notifications will be sent to TELEGRAM_ALLOWED_USER_ID to keep bot access and alerts in sync.",
+    );
+  }
+
+  const targetChatId = allowedUserId || adminChatId;
+
+  if (!targetChatId) {
+    console.warn(
+      "⚠️  TELEGRAM_ALLOWED_USER_ID/TELEGRAM_ADMIN_CHAT_ID is not set. Telegram notifications are disabled.",
+    );
+    console.warn(
+      "    Send /myid command to your bot to get your Chat ID and add it to TELEGRAM_ALLOWED_USER_ID in .env.local",
+    );
     return null;
   }
-  return chatId;
+
+  if (!adminChatId && allowedUserId) {
+    console.log(
+      "[telegram-notify-admin] Using TELEGRAM_ALLOWED_USER_ID as admin chat ID for notifications.",
+    );
+  }
+
+  return targetChatId;
 }
 
 // ============================================
@@ -524,7 +546,9 @@ export async function sendTestNotification(): Promise<void> {
     const adminChatId = getAdminChatId();
 
     if (!adminChatId) {
-      throw new Error("TELEGRAM_ADMIN_CHAT_ID is not configured. Use /myid command in your bot.");
+      throw new Error(
+        "TELEGRAM_ALLOWED_USER_ID/TELEGRAM_ADMIN_CHAT_ID is not configured. Use /myid command in your bot.",
+      );
     }
 
     await bot.telegram.sendMessage(

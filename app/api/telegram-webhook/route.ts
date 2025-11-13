@@ -220,7 +220,8 @@ if (bot) {
         `👤 Username: @${username}\n` +
         `👤 Name: ${firstName}\n\n` +
         `📝 Добавьте этот Chat ID в .env.local:\n` +
-        `\`TELEGRAM_ADMIN_CHAT_ID=${chatId}\``,
+        `\`TELEGRAM_ALLOWED_USER_ID=${chatId}\`\n` +
+        `_или_ \`TELEGRAM_ADMIN_CHAT_ID=${chatId}\` для обратной совместимости`,
       { parse_mode: "Markdown" },
     );
   });
