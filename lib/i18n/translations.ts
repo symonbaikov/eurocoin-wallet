@@ -216,7 +216,8 @@ const translations: Messages = {
       helper: "Поля, отмеченные *, обязательны. После отправки заявка попадёт в общий дашборд.",
       placeholders: {
         requester: "ФИО или корпоративный email",
-        description: "Укажите адрес кошелька, сумму, дедлайн, ID тикета и другие детали...",
+        description:
+          "Сумма потерянных средств , название компании где потеряли , год , когда последний раз общались и работаете ли сейчас с брокером / юридической фирмой",
         department: "Выберите отдел",
         type: "Укажите тип",
         walletAddress: "Введите адрес кошелька",
@@ -1041,7 +1042,8 @@ const translations: Messages = {
         "Fields marked with * are required. After submission the request appears in the internal dashboard.",
       placeholders: {
         requester: "Full name or corporate email",
-        description: "Wallet address, amount, deadline, ticket ID…",
+        description:
+          "Amount of lost funds, name of company where lost, year, when last contacted and are you currently working with broker / law firm",
         department: "Select department",
         type: "Choose type",
         walletAddress: "Enter wallet address",
@@ -1862,7 +1864,8 @@ const translations: Messages = {
       helper: "Laukai, pažymėti *, yra privalomi. Pateikus užklausa pasirodo vidiniame skydelyje.",
       placeholders: {
         requester: "Pilnas vardas arba įmonės el. paštas",
-        description: "Piniginės adresas, suma, terminas, bilieto ID…",
+        description:
+          "Prarastų lėšų suma, įmonės pavadinimas kur prarasta, metai, kada paskutinį kartą susisiekta ir ar šiuo metu dirbate su brokeriu / teisinės firmos",
         department: "Pasirinkite skyrių",
         type: "Pasirinkite tipą",
         walletAddress: "Įveskite piniginės adresą",
@@ -2687,7 +2690,8 @@ const translations: Messages = {
         "Lauki, kas atzīmēti ar *, ir obligāti. Pēc iesniegšanas pieprasījums parādās iekšējā informācijas panelī.",
       placeholders: {
         requester: "Pilns vārds vai korporatīvais e-pasts",
-        description: "Maciņa adrese, summa, termiņš, biļetes ID…",
+        description:
+          "Zaudēto līdzekļu summa, uzņēmuma nosaukums kur zaudēts, gads, kad pēdējo reizi sazinājāties un vai šobrīd strādājat ar brokeri / juridiskās firmas",
         department: "Izvēlieties nodaļu",
         type: "Izvēlieties veidu",
         walletAddress: "Ievadiet maciņa adresi",

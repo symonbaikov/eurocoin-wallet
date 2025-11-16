@@ -94,3 +94,7 @@ DATABASE_URL=postgresql://...
 
 - В Vercel: Dashboard → Your Project → Functions → View Logs
 - Ищите строки с `[newsletter]` для понимания где именно происходит ошибка
+
+
+
+
