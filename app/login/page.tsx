@@ -13,7 +13,7 @@ import { EuroCoin3D, EuroCoinInfoSection } from "@/components/eurocoin";
 import { ReviewsCarousel } from "@/components/reviews";
 import { useTranslation } from "@/hooks/use-translation";
 import { useAuth } from "@/hooks/use-auth";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 import { useSearchParams } from "next/navigation";
 

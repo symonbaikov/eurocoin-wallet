@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 interface NewsletterModalProps {
   open: boolean;

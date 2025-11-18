@@ -6,7 +6,7 @@ import { RequestCard } from "./request-card";
 import { RequestDetailsModal, RequestData } from "./request-details-modal";
 import { RequestStatus } from "./request-status-badge";
 import { cn } from "@/lib/utils";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { useTranslation } from "@/hooks/use-translation";
 
 interface UserRequestsProps {

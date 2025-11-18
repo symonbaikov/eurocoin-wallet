@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Upload, X, File } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { validateFile } from "@/lib/utils/file-validation";
 
 interface FileUploaderProps {

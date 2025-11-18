@@ -10,7 +10,7 @@ import { signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/use-translation';
 import { LogOut } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from "react-toastify";
 
 interface SignOutButtonProps {
   /** Button variant */

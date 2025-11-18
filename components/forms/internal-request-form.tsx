@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { FileUploader } from "@/components/ui/file-uploader";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/use-translation";

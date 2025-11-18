@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { useSupportedNetwork } from "@/hooks/use-supported-network";
 import { useTranslation } from "@/hooks/use-translation";
 

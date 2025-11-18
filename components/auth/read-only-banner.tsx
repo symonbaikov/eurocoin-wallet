@@ -11,7 +11,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { Button } from '@/components/ui/button';
 import { useWalletConnection } from '@/hooks/use-wallet-connection';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from "react-toastify";
 
 interface ReadOnlyBannerProps {
   /** Show connect wallet button */

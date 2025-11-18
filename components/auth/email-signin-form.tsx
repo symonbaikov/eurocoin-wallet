@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/use-translation";
 import { Mail } from "lucide-react";
@@ -44,7 +44,7 @@ export function EmailSignInForm({ callbackUrl = "/", disabled = false }: EmailSi
 
       // Show success message with email instructions
       toast.success(t("login.email.success"), {
-        duration: 5000,
+        autoClose: 5000,
       });
       setEmail("");
 

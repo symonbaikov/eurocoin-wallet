@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
 import { useTranslation } from "@/hooks/use-translation";
 

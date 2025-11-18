@@ -530,7 +530,6 @@ const translations: Messages = {
 <ul>
   <li>1 TOKEN = 1 USD</li>
   <li>Курс автоматически обновляется каждую минуту</li>
-  <li>Комиссия за обмен: 1.5%</li>
 </ul>
 
 <p><strong>Безопасность:</strong></p>
@@ -1311,7 +1310,6 @@ const translations: Messages = {
 <ul>
   <li>1 TOKEN = 1 USD</li>
   <li>Rate automatically updates every minute</li>
-  <li>Exchange commission: 1.5%</li>
 </ul>
 
 <p><strong>Security:</strong></p>

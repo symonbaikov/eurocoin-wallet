@@ -5,7 +5,7 @@ import { useAccount } from "wagmi";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileUploader } from "@/components/ui/file-uploader";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { useExchangeRate } from "@/hooks/use-exchange-rate";
 import { useTokenPrice } from "@/hooks/use-token-price";
 import { useTranslation } from "@/hooks/use-translation";

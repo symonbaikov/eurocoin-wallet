@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/use-translation";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 // Lucide icons
 import { Chrome } from "lucide-react";

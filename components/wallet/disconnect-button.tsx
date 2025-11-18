@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { useWalletConnection } from "@/hooks/use-wallet-connection";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";

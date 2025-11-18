@@ -6,7 +6,8 @@ import { AppProviders } from "@/components/providers/app-providers";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { ChatWidget } from "@/components/chatbot";
-import { Toaster } from "react-hot-toast";
+import { ToastContainer } from "@/components/ui/toast-container";
+import "react-toastify/dist/ReactToastify.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,27 +44,15 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${displayFont.variable} dark:bg-dark-background dark:text-dark-foreground bg-background font-sans text-foreground antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${displayFont.variable} bg-background font-sans text-foreground antialiased dark:bg-dark-background dark:text-dark-foreground`}
       >
         <AppProviders>
-          <div className="dark:bg-dark-background flex min-h-screen flex-col">
+          <div className="flex min-h-screen flex-col dark:bg-dark-background">
             <SiteHeader />
             <div className="flex-1">{children}</div>
             <SiteFooter />
           </div>
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: "var(--surface)",
-                color: "var(--foreground)",
-                border: "1px solid var(--outline)",
-                opacity: 1,
-              },
-              className: "opacity-100",
-            }}
-          />
+          <ToastContainer />
           <ChatWidget delay={10000} position="bottom-right" />
         </AppProviders>
       </body>
