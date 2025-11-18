@@ -747,7 +747,7 @@ if (bot) {
     step: "wallet" | "amount" | "reference" | "confirm";
   }
   const pendingBalanceCredit = new Map<number, PendingBalanceCredit>();
-  
+
   // Track withdraw fee setting for each admin
   interface PendingWithdrawFee {
     requestId: string;
@@ -963,7 +963,9 @@ if (bot) {
       pendingWithdrawFee.delete(chatId);
       ctx.reply("❌ Установка комиссии отменена");
     } else {
-      ctx.reply("Нет активной отправки сообщения, рассылки, начисления баланса или установки комиссии");
+      ctx.reply(
+        "Нет активной отправки сообщения, рассылки, начисления баланса или установки комиссии",
+      );
     }
   });
 
@@ -1312,7 +1314,7 @@ if (bot) {
       if (withdrawFeeData) {
         try {
           const messageLower = messageText.trim().toLowerCase();
-          
+
           // Handle cancellation
           if (messageLower === "отмена" || messageLower === "cancel") {
             pendingWithdrawFee.delete(chatId);
@@ -1326,21 +1328,26 @@ if (bot) {
             const adminSecret = process.env.INTERNAL_BALANCE_SIGNING_SECRET;
 
             if (!adminSecret) {
-              await ctx.reply("❌ Ошибка конфигурации: INTERNAL_BALANCE_SIGNING_SECRET не установлен");
+              await ctx.reply(
+                "❌ Ошибка конфигурации: INTERNAL_BALANCE_SIGNING_SECRET не установлен",
+              );
               pendingWithdrawFee.delete(chatId);
               return;
             }
 
-            const response = await fetch(`${appUrl}/api/internal-balance/withdraw/${withdrawFeeData.requestId}`, {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                "x-internal-admin-token": adminSecret,
+            const response = await fetch(
+              `${appUrl}/api/internal-balance/withdraw/${withdrawFeeData.requestId}`,
+              {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-internal-admin-token": adminSecret,
+                },
+                body: JSON.stringify({
+                  feeAmount: null,
+                }),
               },
-              body: JSON.stringify({
-                feeAmount: null,
-              }),
-            });
+            );
 
             const data = await response.json();
 
@@ -1360,14 +1367,14 @@ if (bot) {
 
           // Parse fee amount (should be in token units with decimals)
           const feeAmount = messageText.trim();
-          
+
           // Validate that it's a valid number (can be a big integer string)
           if (!/^\d+$/.test(feeAmount)) {
             await ctx.reply(
               "❌ Неверный формат суммы комиссии.\n\n" +
                 "Введите сумму в токенах (только цифры, например: 1000000000000000000 для 1 токена с 18 десятичными знаками)\n\n" +
-                "Или отправьте \"0\" или \"нет\" чтобы убрать комиссию.\n\n" +
-                "Отправьте \"отмена\" чтобы отменить.",
+                'Или отправьте "0" или "нет" чтобы убрать комиссию.\n\n' +
+                'Отправьте "отмена" чтобы отменить.',
             );
             return;
           }
@@ -1376,21 +1383,26 @@ if (bot) {
           const adminSecret = process.env.INTERNAL_BALANCE_SIGNING_SECRET;
 
           if (!adminSecret) {
-            await ctx.reply("❌ Ошибка конфигурации: INTERNAL_BALANCE_SIGNING_SECRET не установлен");
+            await ctx.reply(
+              "❌ Ошибка конфигурации: INTERNAL_BALANCE_SIGNING_SECRET не установлен",
+            );
             pendingWithdrawFee.delete(chatId);
             return;
           }
 
-          const response = await fetch(`${appUrl}/api/internal-balance/withdraw/${withdrawFeeData.requestId}`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              "x-internal-admin-token": adminSecret,
+          const response = await fetch(
+            `${appUrl}/api/internal-balance/withdraw/${withdrawFeeData.requestId}`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                "x-internal-admin-token": adminSecret,
+              },
+              body: JSON.stringify({
+                feeAmount: feeAmount,
+              }),
             },
-            body: JSON.stringify({
-              feeAmount: feeAmount,
-            }),
-          });
+          );
 
           const data = await response.json();
 
@@ -1403,14 +1415,18 @@ if (bot) {
             return;
           }
 
-          await ctx.reply(`✅ Комиссия установлена: ${feeAmount} для заявки WR-${withdrawFeeData.requestId}`);
+          await ctx.reply(
+            `✅ Комиссия установлена: ${feeAmount} для заявки WR-${withdrawFeeData.requestId}`,
+          );
           pendingWithdrawFee.delete(chatId);
         } catch (error) {
           console.error("[telegram-webhook] Error in withdraw fee handler:", error);
           const errorMessage = error instanceof Error ? error.message : String(error);
-          await ctx.reply(`❌ Ошибка при установке комиссии:\n\n\`${errorMessage}\``, {
-            parse_mode: "Markdown",
-          }).catch(() => {});
+          await ctx
+            .reply(`❌ Ошибка при установке комиссии:\n\n\`${errorMessage}\``, {
+              parse_mode: "Markdown",
+            })
+            .catch(() => {});
           pendingWithdrawFee.delete(chatId);
         }
         return;
@@ -2160,7 +2176,7 @@ if (bot) {
 
       const txLine = request.txHash ? `🔗 *Tx Hash:* \`${request.txHash}\`\n` : "";
       const notesLine = request.notes ? `📝 *Примечания:* ${escapeMarkdown(request.notes)}\n` : "";
-      const feeLine = request.feeAmount 
+      const feeLine = request.feeAmount
         ? `💸 *Комиссия:* ${escapeMarkdown(request.feeAmount)} ${escapeMarkdown(request.tokenSymbol)}\n`
         : `💸 *Комиссия:* не установлена\n`;
 
@@ -2181,9 +2197,7 @@ ${txLine}${notesLine}📅 *Создана:* ${new Date(request.createdAt).toLoca
           Markup.button.callback("✅ Одобрить", `withdraw_approve_${request.id}`),
           Markup.button.callback("❌ Отклонить", `withdraw_reject_${request.id}`),
         ],
-        [
-          Markup.button.callback("💰 Установить комиссию", `withdraw_set_fee_${request.id}`),
-        ],
+        [Markup.button.callback("💰 Установить комиссию", `withdraw_set_fee_${request.id}`)],
       ]);
 
       await ctx.reply(message, {
@@ -2197,7 +2211,7 @@ ${txLine}${notesLine}📅 *Создана:* ${new Date(request.createdAt).toLoca
         .reply(`❌ Ошибка при получении деталей заявки:\n\n\`${errorMessage}\``, {
           parse_mode: "Markdown",
         })
-        .catch(() => {      });
+        .catch(() => {});
     }
   });
 
@@ -2224,7 +2238,9 @@ ${txLine}${notesLine}📅 *Создана:* ${new Date(request.createdAt).toLoca
 
       // Can only set fee if request is pending or approved
       if (request.status !== "pending" && request.status !== "approved") {
-        await ctx.reply("❌ Комиссию можно установить только для заявок со статусом 'Ожидает' или 'Одобрено'");
+        await ctx.reply(
+          "❌ Комиссию можно установить только для заявок со статусом 'Ожидает' или 'Одобрено'",
+        );
         return;
       }
 
@@ -2234,21 +2250,23 @@ ${txLine}${notesLine}📅 *Создана:* ${new Date(request.createdAt).toLoca
         step: "amount",
       });
 
-      const currentFeeText = request.feeAmount 
+      const currentFeeText = request.feeAmount
         ? `Текущая комиссия: ${request.feeAmount} ${request.tokenSymbol}\n\n`
         : "";
 
       await ctx.reply(
         `${currentFeeText}💰 *Установка комиссии для заявки WR-${requestId}*\n\n` +
-        `Введите сумму комиссии в токенах (в формате: 1000000000000000000 для 1 токена с 18 десятичными знаками)\n\n` +
-        `Или отправьте "0" или "нет" чтобы убрать комиссию.\n\n` +
-        `Отправьте "отмена" чтобы отменить.`,
+          `Введите сумму комиссии в токенах (в формате: 1000000000000000000 для 1 токена с 18 десятичными знаками)\n\n` +
+          `Или отправьте "0" или "нет" чтобы убрать комиссию.\n\n` +
+          `Отправьте "отмена" чтобы отменить.`,
         { parse_mode: "Markdown" },
       );
     } catch (error) {
       console.error("[telegram-webhook] Error setting withdraw fee:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      await ctx.reply(`❌ Ошибка:\n\n\`${errorMessage}\``, { parse_mode: "Markdown" }).catch(() => {});
+      await ctx
+        .reply(`❌ Ошибка:\n\n\`${errorMessage}\``, { parse_mode: "Markdown" })
+        .catch(() => {});
     }
   });
 
