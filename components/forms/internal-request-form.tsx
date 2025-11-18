@@ -37,10 +37,13 @@ export function InternalRequestForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const t = useTranslation();
 
-  // Auto-fill wallet address for MetaMask users
+  // Auto-fill wallet address for MetaMask users only
   useEffect(() => {
     if (authType === "wallet" && address) {
       setForm((prev) => ({ ...prev, walletAddress: address }));
+    } else if (authType === "email") {
+      // Clear wallet address for email users
+      setForm((prev) => ({ ...prev, walletAddress: "" }));
     }
   }, [authType, address]);
 
@@ -88,8 +91,15 @@ export function InternalRequestForm() {
     event.preventDefault();
 
     // Validate required fields
+    // For wallet users, walletAddress is required; for email users, userId is used instead
     if (!form.requester || !form.department || !form.requestType || !form.description) {
       toast.error(t("internalForm.validationTitle"));
+      return;
+    }
+
+    // Validate wallet address only for wallet users
+    if (authType === "wallet" && !form.walletAddress) {
+      toast.error("Wallet address is required for wallet users");
       return;
     }
 
@@ -100,7 +110,7 @@ export function InternalRequestForm() {
       const filesData =
         attachedFiles.length > 0 ? await convertFilesToBase64(attachedFiles) : undefined;
 
-      // Send request to API with wallet address, userId, and email
+      // Send request to API with wallet address (for wallet users) or userId (for email users)
       const response = await fetch("/api/submit-request", {
         method: "POST",
         headers: {
@@ -108,9 +118,11 @@ export function InternalRequestForm() {
         },
         body: JSON.stringify({
           ...form,
-          walletAddress: form.walletAddress, // Use form field instead of address directly
-          userId: userId || undefined, // Include userId for OAuth users
-          email: email || undefined, // Include email for OAuth users
+          // Only include walletAddress for wallet users
+          walletAddress: authType === "wallet" ? form.walletAddress : undefined,
+          // Include userId and email for OAuth users
+          userId: authType === "email" ? userId : undefined,
+          email: authType === "email" ? email : undefined,
           files: filesData,
         }),
       });
@@ -250,24 +262,27 @@ export function InternalRequestForm() {
             />
           </div>
 
-          <div className="flex flex-col gap-2 md:col-span-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted dark:text-dark-foregroundMuted">
-              {t("internalForm.walletAddress")}
-            </label>
-            <input
-              className="rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
-              placeholder={t("internalForm.placeholders.walletAddress")}
-              value={form.walletAddress}
-              onChange={(event) => handleChange("walletAddress", event.target.value)}
-              disabled={authType === "wallet"}
-              autoComplete="off"
-            />
-            {authType === "wallet" && address && (
-              <p className="text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
-                {t("internalForm.walletAddressAutoFilled")}
-              </p>
-            )}
-          </div>
+          {/* Show wallet address field only for wallet users */}
+          {authType === "wallet" && (
+            <div className="flex flex-col gap-2 md:col-span-2">
+              <label className="text-xs font-semibold uppercase tracking-[0.24em] text-foregroundMuted dark:text-dark-foregroundMuted">
+                {t("internalForm.walletAddress")}
+              </label>
+              <input
+                className="rounded-2xl border border-outline bg-surface px-4 py-3 text-sm text-foreground outline-none transition hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground"
+                placeholder={t("internalForm.placeholders.walletAddress")}
+                value={form.walletAddress}
+                onChange={(event) => handleChange("walletAddress", event.target.value)}
+                disabled={authType === "wallet"}
+                autoComplete="off"
+              />
+              {address && (
+                <p className="text-xs text-foregroundMuted dark:text-dark-foregroundMuted">
+                  {t("internalForm.walletAddressAutoFilled")}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* File Upload */}
           <div className="flex flex-col gap-2 md:col-span-2">

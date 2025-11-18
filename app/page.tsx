@@ -64,6 +64,11 @@ export default function Home() {
             <InternalRequestForm />
           </section>
 
+          {/* Internal Balance Section */}
+          <section id="internal-balance">
+            <InternalPayoutForm />
+          </section>
+
           {/* Investigation & Reports Section */}
           <section id="investigation" className="space-y-8">
             <InvestigationProgress walletAddress={address} userEmail={email} />
@@ -133,11 +138,6 @@ export default function Home() {
           {/* Exchange Section */}
           <section id="exchange">
             <ExchangeSection />
-          </section>
-
-          {/* Internal Balance Section */}
-          <section id="internal-balance">
-            <InternalPayoutForm />
           </section>
         </div>
 

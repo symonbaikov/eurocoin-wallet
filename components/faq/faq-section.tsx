@@ -137,7 +137,7 @@ export function FAQSection() {
               </p>
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center md:flex-nowrap">
                 <a
-                  href="https://t.me/corporate_bot"
+                  href="https://t.me/eucoinofficial"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="dark:border-dark-outline dark:bg-dark-surface dark:text-dark-foreground dark:hover:bg-dark-surfaceAlt inline-flex items-center justify-center gap-2 rounded-lg border border-outline bg-surfaceAlt px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface"

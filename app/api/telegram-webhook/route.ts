@@ -237,48 +237,97 @@ if (bot) {
 📋 *Основные команды:*
 
 /start - Начать работу с ботом
+  ➡️ Приветственное сообщение с кратким обзором возможностей бота
+  ➡️ Показывает ваш Chat ID и список основных команд
+
 /help - Показать эту справку
+  ➡️ Отображает полный список всех доступных команд с подробными описаниями
+  ➡️ Помогает быстро найти нужную команду и понять её назначение
+
 /myid - Узнать свой Chat ID
+  ➡️ Показывает ваш уникальный Telegram Chat ID
+  ➡️ Необходим для настройки доступа к боту в .env.local
+  ➡️ Используется для переменной TELEGRAM_ALLOWED_USER_ID
+
+/cancel - Отменить текущую операцию
+  ➡️ Отменяет активный процесс (отправка сообщения, начисление баланса, установка комиссии, рассылка)
+  ➡️ Полезно, если вы передумали или случайно начали операцию
+  ➡️ Работает только во время активных диалогов
 
 📊 *Команды для просмотра заявок:*
 
 /list - Показать все заявки (обмен + внутренние)
   ➡️ Выводит краткий список последних 5 заявок каждого типа с их статусами
+  ➡️ Быстрый обзор всех активных заявок в системе
+  ➡️ Показывает ID, статус и основную информацию
 
 /exchange - Показать заявки на обмен с кнопками управления
   ➡️ Отображает все заявки на обмен с возможностью изменения статуса через inline-кнопки
   ➡️ Поддерживает кнопки: Обработать, Завершить, Отклонить, Отменить
+  ➡️ Показывает до 10 последних заявок с полной информацией
+  ➡️ Удобно для быстрого управления заявками на обмен токенов
 
 /internal - Показать внутренние заявки с кнопками управления
   ➡️ Отображает все внутренние заявки с возможностью изменения статуса
   ➡️ Поддерживает кнопки: Обработать, Завершить, Отклонить
+  ➡️ Показывает до 10 последних заявок с информацией о запрашивающем и отделе
+  ➡️ Идеально для управления внутренними запросами компании
 
 /details <ID> - Показать детали конкретной заявки
   ➡️ Подробная информация о заявке по её ID
-  ➡️ Пример: /details EX-1234567890
-  ➡️ Отображает полную информацию и кнопки для управления
+  ➡️ Пример: /details EX-1234567890 или /details IR-1234567890
+  ➡️ Отображает полную информацию: статус, даты, суммы, адреса, комментарии
+  ➡️ Включает кнопки для быстрого изменения статуса заявки
+
+/chats - Показать активные чат-сессии
+  ➡️ Отображает информацию об активных сессиях чатбота и поддержки
+  ➡️ Позволяет просматривать историю переписки с пользователями
+  ➡️ Поддерживает ответы через кнопку "Ответить" или формат [reply-SESSION_ID]
 
 💰 *Команды для управления балансом:*
 
 /credit - Начислить баланс пользователю
-  ➡️ Пошаговое начисление баланса через диалог
+  ➡️ Пошаговое начисление баланса через интерактивный диалог
   ➡️ Требует: адрес кошелька, сумму, описание (опционально)
   ➡️ Пример использования:
      1. /credit
      2. Введите адрес кошелька (0x...)
      3. Введите сумму (например: 100.5)
      4. Введите описание или "-" для пропуска
-     5. Подтвердите начисление
+     5. Подтвердите начисление через кнопку
+  ➡️ Безопасное начисление с подтверждением перед выполнением
+
+📧 *Команды для рассылки:*
+
+/subscribe - Подписаться на рассылку новостей
+  ➡️ Подписка на получение новостей и обновлений о EuroCoin
+  ➡️ Вы будете получать важные уведомления и анонсы
+  ➡️ Можно отписаться в любой момент командой /unsubscribe
+
+/unsubscribe - Отписаться от рассылки
+  ➡️ Отмена подписки на рассылку новостей
+  ➡️ Вы перестанете получать уведомления
+  ➡️ Можно подписаться снова командой /subscribe
+
+/newsletter - Отправить рассылку подписчикам (только для менеджера)
+  ➡️ Отправка рассылки всем подписчикам с подтвержденным email
+  ➡️ Доступна только для пользователя с TELEGRAM_MANAGER_CHAT_ID
+  ➡️ Поддерживает отправку текста, изображений с подписью, видео и документов
+  ➡️ Использование:
+     1. /newsletter
+     2. Отправьте контент (текст, фото с подписью, видео или документ)
+     3. Подтвердите отправку через кнопку
+  ➡️ Безопасная рассылка с предварительным просмотром и подтверждением
 
 ⚙️ *Изменить статус заявки:*
 
-1. Используйте /exchange или /details <ID>
+1. Используйте /exchange, /internal или /details <ID>
 2. Выберите заявку с нужным статусом
 3. Нажмите на одну из кнопок:
-   🔄 Обработать (processing)
-   ✅ Завершить (completed)
-   ❌ Отклонить (rejected)
-   🚫 Отменить (cancelled)
+   🔄 Обработать (processing) - Заявка взята в работу
+   ✅ Завершить (completed) - Заявка успешно завершена
+   ❌ Отклонить (rejected) - Заявка отклонена
+   🚫 Отменить (cancelled) - Заявка отменена
 
 📈 *Статусы заявок:*
 
@@ -293,6 +342,9 @@ if (bot) {
 • ID заявки начинается с EX- (для обмена) или IR- (для внутренних)
 • При изменении статуса через бота, изменения автоматически синхронизируются на сайте
 • Вы получите уведомление об изменении статуса
+• Для ответа пользователю в чате используйте кнопку "Ответить" или формат [reply-SESSION_ID]
+• Все операции с балансом требуют подтверждения перед выполнением
+• Команда /cancel работает только во время активных диалогов
 `;
 
     ctx.reply(helpMessage, { parse_mode: "Markdown" });
@@ -695,6 +747,13 @@ if (bot) {
     step: "wallet" | "amount" | "reference" | "confirm";
   }
   const pendingBalanceCredit = new Map<number, PendingBalanceCredit>();
+  
+  // Track withdraw fee setting for each admin
+  interface PendingWithdrawFee {
+    requestId: string;
+    step: "amount";
+  }
+  const pendingWithdrawFee = new Map<number, PendingWithdrawFee>();
 
   // ============================================
   // Support Messenger Callback Handlers
@@ -881,6 +940,7 @@ if (bot) {
     const pending = pendingReplies.get(chatId);
     const isNewsletterPending = pendingNewsletter.has(chatId);
     const isBalanceCreditPending = pendingBalanceCredit.has(chatId);
+    const isWithdrawFeePending = pendingWithdrawFee.has(chatId);
 
     if (pending) {
       pendingReplies.delete(chatId);
@@ -899,8 +959,11 @@ if (bot) {
     } else if (isBalanceCreditPending) {
       pendingBalanceCredit.delete(chatId);
       ctx.reply("❌ Начисление баланса отменено");
+    } else if (isWithdrawFeePending) {
+      pendingWithdrawFee.delete(chatId);
+      ctx.reply("❌ Установка комиссии отменена");
     } else {
-      ctx.reply("Нет активной отправки сообщения, рассылки или начисления баланса");
+      ctx.reply("Нет активной отправки сообщения, рассылки, начисления баланса или установки комиссии");
     }
   });
 
@@ -1244,10 +1307,133 @@ if (bot) {
         return;
       }
 
-      // Balance credit handler
+      // Withdraw fee handler
+      const withdrawFeeData = pendingWithdrawFee.get(chatId);
+      if (withdrawFeeData) {
+        try {
+          const messageLower = messageText.trim().toLowerCase();
+          
+          // Handle cancellation
+          if (messageLower === "отмена" || messageLower === "cancel") {
+            pendingWithdrawFee.delete(chatId);
+            await ctx.reply("❌ Установка комиссии отменена");
+            return;
+          }
+
+          // Handle removal of fee
+          if (messageLower === "0" || messageLower === "нет" || messageLower === "no") {
+            const appUrl = getAppUrl();
+            const adminSecret = process.env.INTERNAL_BALANCE_SIGNING_SECRET;
+
+            if (!adminSecret) {
+              await ctx.reply("❌ Ошибка конфигурации: INTERNAL_BALANCE_SIGNING_SECRET не установлен");
+              pendingWithdrawFee.delete(chatId);
+              return;
+            }
+
+            const response = await fetch(`${appUrl}/api/internal-balance/withdraw/${withdrawFeeData.requestId}`, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                "x-internal-admin-token": adminSecret,
+              },
+              body: JSON.stringify({
+                feeAmount: null,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              const errorMessage = data.error || "Неизвестная ошибка";
+              await ctx.reply(`❌ Ошибка при удалении комиссии:\n\n\`${errorMessage}\``, {
+                parse_mode: "Markdown",
+              });
+              pendingWithdrawFee.delete(chatId);
+              return;
+            }
+
+            await ctx.reply(`✅ Комиссия удалена для заявки WR-${withdrawFeeData.requestId}`);
+            pendingWithdrawFee.delete(chatId);
+            return;
+          }
+
+          // Parse fee amount (should be in token units with decimals)
+          const feeAmount = messageText.trim();
+          
+          // Validate that it's a valid number (can be a big integer string)
+          if (!/^\d+$/.test(feeAmount)) {
+            await ctx.reply(
+              "❌ Неверный формат суммы комиссии.\n\n" +
+                "Введите сумму в токенах (только цифры, например: 1000000000000000000 для 1 токена с 18 десятичными знаками)\n\n" +
+                "Или отправьте \"0\" или \"нет\" чтобы убрать комиссию.\n\n" +
+                "Отправьте \"отмена\" чтобы отменить.",
+            );
+            return;
+          }
+
+          const appUrl = getAppUrl();
+          const adminSecret = process.env.INTERNAL_BALANCE_SIGNING_SECRET;
+
+          if (!adminSecret) {
+            await ctx.reply("❌ Ошибка конфигурации: INTERNAL_BALANCE_SIGNING_SECRET не установлен");
+            pendingWithdrawFee.delete(chatId);
+            return;
+          }
+
+          const response = await fetch(`${appUrl}/api/internal-balance/withdraw/${withdrawFeeData.requestId}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "x-internal-admin-token": adminSecret,
+            },
+            body: JSON.stringify({
+              feeAmount: feeAmount,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            const errorMessage = data.error || "Неизвестная ошибка";
+            await ctx.reply(`❌ Ошибка при установке комиссии:\n\n\`${errorMessage}\``, {
+              parse_mode: "Markdown",
+            });
+            pendingWithdrawFee.delete(chatId);
+            return;
+          }
+
+          await ctx.reply(`✅ Комиссия установлена: ${feeAmount} для заявки WR-${withdrawFeeData.requestId}`);
+          pendingWithdrawFee.delete(chatId);
+        } catch (error) {
+          console.error("[telegram-webhook] Error in withdraw fee handler:", error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          await ctx.reply(`❌ Ошибка при установке комиссии:\n\n\`${errorMessage}\``, {
+            parse_mode: "Markdown",
+          }).catch(() => {});
+          pendingWithdrawFee.delete(chatId);
+        }
+        return;
+      }
+
+      // Balance credit handler - must be checked before default handler
       const balanceCreditData = pendingBalanceCredit.get(chatId);
       if (balanceCreditData) {
         try {
+          console.log("[telegram-webhook] Balance credit handler triggered:", {
+            chatId,
+            step: balanceCreditData.step,
+            messageText: messageText.substring(0, 50),
+          });
+
+          // Handle cancellation
+          const messageLower = messageText.trim().toLowerCase();
+          if (messageLower === "отмена" || messageLower === "cancel") {
+            pendingBalanceCredit.delete(chatId);
+            await ctx.reply("❌ Начисление баланса отменено");
+            return;
+          }
+
           if (balanceCreditData.step === "wallet") {
             const walletInput = messageText.trim();
 
@@ -1319,8 +1505,23 @@ if (bot) {
             );
             return;
           }
+
+          // If step is "confirm" or unknown, ignore the message (user should use buttons)
+          if (balanceCreditData.step === "confirm") {
+            await ctx.reply(
+              "⏳ Ожидается подтверждение через кнопки выше.\n\n" +
+                "Используйте кнопки ✅ Подтвердить или ❌ Отменить для продолжения.",
+            );
+            return;
+          }
+
+          // Unknown step - reset
+          console.warn("[telegram-webhook] Unknown balance credit step:", balanceCreditData.step);
+          await ctx.reply("❌ Неизвестное состояние. Начните заново с /credit");
+          pendingBalanceCredit.delete(chatId);
+          return;
         } catch (error) {
-          console.error("Error in balance credit handler:", error);
+          console.error("[telegram-webhook] Error in balance credit handler:", error);
           await ctx
             .reply("❌ Ошибка при обработке данных. Попробуйте снова с /credit")
             .catch(() => {});
@@ -1959,6 +2160,9 @@ if (bot) {
 
       const txLine = request.txHash ? `🔗 *Tx Hash:* \`${request.txHash}\`\n` : "";
       const notesLine = request.notes ? `📝 *Примечания:* ${escapeMarkdown(request.notes)}\n` : "";
+      const feeLine = request.feeAmount 
+        ? `💸 *Комиссия:* ${escapeMarkdown(request.feeAmount)} ${escapeMarkdown(request.tokenSymbol)}\n`
+        : `💸 *Комиссия:* не установлена\n`;
 
       const message = `
 📋 *Детали заявки на вывод*
@@ -1967,7 +2171,7 @@ if (bot) {
 💼 *Кошелек:* \`${escapeMarkdown(request.walletAddress || "N/A")}\`
 🎯 *Адрес вывода:* \`${escapeMarkdown(request.destinationAddress)}\`
 💰 *Сумма:* ${escapeMarkdown(request.amount)} ${escapeMarkdown(request.tokenSymbol)}
-📊 *Статус:* ${statusLabel}
+${feeLine}📊 *Статус:* ${statusLabel}
 ${txLine}${notesLine}📅 *Создана:* ${new Date(request.createdAt).toLocaleString("ru-RU")}
 🕐 *Обновлена:* ${new Date(request.updatedAt).toLocaleString("ru-RU")}
       `.trim();
@@ -1976,6 +2180,9 @@ ${txLine}${notesLine}📅 *Создана:* ${new Date(request.createdAt).toLoca
         [
           Markup.button.callback("✅ Одобрить", `withdraw_approve_${request.id}`),
           Markup.button.callback("❌ Отклонить", `withdraw_reject_${request.id}`),
+        ],
+        [
+          Markup.button.callback("💰 Установить комиссию", `withdraw_set_fee_${request.id}`),
         ],
       ]);
 
@@ -1990,9 +2197,63 @@ ${txLine}${notesLine}📅 *Создана:* ${new Date(request.createdAt).toLoca
         .reply(`❌ Ошибка при получении деталей заявки:\n\n\`${errorMessage}\``, {
           parse_mode: "Markdown",
         })
-        .catch(() => {});
+        .catch(() => {      });
     }
   });
+
+  // Handle withdraw set fee button
+  bot.action(/^withdraw_set_fee_(.+)$/, async (ctx) => {
+    // 🔒 Authorization check
+    if (!(await checkAccess(ctx))) {
+      await ctx.answerCbQuery("🔒 Нет доступа").catch(() => {});
+      return;
+    }
+
+    const requestId = ctx.match[1];
+    const chatId = ctx.from.id;
+    await ctx.answerCbQuery("⏳ Загрузка...").catch(() => {});
+
+    try {
+      const { getWithdrawRequestById } = await import("@/lib/database/internal-balance-queries");
+      const request = await getWithdrawRequestById(requestId);
+
+      if (!request) {
+        await ctx.reply("❌ Заявка не найдена");
+        return;
+      }
+
+      // Can only set fee if request is pending or approved
+      if (request.status !== "pending" && request.status !== "approved") {
+        await ctx.reply("❌ Комиссию можно установить только для заявок со статусом 'Ожидает' или 'Одобрено'");
+        return;
+      }
+
+      // Store pending fee setting
+      pendingWithdrawFee.set(chatId, {
+        requestId,
+        step: "amount",
+      });
+
+      const currentFeeText = request.feeAmount 
+        ? `Текущая комиссия: ${request.feeAmount} ${request.tokenSymbol}\n\n`
+        : "";
+
+      await ctx.reply(
+        `${currentFeeText}💰 *Установка комиссии для заявки WR-${requestId}*\n\n` +
+        `Введите сумму комиссии в токенах (в формате: 1000000000000000000 для 1 токена с 18 десятичными знаками)\n\n` +
+        `Или отправьте "0" или "нет" чтобы убрать комиссию.\n\n` +
+        `Отправьте "отмена" чтобы отменить.`,
+        { parse_mode: "Markdown" },
+      );
+    } catch (error) {
+      console.error("[telegram-webhook] Error setting withdraw fee:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      await ctx.reply(`❌ Ошибка:\n\n\`${errorMessage}\``, { parse_mode: "Markdown" }).catch(() => {});
+    }
+  });
+
+  // Handle withdraw fee amount input (in text message handler)
+  // This will be added to the existing text message handler
 } // End of if (bot) block
 
 export async function POST(request: NextRequest) {

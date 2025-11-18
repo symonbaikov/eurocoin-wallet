@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateWithdrawRequestStatus } from "@/lib/database/internal-balance-queries";
+import { updateWithdrawRequestStatus, updateWithdrawRequestFee } from "@/lib/database/internal-balance-queries";
 import type { WithdrawStatus } from "@/lib/database/internal-balance-queries";
 
 const ALLOWED_STATUSES: WithdrawStatus[] = ["approved", "processing", "completed", "rejected"];
@@ -21,12 +21,13 @@ function ensureAdminToken(request: NextRequest): NextResponse | null {
   return null;
 }
 
-function serialize(record: Awaited<ReturnType<typeof updateWithdrawRequestStatus>>) {
+function serialize(record: Awaited<ReturnType<typeof updateWithdrawRequestStatus>> | Awaited<ReturnType<typeof updateWithdrawRequestFee>>) {
   return {
     id: record.id,
     walletId: record.walletId,
     tokenSymbol: record.tokenSymbol,
     amount: record.amount,
+    feeAmount: record.feeAmount,
     destinationAddress: record.destinationAddress,
     status: record.status,
     reviewerId: record.reviewerId,
@@ -53,8 +54,24 @@ export async function PATCH(
       reviewerId?: string;
       txHash?: string;
       notes?: string;
+      feeAmount?: string | null;
     };
 
+    // Handle fee update separately
+    if (payload.feeAmount !== undefined && payload.status === undefined) {
+      const feeAmount = payload.feeAmount === null || payload.feeAmount === "" 
+        ? null 
+        : payload.feeAmount;
+      
+      const record = await updateWithdrawRequestFee({
+        requestId,
+        feeAmount,
+      });
+
+      return NextResponse.json({ request: serialize(record) });
+    }
+
+    // Handle status update
     if (!payload.status || !ALLOWED_STATUSES.includes(payload.status)) {
       return NextResponse.json({ error: "Unsupported status" }, { status: 400 });
     }

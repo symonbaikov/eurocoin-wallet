@@ -94,6 +94,8 @@ export interface InternalRequestNotification {
   id: string;
   requester: string;
   walletAddress?: string;
+  userId?: string; // For email users
+  email?: string; // For email users
   department: string;
   requestType: string;
   priority: string;
@@ -113,19 +115,21 @@ export async function notifyNewInternalRequest(
       return; // Skip if chat ID not configured
     }
 
-    const walletLine = request.walletAddress
+    // Show wallet address for wallet users, userId for email users
+    const userIdentifier = request.walletAddress
       ? `💼 *Кошелек:* \`${escapeMarkdown(request.walletAddress)}\``
-      : "";
+      : request.userId
+        ? `🆔 *ID пользователя:* \`${escapeMarkdown(request.userId)}\`${request.email ? `\n📧 *Email:* ${escapeMarkdown(request.email)}` : ""}`
+        : "";
 
     const message = `
 🔔 *Новая внутренняя заявка*
 
 📋 *ID заявки:* IR\\-${escapeMarkdown(request.id)}
 👤 *Инициатор:* ${escapeMarkdown(request.requester)}
-💼 *Отдел:* ${escapeMarkdown(request.department)}
+${userIdentifier ? `${userIdentifier}\n` : ""}💼 *Отдел:* ${escapeMarkdown(request.department)}
 📝 *Тип:* ${escapeMarkdown(request.requestType)}
 ⚡ *Приоритет:* ${escapeMarkdown(request.priority)}
-${walletLine}
     `.trim();
 
     // Only show support messenger buttons if user has a valid wallet address
@@ -191,7 +195,10 @@ export async function notifyNewWithdrawRequest(
         Markup.button.callback("❌ Отклонить", `withdraw_reject_${payload.id}`),
       ],
       [
+        Markup.button.callback("💰 Установить комиссию", `withdraw_set_fee_${payload.id}`),
         Markup.button.callback("📋 Детали", `withdraw_details_${payload.id}`),
+      ],
+      [
         Markup.button.callback("💬 Сообщение", `msg_${payload.walletAddress}`),
       ],
     ]);
@@ -341,6 +348,38 @@ export async function notifyNewsletterSubscription(email: string): Promise<void>
     });
   } catch (error) {
     console.error("Error sending newsletter subscription notification:", error);
+    // Don't throw - notification failure shouldn't break the main flow
+  }
+}
+
+// ============================================
+// User Registration Notifications
+// ============================================
+
+/**
+ * Отправляет уведомление админу о новой регистрации пользователя
+ */
+export async function notifyNewUserRegistration(email: string): Promise<void> {
+  try {
+    const bot = getBot();
+    const adminChatId = getAdminChatId();
+
+    if (!adminChatId) {
+      return; // Skip if chat ID not configured
+    }
+
+    const message = `
+🆕 *Новая регистрация*
+
+📬 *Email:* ${escapeMarkdown(email)}
+🕐 *Время:* ${escapeMarkdown(new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" }))}
+    `.trim();
+
+    await bot.telegram.sendMessage(adminChatId, message, {
+      parse_mode: "MarkdownV2",
+    });
+  } catch (error) {
+    console.error("Error sending new user registration notification:", error);
     // Don't throw - notification failure shouldn't break the main flow
   }
 }

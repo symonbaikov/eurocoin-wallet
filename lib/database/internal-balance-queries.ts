@@ -58,6 +58,7 @@ export interface WithdrawRequestRecord {
   walletId: string;
   tokenSymbol: string;
   amount: string;
+  feeAmount: string | null;
   destinationAddress: string;
   status: WithdrawStatus;
   reviewerId: string | null;
@@ -145,6 +146,7 @@ function mapWithdrawRow(row: Record<string, unknown>): WithdrawRequestRecord {
     walletId: row.wallet_id as string,
     tokenSymbol: (row.token_symbol as string)?.toUpperCase() ?? DEFAULT_TOKEN_SYMBOL,
     amount: toNumericString(row.amount),
+    feeAmount: row.fee_amount ? toNumericString(row.fee_amount) : null,
     destinationAddress: row.destination_address as string,
     status: (row.status as WithdrawStatus) ?? "pending",
     reviewerId: (row.reviewer_id as string) ?? null,
@@ -637,6 +639,11 @@ interface WithdrawStatusUpdateParams {
   notes?: string | null;
 }
 
+interface WithdrawFeeUpdateParams {
+  requestId: string;
+  feeAmount: string | null;
+}
+
 export async function updateWithdrawRequestStatus(
   params: WithdrawStatusUpdateParams,
 ): Promise<WithdrawRequestRecord> {
@@ -765,6 +772,59 @@ export async function updateWithdrawRequestStatus(
     if (ledgerRow) {
       mapLedgerRow(ledgerRow as unknown as Record<string, unknown>);
     }
+
+    return mapWithdrawRow(updateResult.rows[0] as Record<string, unknown>);
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Update fee amount for a withdraw request
+ * Can only be updated when status is 'pending' or 'approved'
+ */
+export async function updateWithdrawRequestFee(
+  params: WithdrawFeeUpdateParams,
+): Promise<WithdrawRequestRecord> {
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
+
+    const requestResult = await client.query(
+      `SELECT *
+       FROM withdraw_requests
+       WHERE id = $1
+       FOR UPDATE`,
+      [params.requestId],
+    );
+
+    if (requestResult.rows.length === 0) {
+      throw new Error("WITHDRAW_REQUEST_NOT_FOUND");
+    }
+
+    const current = mapWithdrawRow(requestResult.rows[0] as Record<string, unknown>);
+    
+    // Can only update fee if request is pending or approved
+    if (current.status !== "pending" && current.status !== "approved") {
+      throw new Error("WITHDRAW_REQUEST_FINALIZED");
+    }
+
+    const updateResult = await client.query(
+      `UPDATE withdraw_requests
+       SET fee_amount = $1,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2
+       RETURNING *`,
+      [
+        params.feeAmount ?? null,
+        params.requestId,
+      ],
+    );
+
+    await client.query("COMMIT");
 
     return mapWithdrawRow(updateResult.rows[0] as Record<string, unknown>);
   } catch (error) {

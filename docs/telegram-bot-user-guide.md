@@ -533,3 +533,4 @@ Welcome bonus for new user. Campaign: WELCOME2024. Promo code: WELCOME2024
 ---
 
 **Последнее обновление:** 2025-01-12
+

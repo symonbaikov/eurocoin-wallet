@@ -142,16 +142,23 @@ export async function POST(request: NextRequest) {
             ? `\n📎 *Прикрепленные файлы:* ${data.files.length} шт.`
             : "";
 
+        // Show wallet address for wallet users, userId for email users
+        const userIdentifier = data.walletAddress
+          ? `💼 Кошелек: \`${data.walletAddress}\``
+          : data.userId
+            ? `🆔 ID пользователя: \`${data.userId}\``
+            : "";
+
         const telegramMessage =
           `🔵 *Новая внутренняя заявка*\n\n` +
           `👤 Инициатор: ${data.requester}\n` +
-          (data.walletAddress ? `💼 Кошелек: \`${data.walletAddress}\`\n` : "") +
+          (userIdentifier ? `${userIdentifier}\n` : "") +
           `🏢 Отдел: ${departmentMap[data.department] || data.department}\n` +
           `📋 Тип: ${requestTypeMap[data.requestType] || data.requestType}\n` +
           `📊 Приоритет: ${data.priority.toUpperCase()}\n` +
           `📝 Описание: ${data.description}\n` +
           filesInfo +
-          `\n\n🆔 ID: \`${requestId}\``;
+          `\n\n🆔 ID заявки: \`${requestId}\``;
 
         const keyboard = Markup.inlineKeyboard([
           [
@@ -207,7 +214,9 @@ export async function POST(request: NextRequest) {
     await notifyNewInternalRequest({
       id: requestId,
       requester: data.requester,
-      walletAddress: data.walletAddress,
+      walletAddress: data.walletAddress, // Only for wallet users
+      userId: data.userId, // For email users
+      email: data.email, // For email users
       department: departmentMap[data.department] || data.department,
       requestType: requestTypeMap[data.requestType] || data.requestType,
       priority: data.priority.toUpperCase(),

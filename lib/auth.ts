@@ -478,6 +478,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       });
 
       // Send welcome email, create initial data, etc.
+      
+      // Send notification to Telegram bot about new registration
+      if (user.email) {
+        try {
+          const { notifyNewUserRegistration } = await import("@/lib/telegram/notify-admin");
+          await notifyNewUserRegistration(user.email);
+          console.log("[AUTH EVENT] New user registration notification sent to Telegram");
+        } catch (error) {
+          console.error("[AUTH EVENT] Failed to send registration notification to Telegram:", error);
+          // Don't throw - notification failure shouldn't break the registration flow
+        }
+      }
     },
 
     async linkAccount({ user, account }) {
