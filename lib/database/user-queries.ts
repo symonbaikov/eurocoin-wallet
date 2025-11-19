@@ -188,3 +188,56 @@ export async function getUserByWalletAddress(
   }
 }
 
+/**
+ * Get user by ID
+ */
+export async function getUserById(userId: string): Promise<UserSelect | null> {
+  try {
+    console.log("[user-queries] getUserById called:", { userId });
+
+    // Try direct SQL query first
+    try {
+      const { query } = await import("./db");
+      const result = await query(
+        'SELECT id, name, email, "emailVerified", image, auth_type as "authType", wallet_address as "walletAddress", created_at as "createdAt", updated_at as "updatedAt" FROM users WHERE id = $1 LIMIT 1',
+        [userId],
+      );
+
+      if (result.rows.length > 0) {
+        const user = result.rows[0] as UserSelect;
+        console.log("[user-queries] User found via direct SQL:", { userId: user.id, email: user.email });
+        return user;
+      } else {
+        console.log("[user-queries] User not found via direct SQL for ID:", userId);
+        return null;
+      }
+    } catch (sqlError) {
+      console.error("[user-queries] Direct SQL query failed, trying Drizzle:", {
+        error: sqlError instanceof Error ? sqlError.message : String(sqlError),
+      });
+    }
+
+    // Try Drizzle ORM query
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (user) {
+      console.log("[user-queries] User found via Drizzle:", { userId: user.id, email: user.email });
+    } else {
+      console.log("[user-queries] User not found via Drizzle for ID:", userId);
+    }
+
+    return user ?? null;
+  } catch (error) {
+    console.error("[user-queries] Error in getUserById:", {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    throw error;
+  }
+}
+

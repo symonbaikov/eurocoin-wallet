@@ -6,3 +6,4 @@ ADD COLUMN IF NOT EXISTS fee_amount NUMERIC(78, 0) DEFAULT NULL;
 
 COMMENT ON COLUMN withdraw_requests.fee_amount IS 'Individual commission amount set by admin (in token units, same decimals as amount)';
 
+

@@ -13,6 +13,7 @@ import {
   getChatbotSessionById,
 } from "@/lib/database/queries";
 import { createSupportMessage, getLatestSessionByWallet } from "@/lib/database/support-queries";
+import { getUserById } from "@/lib/database/user-queries";
 import { query } from "@/lib/database/db";
 import {
   formatChatHistoryForTelegram,
@@ -288,13 +289,15 @@ if (bot) {
 
 /credit - Начислить баланс пользователю
   ➡️ Пошаговое начисление баланса через интерактивный диалог
-  ➡️ Требует: адрес кошелька, сумму, описание (опционально)
+  ➡️ Поддерживает начисление по адресу кошелька или ID пользователя
+  ➡️ Требует: адрес кошелька (0x...) или ID пользователя (UUID), сумму, описание (опционально)
   ➡️ Пример использования:
      1. /credit
-     2. Введите адрес кошелька (0x...)
+     2. Введите адрес кошелька (0x...) или ID пользователя (UUID)
      3. Введите сумму (например: 100.5)
      4. Введите описание или "-" для пропуска
      5. Подтвердите начисление через кнопку
+  ➡️ Баланс отображается в личном кабинете пользователя
   ➡️ Безопасное начисление с подтверждением перед выполнением
 
 📧 *Команды для рассылки:*
@@ -1027,7 +1030,10 @@ if (bot) {
 
       await ctx.reply(
         `💰 *Начисление баланса пользователю*\n\n` +
-          `Введите адрес кошелька пользователя (0x...)\n\n` +
+          `Введите адрес кошелька пользователя (0x...) или ID пользователя (UUID)\n\n` +
+          `Примеры:\n` +
+          `• Адрес кошелька: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb\n` +
+          `• ID пользователя: 123e4567-e89b-12d3-a456-426614174000\n\n` +
           `Для отмены используйте /cancel`,
         { parse_mode: "Markdown" },
       );
@@ -1451,25 +1457,71 @@ if (bot) {
           }
 
           if (balanceCreditData.step === "wallet") {
-            const walletInput = messageText.trim();
+            const input = messageText.trim();
 
-            if (!isValidWalletAddress(walletInput)) {
+            // Check if it's a wallet address
+            if (isValidWalletAddress(input)) {
+              balanceCreditData.walletAddress = input.toLowerCase();
+              balanceCreditData.userId = undefined;
+              balanceCreditData.step = "amount";
+
               await ctx.reply(
-                "❌ Неверный формат адреса кошелька.\n\n" +
-                  "Введите корректный Ethereum адрес (начинается с 0x...)\n\n" +
-                  "Для отмены используйте /cancel",
+                `✅ Адрес кошелька: \`${input}\`\n\n` +
+                  `Введите сумму для начисления (например: 100.5)\n\n` +
+                  `Для отмены используйте /cancel`,
+                { parse_mode: "Markdown" },
               );
               return;
             }
 
-            balanceCreditData.walletAddress = walletInput.toLowerCase();
-            balanceCreditData.step = "amount";
+            // Check if it's a UUID (user ID)
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            if (uuidRegex.test(input)) {
+              try {
+                const user = await getUserById(input);
+                if (!user) {
+                  await ctx.reply(
+                    "❌ Пользователь с таким ID не найден.\n\n" +
+                      "Проверьте правильность ID и попробуйте снова.\n\n" +
+                      "Для отмены используйте /cancel",
+                  );
+                  return;
+                }
 
+                balanceCreditData.userId = input;
+                balanceCreditData.walletAddress = user.walletAddress?.toLowerCase() || undefined;
+                balanceCreditData.step = "amount";
+
+                const userInfo = user.email || user.name || "Пользователь";
+                await ctx.reply(
+                  `✅ Пользователь найден:\n` +
+                    `• ID: \`${input}\`\n` +
+                    `• Email/Имя: ${userInfo}\n` +
+                    (user.walletAddress ? `• Кошелек: \`${user.walletAddress}\`\n` : "") +
+                    `\nВведите сумму для начисления (например: 100.5)\n\n` +
+                    `Для отмены используйте /cancel`,
+                  { parse_mode: "Markdown" },
+                );
+                return;
+              } catch (error) {
+                console.error("[telegram-webhook] Error fetching user by ID:", error);
+                await ctx.reply(
+                  "❌ Ошибка при поиске пользователя.\n\n" +
+                    "Попробуйте снова или используйте адрес кошелька.\n\n" +
+                    "Для отмены используйте /cancel",
+                );
+                return;
+              }
+            }
+
+            // Neither wallet address nor UUID
             await ctx.reply(
-              `✅ Адрес кошелька: \`${walletInput}\`\n\n` +
-                `Введите сумму для начисления (например: 100.5)\n\n` +
-                `Для отмены используйте /cancel`,
-              { parse_mode: "Markdown" },
+              "❌ Неверный формат.\n\n" +
+                "Введите корректный Ethereum адрес (начинается с 0x...) или ID пользователя (UUID)\n\n" +
+                "Примеры:\n" +
+                "• Адрес: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb\n" +
+                "• ID: 123e4567-e89b-12d3-a456-426614174000\n\n" +
+                "Для отмены используйте /cancel",
             );
             return;
           }
@@ -1511,9 +1563,13 @@ if (bot) {
               ],
             ]);
 
+            const identifierText = balanceCreditData.userId
+              ? `👤 ID пользователя: \`${balanceCreditData.userId}\``
+              : `💼 Кошелек: \`${balanceCreditData.walletAddress}\``;
+
             await ctx.reply(
               `📋 *Подтверждение начисления баланса*\n\n` +
-                `💼 Кошелек: \`${balanceCreditData.walletAddress}\`\n` +
+                `${identifierText}\n` +
                 `💰 Сумма: ${balanceCreditData.amount}\n` +
                 `📝 Описание: ${balanceCreditData.reference || "—"}\n\n` +
                 `Подтвердить начисление?`,
@@ -1950,7 +2006,7 @@ if (bot) {
       const chatId = ctx.from.id;
       const balanceCreditData = pendingBalanceCredit.get(chatId);
 
-      if (!balanceCreditData || !balanceCreditData.walletAddress || !balanceCreditData.amount) {
+      if (!balanceCreditData || (!balanceCreditData.walletAddress && !balanceCreditData.userId) || !balanceCreditData.amount) {
         await ctx.reply("❌ Данные начисления не найдены. Начните заново с /credit");
         pendingBalanceCredit.delete(chatId);
         return;
@@ -1966,18 +2022,35 @@ if (bot) {
         return;
       }
 
+      // Prepare request body - prioritize userId if available
+      const requestBody: {
+        userId?: string;
+        walletAddress?: string;
+        amount: string;
+        reference?: string;
+        createdBy: string;
+      } = {
+        amount: balanceCreditData.amount,
+        reference: balanceCreditData.reference,
+        createdBy: ctx.from.first_name || ctx.from.username || "telegram-admin",
+      };
+
+      if (balanceCreditData.userId) {
+        requestBody.userId = balanceCreditData.userId;
+        if (balanceCreditData.walletAddress) {
+          requestBody.walletAddress = balanceCreditData.walletAddress;
+        }
+      } else if (balanceCreditData.walletAddress) {
+        requestBody.walletAddress = balanceCreditData.walletAddress;
+      }
+
       const response = await fetch(`${appUrl}/api/internal-balance/credit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-internal-admin-token": adminSecret,
         },
-        body: JSON.stringify({
-          walletAddress: balanceCreditData.walletAddress,
-          amount: balanceCreditData.amount,
-          reference: balanceCreditData.reference,
-          createdBy: ctx.from.first_name || ctx.from.username || "telegram-admin",
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -2002,9 +2075,13 @@ if (bot) {
       // Format balance for display
       const balanceFormatted = (parseFloat(balance) / Math.pow(10, decimals)).toFixed(2);
 
+      const identifierText = balanceCreditData.userId
+        ? `👤 ID пользователя: \`${balanceCreditData.userId}\``
+        : `💼 Кошелек: \`${balanceCreditData.walletAddress}\``;
+
       await ctx.reply(
         `✅ *Баланс успешно начислен!*\n\n` +
-          `💼 Кошелек: \`${balanceCreditData.walletAddress}\`\n` +
+          `${identifierText}\n` +
           `💰 Начислено: ${balanceCreditData.amount} ${tokenSymbol}\n` +
           `📊 Новый баланс: ${balanceFormatted} ${tokenSymbol}\n` +
           (balanceCreditData.reference ? `📝 Описание: ${balanceCreditData.reference}\n` : ""),

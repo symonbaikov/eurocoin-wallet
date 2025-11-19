@@ -1008,3 +1008,4 @@ CREATE TRIGGER update_trading_liquidity_pool_updated_at
 **Статус:** Готов к реализации
 
 
+
